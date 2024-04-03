@@ -20,5 +20,4 @@ public class UniformPrimitive : BasePrimitive
         Vector3 temp = Common.Multiply(Vector3.one - OP, direction.normalized);
         return temp;
     }
-
 }

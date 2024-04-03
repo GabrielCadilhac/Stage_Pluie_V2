@@ -42,4 +42,27 @@ public static class Common
     {
         return new Vector3(Mathf.Abs(a.x), Mathf.Abs(a.y), Mathf.Abs(a.z));
     }
+
+    public static Vector3 Cart2Cyl(Vector3 p_coord)
+    {
+        float r = Mathf.Sqrt(p_coord.x * p_coord.x + p_coord.y * p_coord.y);
+        float theta = 0f;
+        if (p_coord.x != 0f)
+            theta = Mathf.Atan(p_coord.y / p_coord.x);
+        else if (p_coord.y > 0f)
+            theta = Mathf.PI / 2f;
+        else if (p_coord.y < 0f)
+            theta = -Mathf.PI / 2f;
+
+        if (p_coord.x < 0f)
+            theta += Mathf.PI;
+
+        return new(r, theta, p_coord.z);
+    }
+
+    // Convert cylindrical coords (r,theta) to cartesian
+    public static Vector2 Cyl2Cart(Vector2 p_coord)
+    {
+        return new Vector2(p_coord.x * Mathf.Cos(p_coord.y), p_coord.x * Mathf.Sin(p_coord.y));
+    }
 }

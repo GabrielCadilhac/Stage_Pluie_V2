@@ -15,7 +15,7 @@ public abstract class BasePrimitive
         _speed = p_speed;
         _size = size;
 
-        _currentLerp = 0f;
+        _currentLerp = 0.5f;
     }
 
     public void Update(float p_deltaTime, Vector3 p_min, Vector3 p_nDivSize)

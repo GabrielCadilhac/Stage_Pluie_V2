@@ -35,12 +35,11 @@ public class WindGenerator
         
         // Init Prmitives
         _primitives = new BasePrimitive[p_nbPrimitives];
-        for (int i = 0; i < p_nbPrimitives; i++)
-        {
-            Vector3 randPos = new Vector3(Random.Range(0f, Common.NB_CELLS.x), Random.Range(0f, Common.NB_CELLS.y), 0f);
-            float randSpeed = Random.Range(0f, p_primitiveSpeed);
-            _primitives[i]  = new UniformPrimitive(p_bezierCurve, randPos, randSpeed, 0.3f);
-        }
+
+        Vector3 randPos = new Vector3(Random.Range(0f, Common.NB_CELLS.x), Random.Range(0f, Common.NB_CELLS.y), 0f);
+        float randSpeed = Random.Range(0f, p_primitiveSpeed);
+        _primitives[0]  = new SourcePrimitive(p_bezierCurve, randPos, randSpeed, 0.3f);
+        _primitives[1]  = new VortexPrimitive(p_bezierCurve, randPos, randSpeed, 0.3f);
     }
 
     public void Update()
@@ -76,7 +75,7 @@ public class WindGenerator
 
                     if (direction.magnitude != 0f)
                     {
-                        _windsGrid.Set(i, j, k, direction * direction.magnitude * _localWindForce);
+                        _windsGrid.Add(i, j, k, direction * direction.magnitude * _localWindForce);
                         _curvePos.Add(new Vector3Int(i, j, k));
                     }
                 }

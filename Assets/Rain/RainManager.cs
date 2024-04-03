@@ -25,7 +25,7 @@ public class RainManager : MonoBehaviour
 
     void Start()
     {
-        _windGenerator = new WindGenerator(_box.bounds, _bezierCurve, _globalWind, 1, _primitiveSpeed, _localWindForce, _deltaTime);
+        _windGenerator = new WindGenerator(_box.bounds, _bezierCurve, _globalWind, 2, _primitiveSpeed, _localWindForce, _deltaTime);
         
         Material material = GetComponent<Renderer>().material;
         _renderer = new RainRenderer(material, _box.bounds, transform, _nbParticles);
