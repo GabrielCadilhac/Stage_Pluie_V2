@@ -17,6 +17,7 @@ public class RainManagerEditor : Editor
 
     private SerializedProperty _updateShaderProp, _collisionShaderProp;
 
+    private RainManager _rainManager;
     void OnEnable()
     {
         _boxProp             = serializedObject.FindProperty("_box");
@@ -28,6 +29,8 @@ public class RainManagerEditor : Editor
         _updateShaderProp    = serializedObject.FindProperty("_updateShader");
         _collisionShaderProp = serializedObject.FindProperty("_collisionShader");
         _showGizmosProp = serializedObject.FindProperty("_showGizmos");
+
+        _rainManager = target as RainManager;
     }
 
     public override void OnInspectorGUI()
@@ -40,8 +43,13 @@ public class RainManagerEditor : Editor
         EditorGUILayout.PropertyField(_bezierCurveProp);
 
         EditorGUILayout.LabelField("Wind properties", EditorStyles.boldLabel);
-        EditorGUILayout.PropertyField(_globalWindProp);
         EditorGUILayout.PropertyField(_localWindForceProp);
+
+        EditorGUI.BeginChangeCheck();
+        EditorGUILayout.PropertyField(_globalWindProp);
+        if (EditorGUI.EndChangeCheck())
+            _rainManager.GlobalWindChanged();
+
         EditorGUILayout.PropertyField(_deltaTimeProp);
 
         EditorGUILayout.LabelField("Rain properties", EditorStyles.boldLabel);

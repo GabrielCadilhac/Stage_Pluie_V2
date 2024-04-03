@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.Rendering;
 
@@ -8,6 +9,7 @@ public class RainRenderer
     // Renderer elements
     private Material _material;
     private Mesh _mesh;
+    private GraphicsBuffer _posBuffer;
 
     public RainRenderer(Material p_material, Bounds p_minMax, Transform p_transform, int p_nbMaxParticles = 1000)
     {
@@ -42,8 +44,10 @@ public class RainRenderer
         _mesh.SetVertices(positions);
         _mesh.SetIndices(indices, MeshTopology.Points, 0);
         _mesh.SetVertexBufferParams(p_nbMaxParticles, layout);
-        _mesh.hideFlags = HideFlags.HideAndDontSave;
         _mesh.bounds = p_minMax;
+        _mesh.hideFlags = HideFlags.HideAndDontSave;
+        _mesh.vertexBufferTarget |= GraphicsBuffer.Target.Raw;
+        _posBuffer = _mesh.GetVertexBuffer(0);
 
         _material.SetInteger("_ParticlesNumber", p_nbMaxParticles);
     }
@@ -56,12 +60,17 @@ public class RainRenderer
 
     public GraphicsBuffer GetPositionsBuffer()
     {
-        _mesh.vertexBufferTarget |= GraphicsBuffer.Target.Raw;
-        return _mesh.GetVertexBuffer(0);
+        return _posBuffer;
     }
 
     public Mesh GetMesh()
     {
         return _mesh;
+    }
+
+    public void Disable()
+    {
+        _posBuffer.Release();
+        _posBuffer = null;
     }
 }

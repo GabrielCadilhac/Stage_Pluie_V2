@@ -31,7 +31,7 @@ public class WindGenerator
 
         _curvePos = new List<Vector3Int>();
 
-        _windsGrid = new Grid(Common.NB_CELLS, p_box, Vector3.zero);
+        _windsGrid = new Grid(Common.NB_CELLS, p_box, _globalWind);
         
         // Init Prmitives
         _primitives = new BasePrimitive[p_nbPrimitives];
@@ -75,8 +75,21 @@ public class WindGenerator
                         direction += prim.GetValue(x, y, z);
 
                     if (direction.magnitude != 0f)
+                    {
                         _windsGrid.Set(i, j, k, direction * direction.magnitude * _localWindForce);
+                        _curvePos.Add(new Vector3Int(i, j, k));
+                    }
                 }
+    }
+
+    public void SetGlobalWind(Vector3 p_globalWind)
+    {
+        _windsGrid.Reset(p_globalWind);
+    }
+
+    public void SetDeltaTime(float p_deltaTime)
+    {
+        _deltaTime = p_deltaTime;
     }
 
     public Vector3[] GetWinds()

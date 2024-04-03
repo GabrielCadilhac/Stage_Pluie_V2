@@ -106,7 +106,7 @@ Shader "Unlit/RainShader"
             void geom(point v2g vertIn[1], inout TriangleStream<g2f> triStream)
             {
                 float3 pos = vertIn[0].vertex.xyz;
-                _WindRotation.y += 2.0 * _ForceRotation;
+                _WindRotation.y -= 2.0 * _ForceRotation;
                 float3 up = normalize(_WindRotation) * _Size.x;// + range11(vertIn[0].vertexId.x, -0.01, 0.01);
                 float3 right = normalize(float3(1.0, 0.0, 0.0)) * _Size.y;// + range11(vertIn[0].vertexId.x, -0.01, 0.01);
 

@@ -6,6 +6,7 @@ using UnityEngine;
 public class RainGenerator
 {
     private ComputeBuffer _velBuffer, _windBuffer;
+    private GraphicsBuffer _posBuffer;
 
     private float _deltaTime;
     private int _nbBlocks;
@@ -21,11 +22,12 @@ public class RainGenerator
                         float p_deltaTime = 1f,
                         int p_nbMaxParticles = 1000)
     {
+        _posBuffer = p_posBuffer;
         _velBuffer  = new ComputeBuffer(p_nbMaxParticles, 3 * sizeof(float));
-        _windBuffer = new ComputeBuffer(Common.NB_CELLS.x * Common.NB_CELLS.y * Common.NB_CELLS.z, 3 * 4);
+        _windBuffer = new ComputeBuffer(Common.NB_CELLS.x * Common.NB_CELLS.y * Common.NB_CELLS.z, 3 * sizeof(float));
 
         _deltaTime = p_deltaTime;
-        _nbBlocks  = Mathf.Clamp(Mathf.FloorToInt(p_nbMaxParticles / Constants.BLOCK_SIZE + 0.5f), 1, Constants.MAX_BLOCKS_NUMBER);
+        _nbBlocks  = Mathf.Clamp(Mathf.FloorToInt((float) p_nbMaxParticles / (float) Constants.BLOCK_SIZE + 0.5f), 1, Constants.MAX_BLOCKS_NUMBER);
 
         Vector3 min = p_windGrid.center - p_windGrid.size / 2f;
         Vector3 max = p_windGrid.center + p_windGrid.size / 2f;
@@ -43,11 +45,11 @@ public class RainGenerator
 
         _updateShader.SetBuffer(0, "Positions", p_posBuffer);
         _updateShader.SetBuffer(0, "Velocities", _velBuffer);
-        _updateShader.SetBuffer(0, "Wind", _windBuffer);
+        _updateShader.SetBuffer(0, "Winds", _windBuffer);
 
         _updateShader.SetInt("_NumParticles", p_nbMaxParticles);
-        _updateShader.SetInt("_Resolution", p_nbMaxParticles);
-        _updateShader.SetFloat("_DeltaTime", _deltaTime);
+        _updateShader.SetInt("_Resolution", _nbBlocks);
+        _updateShader.SetFloat("_DeltaTime", _deltaTime * Time.deltaTime);
         _updateShader.SetFloat("_DropsCX", 0.42f);
         _updateShader.SetFloat("_DropDiam", 0.78f);
         _updateShader.SetVector("_Min", min);
@@ -61,7 +63,7 @@ public class RainGenerator
         _collisionShader.SetBuffer(0, "Velocities", _velBuffer);
 
         _collisionShader.SetInt("_NumParticles", p_nbMaxParticles);
-        _collisionShader.SetInt("_Resolution", p_nbMaxParticles);
+        _collisionShader.SetInt("_Resolution", _nbBlocks);
         _collisionShader.SetVector("_InitialVel", new Vector3(0f, -4f, 0f));
         _collisionShader.SetVector("_Min", min);
         _collisionShader.SetVector("_Max", max);
@@ -78,15 +80,23 @@ public class RainGenerator
         if (p_winds != null)
         {
             _windBuffer.SetData(p_winds);
-            _updateShader.SetBuffer(0, "Wind", _windBuffer);
+            _updateShader.SetBuffer(0, "Winds", _windBuffer);
         }
     }
 
-    public void Destroy()
+    public void SetDeltaTime(float p_deltaTime)
     {
-        _velBuffer.Dispose();
-        _windBuffer.Dispose();
+        _deltaTime = p_deltaTime;
+        _updateShader.SetFloat("_DeltaTime", p_deltaTime * Time.deltaTime);
+    }
 
+    public void Disable()
+    {
+        _posBuffer.Release();
+        _velBuffer.Release();
+        _windBuffer.Release();
+
+        _posBuffer = null;
         _velBuffer  = null;
         _windBuffer = null;
     }

@@ -483,7 +483,7 @@ MonoBehaviour:
   _showGizmos: 1
   _globalWind: {x: 0, y: 0, z: 0}
   _localWindForce: 0
-  _deltaTime: 1
+  _deltaTime: 5
   _updateShader: {fileID: 7200000, guid: bc70226b2d209074e98b76c1548e73f6, type: 3}
   _collisionShader: {fileID: 7200000, guid: 205411dfba100874f9c822f3aa0e75ff, type: 3}
   _forceRotation: 3

@@ -6,7 +6,7 @@
 // ====== Buffers ======
 RWStructuredBuffer<float3> Velocities;
 RWStructuredBuffer<float3> Positions;
-//RWStructuredBuffer<float3> Winds;
+RWStructuredBuffer<float3> Winds;
 
 // ====== Settings ======
 const uint _NumParticles;
@@ -34,12 +34,10 @@ void CSMain (uint3 id : SV_DispatchThreadID)
         int k = min(_NbCells.z - 1, floor((pos.z - _Min.z) * _NbCells.z / _WindGridSize.z));
         int idxPos = (k * _NbCells.y + i) * _NbCells.x + j;
         
-        //float3 wind = -Winds[idxPos];
-
         //float acceleration = _Gravity + (0.9195 * _DropsCX / _DropDiam) * (wind * length(wind) - Velocities[id.x] * length(Velocities[id.x]);
-        float3 acceleration = _Gravity; // + (0.9195 * _DropsCX / _DropDiam) * wind * length(wind);
-        Velocities[id.x]   += acceleration;
-        Positions[id.x]    += Velocities[id.x];
+        float3 acceleration = _Gravity + (0.9195 * _DropsCX / _DropDiam) * Winds[idxPos];
+        Velocities[id.x]   += acceleration * _DeltaTime;
+        Positions[id.x]    += Velocities[id.x] * _DeltaTime;
         
         id.x += SIZE * _Resolution;
     }

@@ -33,7 +33,7 @@ float range12(float2 p_p, float p_Min, float p_Max)
 void changePosVel(uint3 p_id, float3 p_newPos)
 {
     Positions[p_id.x] = p_newPos;
-    Velocities[p_id.x] = _InitialVel + float3(0.0, range12(p_id.xz, -_InitialVel.y, 0.0), 0.0);
+    Velocities[p_id.x] = _InitialVel+float3(0.0, range12(p_id.xz, -3.0, -2.0), 0.0);
 }
 
 [numthreads(SIZE,1,1)]
@@ -49,7 +49,7 @@ void CSMain (uint3 id : SV_DispatchThreadID)
         }
         else if (Positions[id.x].x < _Min.x)
         {
-            float dist = Positions[id.x].x - _Min.x;
+            float dist = _Min.x - Positions[id.x].x;
             changePosVel(id, float3(_Max.x - dist, Positions[id.x].y, Positions[id.x].z));
         }
         else if (Positions[id.x].x > _Max.x)
