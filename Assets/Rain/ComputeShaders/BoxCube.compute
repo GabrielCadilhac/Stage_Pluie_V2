@@ -33,7 +33,7 @@ float range12(float2 p_p, float p_Min, float p_Max)
 void changePosVel(uint3 p_id, float3 p_newPos)
 {
     Positions[p_id.x] = p_newPos;
-    Velocities[p_id.x] = _InitialVel+float3(0.0, range12(p_id.xz, -3.0, -2.0), 0.0);
+    Velocities[p_id.x] = _InitialVel + float3(0.0, range12(p_id.xz, _InitialVel.y, _InitialVel.y+1.0), 0.0);
 }
 
 [numthreads(SIZE,1,1)]

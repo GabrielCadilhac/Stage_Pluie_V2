@@ -31,7 +31,7 @@ public class WindGenerator
 
         _curvePos = new List<Vector3Int>();
 
-        _windsGrid = new Grid(Common.NB_CELLS, p_box, _globalWind);
+        _windsGrid = new Grid(Common.NB_CELLS, p_box, _globalWind * _globalWind.magnitude);
         
         // Init Prmitives
         _primitives = new BasePrimitive[p_nbPrimitives];
@@ -39,7 +39,7 @@ public class WindGenerator
         {
             Vector3 randPos = new Vector3(Random.Range(0f, Common.NB_CELLS.x), Random.Range(0f, Common.NB_CELLS.y), 0f);
             float randSpeed = Random.Range(0f, p_primitiveSpeed);
-            _primitives[i] = new UniformPrimitive(p_bezierCurve, randPos, randSpeed, 0.4f);
+            _primitives[i]  = new UniformPrimitive(p_bezierCurve, randPos, randSpeed, 0.3f);
         }
     }
 
@@ -62,13 +62,13 @@ public class WindGenerator
         }
 
         // Update Wind Grid
-        for (int i = 0; i < Common.NB_CELLS.x; i++)
-            for (int j = 0; j < Common.NB_CELLS.y; j++)
+        for (int j = 0; j < Common.NB_CELLS.x; j++)
+            for (int i = 0; i < Common.NB_CELLS.y; i++)
                 for (int k = 0; k < Common.NB_CELLS.z; k++)
                 {
-                    float x = (float)i / Common.NB_CELLS.x;
-                    float y = (float)j / Common.NB_CELLS.y;
-                    float z = (float)k / Common.NB_CELLS.z;
+                    float x = (float) j / Common.NB_CELLS.x;
+                    float y = (float) i / Common.NB_CELLS.y;
+                    float z = (float) k / Common.NB_CELLS.z;
 
                     Vector3 direction = Vector3.zero;
                     foreach (BasePrimitive prim in _primitives)
@@ -87,9 +87,20 @@ public class WindGenerator
         _windsGrid.Reset(p_globalWind);
     }
 
+    public void SetLocalWindForce(float p_localWindForce)
+    {
+        _localWindForce = p_localWindForce;
+    }
+
     public void SetDeltaTime(float p_deltaTime)
     {
         _deltaTime = p_deltaTime;
+    }
+
+    public void SetPrimitiveSpeed(float p_primitiveSpeed)
+    {
+        foreach (BasePrimitive prim in _primitives)
+            prim.SetSpeed(p_primitiveSpeed);
     }
 
     public Vector3[] GetWinds()

@@ -1,6 +1,4 @@
 using System.Collections;
-using System.Collections.Generic;
-using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.Rendering;
 
@@ -25,7 +23,7 @@ public class RainRenderer
         Vector3[] positions = new Vector3[p_nbMaxParticles];
         for (int i = 0; i < p_nbMaxParticles; i++)
         {
-            positions[i] = p_transform.TransformPoint( new Vector3(
+            positions[i] = p_transform.InverseTransformPoint( new Vector3(
                 Random.Range(min.x, max.x),
                 Random.Range(min.y, max.y),
                 Random.Range(min.z, max.z)) );

@@ -39,6 +39,12 @@ public class Grid
         _grid[index] = p_value;
     }
 
+    public void Add(int i, int j, int k, Vector3 p_value)
+    {
+        int index = (k * _nbCells.y + i) * _nbCells.x + j;
+        _grid[index] += p_value;
+    }
+
     public void Set(int p_index, Vector3 p_value)
     {
         _grid[p_index] = p_value;

@@ -179,7 +179,7 @@ Camera:
     height: 1
   near clip plane: 0.3
   far clip plane: 1000
-  field of view: 38
+  field of view: 42
   orthographic: 0
   orthographic size: 5
   m_Depth: -1
@@ -481,12 +481,13 @@ MonoBehaviour:
   _bezierCurve: {fileID: 2065306523}
   _box: {fileID: 788456213}
   _showGizmos: 1
-  _globalWind: {x: 0, y: 0, z: 0}
-  _localWindForce: 0
+  _globalWind: {x: -2, y: 0, z: -2}
+  _localWindForce: 2.5
   _deltaTime: 5
+  _primitiveSpeed: 0.2
   _updateShader: {fileID: 7200000, guid: bc70226b2d209074e98b76c1548e73f6, type: 3}
   _collisionShader: {fileID: 7200000, guid: 205411dfba100874f9c822f3aa0e75ff, type: 3}
-  _forceRotation: 3
+  _forceRotation: 1
 --- !u!4 &788456217
 Transform:
   m_ObjectHideFlags: 0
@@ -559,7 +560,7 @@ Transform:
   m_GameObject: {fileID: 1950497382}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -27.5, y: -17.5, z: -10}
+  m_LocalPosition: {x: -21.7, y: 11.63, z: -7.51}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -595,10 +596,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _points:
-  - {x: -16.450842, y: 11.627304, z: -11.184168}
-  - {x: -9.660304, y: 13.888631, z: 2.8988886}
-  - {x: 2.8992362, y: 6.259865, z: 6.9744496}
-  - {x: 12.478878, y: 0, z: 2.685544}
+  - {x: -21.697975, y: 11.627304, z: -7.511176}
+  - {x: -6.846634, y: 8.993753, z: 26.825117}
+  - {x: 19.996277, y: 1.8713548, z: 1.3496504}
+  - {x: 22.72218, y: -14.009477, z: 25.674627}
 --- !u!4 &2065306524
 Transform:
   m_ObjectHideFlags: 0
