@@ -1,0 +1,46 @@
+// Each #kernel tells which function to compile; you can have many kernels
+#pragma kernel CSMain
+
+#define SIZE 1024
+
+// ====== Buffers ======
+RWStructuredBuffer<float3> Velocities;
+RWStructuredBuffer<float3> Positions;
+//RWStructuredBuffer<float3> Winds;
+
+// ====== Settings ======
+const uint _NumParticles;
+const uint _Resolution;
+
+const float _DeltaTime;
+const float _DropsCX;
+const float _DropDiam;
+
+const float3 _Gravity = float3(0.0, -9.81, 0.0);
+const float3 _WindGridSize;
+const float3 _NbCells;
+const float3 _Min;
+
+[numthreads(SIZE,1,1)]
+void CSMain (uint3 id : SV_DispatchThreadID)
+{
+    while (id.x < _NumParticles)
+    {
+        float4 tempPos = float4(Positions[id.x], 1.0);
+        float3 pos = tempPos.xyz / tempPos.w;
+        
+        int j = min(_NbCells.x - 1, floor((pos.x - _Min.x) * _NbCells.x / _WindGridSize.x));
+        int i = min(_NbCells.y - 1, floor((pos.y - _Min.y) * _NbCells.y / _WindGridSize.y));
+        int k = min(_NbCells.z - 1, floor((pos.z - _Min.z) * _NbCells.z / _WindGridSize.z));
+        int idxPos = (k * _NbCells.y + i) * _NbCells.x + j;
+        
+        //float3 wind = -Winds[idxPos];
+
+        //float acceleration = _Gravity + (0.9195 * _DropsCX / _DropDiam) * (wind * length(wind) - Velocities[id.x] * length(Velocities[id.x]);
+        float3 acceleration = _Gravity; // + (0.9195 * _DropsCX / _DropDiam) * wind * length(wind);
+        Velocities[id.x]   += acceleration;
+        Positions[id.x]    += Velocities[id.x];
+        
+        id.x += SIZE * _Resolution;
+    }
+}

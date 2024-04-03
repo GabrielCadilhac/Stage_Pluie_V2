@@ -1,0 +1,72 @@
+// Each #kernel tells which function to compile; you can have many kernels
+#pragma kernel CSMain
+#define SIZE 1024
+
+// ====== Buffers ======
+RWStructuredBuffer<float3> Velocities;
+RWStructuredBuffer<float3> Positions;
+
+// ====== Settings ======
+const uint _NumParticles;
+const uint _Resolution;
+
+const float3 _Min;
+const float3 _Max;
+const float3 _InitialVel;
+
+//Generateur de nombre aleatoire
+float hash12(float2 p_p)
+{
+    float3 p3 = frac(float3(p_p.xyx) * .1031);
+    p3 += dot(p3, p3.yzx + 33.33);
+    return frac((p3.x + p3.y) * p3.z);
+}
+
+// Retourne un nombre aleatoire entre p_Min et p_Max
+float range12(float2 p_p, float p_Min, float p_Max)
+{
+    float r = hash12(p_p);
+    return p_Min * (1.0 - r) + p_Max * r;
+}
+
+// Mise a jour de la vitesse et de la position
+void changePosVel(uint3 p_id, float3 p_newPos)
+{
+    Positions[p_id.x] = p_newPos;
+    Velocities[p_id.x] = _InitialVel + float3(0.0, range12(p_id.xz, -_InitialVel.y, 0.0), 0.0);
+}
+
+[numthreads(SIZE,1,1)]
+void CSMain (uint3 id : SV_DispatchThreadID)
+{
+    while (id.x < _NumParticles)
+    {
+        // Verifier les collisions avec les bords de la boite
+        if (Positions[id.x].y < _Min.y)
+        {
+            float dist = Positions[id.x].y - _Min.y;
+            changePosVel(id, float3(Positions[id.x].x, _Max.y + dist, Positions[id.x].z));
+        }
+        else if (Positions[id.x].x < _Min.x)
+        {
+            float dist = Positions[id.x].x - _Min.x;
+            changePosVel(id, float3(_Max.x - dist, Positions[id.x].y, Positions[id.x].z));
+        }
+        else if (Positions[id.x].x > _Max.x)
+        {
+            float dist = Positions[id.x].x - _Max.x;
+            changePosVel(id, float3(_Min.x + dist, Positions[id.x].y, Positions[id.x].z));
+        }
+        else if (Positions[id.x].z < _Min.z)
+        {
+            float dist = Positions[id.x].z - _Min.z;
+            changePosVel(id, float3(Positions[id.x].x, Positions[id.x].y, _Max.z - dist));
+        }
+        else if (Positions[id.x].z > _Max.z)
+        {
+            float dist = Positions[id.x].z - _Max.z;
+            changePosVel(id, float3(Positions[id.x].x, Positions[id.x].y, _Min.z + dist));
+        }
+        id.x += SIZE * _Resolution;
+    }
+}
