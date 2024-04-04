@@ -6,7 +6,7 @@ using UnityEditor;
 [CustomEditor(typeof(RainManager))]
 public class RainManagerEditor : Editor
 {
-    private SerializedProperty _boxProp, _bezierCurveProp, _showGizmosProp, _nbParticlesProp;
+    private SerializedProperty _bezierCurveProp, _showGizmosProp, _nbParticlesProp;
 
     // Wind parameters
     private SerializedProperty _globalWindProp;
@@ -19,7 +19,6 @@ public class RainManagerEditor : Editor
     private RainManager _rainManager;
     void OnEnable()
     {
-        _boxProp             = serializedObject.FindProperty("_box");
         _bezierCurveProp     = serializedObject.FindProperty("_bezierCurve");
         _globalWindProp      = serializedObject.FindProperty("_globalWind");
         _nbParticlesProp     = serializedObject.FindProperty("_nbParticles");
@@ -41,7 +40,6 @@ public class RainManagerEditor : Editor
         EditorGUILayout.LabelField("General properties", EditorStyles.boldLabel);
         EditorGUILayout.PropertyField(_nbParticlesProp);
         EditorGUILayout.PropertyField(_showGizmosProp);
-        EditorGUILayout.PropertyField(_boxProp);
         EditorGUILayout.PropertyField(_bezierCurveProp);
 
         EditorGUILayout.LabelField("Wind properties", EditorStyles.boldLabel);

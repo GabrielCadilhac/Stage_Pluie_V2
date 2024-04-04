@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using Unity.VisualScripting;
 using UnityEngine;
 
 public class RainManager : MonoBehaviour
@@ -7,7 +8,7 @@ public class RainManager : MonoBehaviour
     // General parameter
     private GraphicsBuffer _posBuffer;
     [SerializeField] private BezierCurve _bezierCurve;
-    [SerializeField] private BoxCollider _box;
+    private Bounds _bounds;
     [SerializeField] private bool _showGizmos;
 
     // Wind parameters
@@ -25,15 +26,16 @@ public class RainManager : MonoBehaviour
 
     void Start()
     {
-        _windGenerator = new WindGenerator(_box.bounds, _bezierCurve, _globalWind, 2, _primitiveSpeed, _localWindForce, _deltaTime);
-        
+        _bounds = GetComponent<BoxCollider>().bounds;
+        _windGenerator = new WindGenerator(_bounds, _bezierCurve, _globalWind, 1, _primitiveSpeed, _localWindForce, _deltaTime);
+
         Material material = GetComponent<Renderer>().material;
-        _renderer = new RainRenderer(material, _box.bounds, transform, _nbParticles);
+        _renderer = new RainRenderer(material, _bounds, transform, _nbParticles);
 
         GetComponent<MeshFilter>().sharedMesh = _renderer.GetMesh();
 
         _posBuffer = _renderer.GetPositionsBuffer();
-        _rainGenerator = new RainGenerator(_updateShader, _collisionShader, _posBuffer, _box.bounds, transform, _deltaTime, _nbParticles);
+        _rainGenerator = new RainGenerator(_updateShader, _collisionShader, _posBuffer, _bounds, transform, _deltaTime, _nbParticles);
 
         _posBuffer.Release();
         _posBuffer = null;
@@ -78,7 +80,7 @@ public class RainManager : MonoBehaviour
         if (!_showGizmos || _windGenerator == null) return;
 
         Grid grid = _windGenerator.GetGrid();
-        Vector3 offset = Common.Divide(_box.center - _box.size / 2f, _box.size);
+        Vector3 offset = Common.Divide(_bounds.center - _bounds.size / 2f, _bounds.size);
 
         for (int j = 0; j < Common.NB_CELLS.x; j++)
         {

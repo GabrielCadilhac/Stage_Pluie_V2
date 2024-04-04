@@ -38,8 +38,8 @@ public class WindGenerator
 
         Vector3 randPos = new Vector3(Random.Range(0f, Common.NB_CELLS.x), Random.Range(0f, Common.NB_CELLS.y), 0f);
         float randSpeed = Random.Range(0f, p_primitiveSpeed);
-        _primitives[0]  = new SourcePrimitive(p_bezierCurve, randPos, randSpeed, 0.3f);
-        _primitives[1]  = new VortexPrimitive(p_bezierCurve, randPos, randSpeed, 0.3f);
+        //_primitives[0]  = new SourcePrimitive(p_bezierCurve, randPos, randSpeed, 0.3f);
+        _primitives[0]  = new VortexPrimitive(p_bezierCurve, randPos, randSpeed, 0.3f);
     }
 
     public void Update()
