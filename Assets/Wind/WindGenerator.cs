@@ -4,7 +4,7 @@ using UnityEngine;
 
 public class WindGenerator
 {
-    private BasePrimitive[] _primitives;
+    private SuperPrimitive[] _primitives;
 
     private Grid _windsGrid;
     private Bounds _box;
@@ -34,12 +34,14 @@ public class WindGenerator
         _windsGrid = new Grid(Common.NB_CELLS, p_box, _globalWind * _globalWind.magnitude);
         
         // Init Prmitives
-        _primitives = new BasePrimitive[p_nbPrimitives];
+        _primitives = new SuperPrimitive[p_nbPrimitives];
 
         Vector3 randPos = new Vector3(Random.Range(0f, Common.NB_CELLS.x), Random.Range(0f, Common.NB_CELLS.y), 0f);
         float randSpeed = Random.Range(0f, p_primitiveSpeed);
         //_primitives[0]  = new SourcePrimitive(p_bezierCurve, randPos, randSpeed, 0.3f);
-        _primitives[0]  = new VortexPrimitive(p_bezierCurve, randPos, randSpeed, 0.3f);
+
+        WindPrimitiveType[] primComp = new WindPrimitiveType[2] { WindPrimitiveType.VORTEX, WindPrimitiveType.SOURCE };
+        _primitives[0]  = new SuperPrimitive(p_bezierCurve, primComp, randPos, randSpeed, 0.3f);
     }
 
     public void Update()
@@ -70,7 +72,7 @@ public class WindGenerator
                     float z = (float) k / Common.NB_CELLS.z;
 
                     Vector3 direction = Vector3.zero;
-                    foreach (BasePrimitive prim in _primitives)
+                    foreach (SuperPrimitive prim in _primitives)
                         direction += prim.GetValue(x, y, z);
 
                     if (direction.magnitude != 0f)
@@ -98,7 +100,7 @@ public class WindGenerator
 
     public void SetPrimitiveSpeed(float p_primitiveSpeed)
     {
-        foreach (BasePrimitive prim in _primitives)
+        foreach (SuperPrimitive prim in _primitives)
             prim.SetSpeed(p_primitiveSpeed);
     }
 

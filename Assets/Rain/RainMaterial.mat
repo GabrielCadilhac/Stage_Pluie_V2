@@ -81,10 +81,10 @@ Material:
     - DropColor: {r: 0, g: 0, b: 0.24999997, a: 0.75}
     - MyColor: {r: 0.08597367, g: 0.53321046, b: 0.7924528, a: 0.75}
     - _AmbientColor: {r: 0, g: 0, b: 0.24999997, a: 0.75}
-    - _Color: {r: 0.41429335, g: 0.69974923, b: 0.9245283, a: 1}
+    - _Color: {r: 0.61489856, g: 0.7863857, b: 0.9245283, a: 1}
     - _DropColor: {r: 0.3537736, g: 0.66944236, b: 1, a: 0}
     - _EmissionColor: {r: 0, g: 0, b: 0, a: 1}
     - _MainColor: {r: 0, g: 0, b: 0.24999997, a: 0.75}
-    - _Size: {r: 1.2, g: 0.02, b: 0, a: 0}
+    - _Size: {r: 1.2, g: 0.005, b: 0, a: 0}
   m_BuildTextureStacks: []
   m_AllowLocking: 1

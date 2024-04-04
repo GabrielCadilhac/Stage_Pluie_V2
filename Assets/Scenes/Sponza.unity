@@ -342,11 +342,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _bezierCurve: {fileID: 1599858208}
-  _box: {fileID: 1401251279}
   _showGizmos: 1
   _globalWind: {x: -1, y: 0, z: -1}
-  _localWindForce: 1
-  _deltaTime: 6
+  _localWindForce: 0
+  _deltaTime: 4
   _primitiveSpeed: 0.2
   _nbParticles: 20000
   _updateShader: {fileID: 7200000, guid: bc70226b2d209074e98b76c1548e73f6, type: 3}

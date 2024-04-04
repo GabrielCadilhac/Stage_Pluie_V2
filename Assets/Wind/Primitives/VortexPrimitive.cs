@@ -4,8 +4,8 @@ using UnityEngine;
 
 public class VortexPrimitive : BasePrimitive
 {
-    public VortexPrimitive(BezierCurve bezierCurve, Vector3 position, float p_speed, float size)
-        : base(bezierCurve, position, p_speed, size)
+    public VortexPrimitive(Vector3 position, float p_speed, float size)
+        : base(position, p_speed, size)
     { }
 
     public override Vector3 GetValue(float p_i, float p_j, float p_k)
