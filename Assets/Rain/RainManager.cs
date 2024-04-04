@@ -7,9 +7,9 @@ using UnityEngine.UIElements;
 public class RainManager : MonoBehaviour
 {
     // General parameter
+    private Bounds _bounds;
     private GraphicsBuffer _posBuffer;
     [SerializeField] private BezierCurve _bezierCurve;
-    private Bounds _bounds;
     [SerializeField] private bool _showGizmos;
 
     // Wind parameters

@@ -87,6 +87,7 @@ public class WindGenerator
 
     public void SetGlobalWind(Vector3 p_globalWind)
     {
+        _globalWind = p_globalWind;
         _windsGrid.Reset(p_globalWind);
     }
 

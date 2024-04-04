@@ -23,13 +23,13 @@ public class Grid
 
     public void Reset(Vector3? p_defaultValue = null)
     {
-        p_defaultValue = p_defaultValue == null ? Vector3.zero : p_defaultValue;
+        Vector3 value = p_defaultValue == null ? Vector3.zero : (Vector3) p_defaultValue;
 
         for (int k = 0; k < _nbCells.z; k++)
             for (int i = 0; i < _nbCells.y; i++)
                 for (int j = 0; j < _nbCells.x; j++)
                 {
-                    Set(i, j, k, (Vector3) p_defaultValue);
+                    Set(i, j, k, value * value.magnitude);
                 }
     }
 
