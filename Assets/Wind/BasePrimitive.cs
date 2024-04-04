@@ -3,13 +3,14 @@ using UnityEngine;
 public abstract class BasePrimitive
 {
     protected Vector3 _position;
-    protected float _speed, _size;
+    protected float _speed, _size, _param;
 
-    public BasePrimitive(Vector3 position, float p_speed, float size)
+    public BasePrimitive(Vector3 position, float p_param, float p_speed, float size)
     {
         _position = position;
         _speed = p_speed;
         _size = size;
+        _param = p_param;
     }
 
     public void SetPosition(Vector3 p_position)

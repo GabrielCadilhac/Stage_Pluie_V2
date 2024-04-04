@@ -128,7 +128,7 @@ Shader "Unlit/RainShader"
 
                 // Verifier si la particule se trouve devant en fonction de l'angle entre les deux vecteurs
                 // if (dot(camForward, pos2Camera) < 0.0) return;
-                // ===============================================================
+                // ===========================================================
 
                 // Creer un Quad autour de la particule
                 CreateQuad(vertIn[0].vertex, vertIn[0].vertexId.x, up, right, triStream);
@@ -136,7 +136,6 @@ Shader "Unlit/RainShader"
 
             fixed4 frag(g2f i) : SV_Target
             {
-                // sample the texture
                 fixed4 col = _Color;
 
                 // apply fog

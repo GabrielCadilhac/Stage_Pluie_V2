@@ -10,6 +10,18 @@ public enum WindPrimitiveType
     VORTEX
 }
 
+public struct Primitive
+{
+    public WindPrimitiveType type;
+    public float parameter;
+
+    public Primitive(WindPrimitiveType p_type, float p_param)
+    {
+        type = p_type;
+        parameter = p_param;
+    }
+}
+
 public class SuperPrimitive
 {
 
@@ -20,7 +32,7 @@ public class SuperPrimitive
 
     List<BasePrimitive> _basePrimitives;
 
-    public SuperPrimitive(BezierCurve bezierCurve, WindPrimitiveType[] p_WindPrimitiveType, Vector3 position, float p_speed, float size)
+    public SuperPrimitive(BezierCurve bezierCurve, Primitive[] p_WindPrimitiveType, Vector3 position, float p_speed, float size)
     {
         _bezierCurve = bezierCurve;
         _position = position;
@@ -31,21 +43,21 @@ public class SuperPrimitive
         _currentLerp = 0f;
 
         _basePrimitives = new List<BasePrimitive>();
-        foreach (WindPrimitiveType primitiveType in p_WindPrimitiveType)
+        foreach (Primitive prim in p_WindPrimitiveType)
         {
-            switch (primitiveType)
+            switch (prim.type)
             {
                 case WindPrimitiveType.SOURCE:
-                    _basePrimitives.Add(new SourcePrimitive(_position, _speed, _size));
+                    _basePrimitives.Add(new SourcePrimitive(_position, prim.parameter, _speed, _size));
                     break;
                 case WindPrimitiveType.SINK:
-                    _basePrimitives.Add(new SourcePrimitive(_position, _speed, _size));
+                    _basePrimitives.Add(new SourcePrimitive(_position, -prim.parameter, _speed, _size));
                     break;
                 case WindPrimitiveType.VORTEX:
-                    _basePrimitives.Add(new VortexPrimitive(_position, _speed, _size));
+                    _basePrimitives.Add(new VortexPrimitive(_position, prim.parameter, _speed, _size));
                     break;
                 case WindPrimitiveType.UNIFORM:
-                    _basePrimitives.Add(new UniformPrimitive(_position, _speed, _size));
+                    _basePrimitives.Add(new UniformPrimitive(_position, prim.parameter, _speed, _size));
                     break;
             }
         }

@@ -65,7 +65,6 @@ public class RainManagerEditor : Editor
         EditorGUILayout.PropertyField(_updateShaderProp);
         EditorGUILayout.PropertyField(_collisionShaderProp);
 
-
         serializedObject.ApplyModifiedProperties();
     }
 }

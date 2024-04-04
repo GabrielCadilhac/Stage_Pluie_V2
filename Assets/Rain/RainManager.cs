@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using Unity.VisualScripting;
 using UnityEngine;
+using UnityEngine.UIElements;
 
 public class RainManager : MonoBehaviour
 {
@@ -43,6 +44,9 @@ public class RainManager : MonoBehaviour
 
     void Update()
     {
+        if (Input.GetKeyDown(KeyCode.Space))
+            ResetParticles();
+
         _windGenerator.SetDeltaTime(_deltaTime);
         _rainGenerator.SetDeltaTime(_deltaTime);
 
@@ -73,6 +77,24 @@ public class RainManager : MonoBehaviour
     {
         _rainGenerator.Disable();
         _renderer.Disable();
+    }
+
+    private void ResetParticles()
+    {
+        Vector3 min = _bounds.center - _bounds.size / 2f;
+        Vector3 max = _bounds.center + _bounds.size / 2f;
+
+        Vector3[] newPos = new Vector3[_nbParticles];
+        for (int i = 0; i < _nbParticles; i++)
+            newPos[i] = transform.InverseTransformPoint(new Vector3(
+            Random.Range(min.x, max.x),
+            Random.Range(min.y, max.y),
+            Random.Range(min.z, max.z)));
+
+        _renderer.SetParticles(newPos);
+        _rainGenerator.ResetParticles(_nbParticles);
+
+        Debug.Log("Particules réinitialisées !");
     }
 
     private void OnDrawGizmos()

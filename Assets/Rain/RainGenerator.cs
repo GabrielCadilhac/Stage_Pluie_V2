@@ -91,6 +91,15 @@ public class RainGenerator
         _updateShader.SetFloat("_DeltaTime", p_deltaTime * Time.deltaTime);
     }
 
+    public void ResetParticles(int p_nbParticles)
+    {
+        Vector3[] newVel = new Vector3[p_nbParticles];
+        for (int i = 0; i < p_nbParticles; i++)
+            newVel[i] = new Vector3(0.0f, Random.Range(_initVel.y, _initVel.y + 1f), 0f);
+
+        _velBuffer.SetData(newVel);
+    }
+
     public void Disable()
     {
         _posBuffer.Release();
@@ -101,5 +110,4 @@ public class RainGenerator
         _velBuffer  = null;
         _windBuffer = null;
     }
-
 }

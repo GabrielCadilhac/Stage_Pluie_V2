@@ -1,6 +1,7 @@
 using System.Collections;
 using UnityEngine;
 using UnityEngine.Rendering;
+using UnityEngine.UIElements;
 
 public class RainRenderer
 {
@@ -64,6 +65,12 @@ public class RainRenderer
     public Mesh GetMesh()
     {
         return _mesh;
+    }
+
+    public void SetParticles(Vector3[] p_newPos)
+    {
+        _mesh.SetVertices(p_newPos);
+
     }
 
     public void Disable()

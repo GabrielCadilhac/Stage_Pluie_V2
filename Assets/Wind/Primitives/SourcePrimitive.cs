@@ -4,14 +4,13 @@ using UnityEngine;
 
 public class SourcePrimitive : BasePrimitive
 {
-    public SourcePrimitive(Vector3 position, float p_speed, float size)
-        : base(position, p_speed, size)
+    public SourcePrimitive(Vector3 position, float p_param, float p_speed, float size)
+        : base(position, p_param, p_speed, size)
     { }
 
     public override Vector3 GetValue(float p_i, float p_j, float p_k)
     {
         // Vortex parameters
-        float a = -2f;
         Vector3 center = new Vector3(_position.x / Common.NB_CELLS.x, _position.y / Common.NB_CELLS.y, _position.z / Common.NB_CELLS.z);
 
         Vector3 OP = new Vector3(p_j, p_i, p_k) - center;
@@ -19,7 +18,7 @@ public class SourcePrimitive : BasePrimitive
             return Vector3.zero;
 
         Vector3 cylCoord = Common.Cart2Cyl(OP);
-        cylCoord.x = a / (2f * Mathf.PI * _size);
+        cylCoord.x = _param / (2f * Mathf.PI * _size);
 
         return new Vector3(cylCoord.x * Mathf.Cos(cylCoord.y), cylCoord.x * Mathf.Sin(cylCoord.y), -cylCoord.z);
     }

@@ -191,7 +191,7 @@ Light:
   m_LightShadowCasterMode: 0
   m_AreaSize: {x: 1, y: 1}
   m_BounceIntensity: 1
-  m_ColorTemperature: 5302
+  m_ColorTemperature: 8660
   m_UseColorTemperature: 1
   m_BoundingSphereOverride: {x: 0, y: 0, z: 0, w: 0}
   m_UseBoundingSphereOverride: 0
@@ -343,8 +343,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _bezierCurve: {fileID: 1599858208}
   _showGizmos: 1
-  _globalWind: {x: -1, y: 0, z: -1}
-  _localWindForce: 0
+  _globalWind: {x: -1, y: 0, z: 1}
+  _localWindForce: 1.2
   _deltaTime: 4
   _primitiveSpeed: 0.2
   _nbParticles: 20000
