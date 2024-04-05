@@ -76,7 +76,7 @@ public class SuperPrimitive
         foreach (BasePrimitive prim in _basePrimitives)
             prim.SetPosition(_position);
 
-        //_currentLerp += _speed * p_deltaTime * Time.deltaTime;
+        _currentLerp += _speed * p_deltaTime * Time.deltaTime;
     }
 
     public void CheckCollision()

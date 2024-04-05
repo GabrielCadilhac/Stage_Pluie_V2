@@ -33,6 +33,11 @@ public static class Common
         return new Vector3(a.x / b.x, a.y / b.y, a.z / b.z);
     }
 
+    public static Vector2 Divide(Vector2 a, Vector2 b)
+    {
+        return new Vector2(a.x / b.x, a.y / b.y);
+    }
+
     public static Vector3 Multiply(Vector3 a, Vector3 b)
     {
         return new Vector3(a.x * b.x, a.y * b.y, a.z * b.z);
