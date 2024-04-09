@@ -24,9 +24,12 @@ public struct Primitive
 
 public class SuperPrimitive
 {
+    private Vector2 _randSpeedRange    = new Vector2(-0.05f, 0.05f);
+    private Vector2 _randStrenghtRange = new Vector2(1f, 1.5f);
 
     protected Vector3 _position;
-    protected float _speed, _size, _currentLerp;
+    protected float _speed, _force, _size, _currentLerp;
+    protected float _baseSpeed;
 
     private BezierCurve _bezierCurve;
 
@@ -37,7 +40,11 @@ public class SuperPrimitive
         _bezierCurve = bezierCurve;
         _position = position;
 
-        _speed = p_speed;
+        _baseSpeed = p_speed;
+        _speed = _baseSpeed + Random.Range(-0.05f, 0.05f);
+
+        _force = Random.Range(1f, 1.5f);
+
         _size = size;
 
         _currentLerp = 0f;
@@ -81,7 +88,12 @@ public class SuperPrimitive
 
     public void CheckCollision()
     {
-        _currentLerp = _currentLerp > 1f ? 0f : _currentLerp;
+        if ( _currentLerp > 1f )
+        {
+            _currentLerp = 0f;
+            _speed = _baseSpeed + Random.Range(_randSpeedRange.x, _randSpeedRange.y);
+            _force = Random.Range(_randStrenghtRange.x, _randStrenghtRange.y);
+        }
     }
 
     public void SetSpeed(float p_newSpeed)
@@ -95,6 +107,6 @@ public class SuperPrimitive
         foreach (BasePrimitive prim in _basePrimitives)
             result += prim.GetValue(p_j, p_i, p_k);
 
-        return result;
+        return result * _force;
     }
 }

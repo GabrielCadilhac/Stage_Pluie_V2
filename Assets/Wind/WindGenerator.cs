@@ -15,6 +15,8 @@ public class WindGenerator
     private float   _deltaTime;
     private float   _localWindForce;
 
+    private float _primitiveSpeed;
+
     public WindGenerator(Bounds p_box,
                          BezierCurve p_bezierCurve,
                          Vector3? p_globalWind = null,
@@ -28,6 +30,7 @@ public class WindGenerator
         _globalWind = p_globalWind == null ? Vector3.zero : (Vector3) p_globalWind;
         _deltaTime = p_deltaTime;
         _localWindForce = p_localWindForce;
+        _primitiveSpeed = p_primitiveSpeed;
 
         _curvePos = new List<Vector3Int>();
 

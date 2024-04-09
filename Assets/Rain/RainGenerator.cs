@@ -11,7 +11,7 @@ public class RainGenerator
     private float _deltaTime;
     private int _nbBlocks;
 
-    private Vector3 _initVel = new Vector3(0f,-3f,0f);
+    private Vector3 _initVel = new Vector3(0f,-5f,0f);
 
     [SerializeField] private ComputeShader _updateShader, _collisionShader;
 
