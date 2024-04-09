@@ -31,12 +31,12 @@ public class RainRenderer
         }
 
         // Mesh initialization
-        int[] indices = new int[p_nbMaxParticles];
         var layout = new[]
         {
                 new VertexAttributeDescriptor(VertexAttribute.Position, VertexAttributeFormat.Float32, 3),
         };
 
+        int[] indices = new int[p_nbMaxParticles];
         for (int i = 0; i < p_nbMaxParticles; i++)
             indices[i] = i;
 

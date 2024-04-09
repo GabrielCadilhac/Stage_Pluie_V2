@@ -6,7 +6,7 @@ public class SourcePrimitive : BasePrimitive
 {
     public SourcePrimitive(Vector3 position, float p_param, float p_speed, float size)
         : base(position, p_param, p_speed, size)
-    { }
+    {}
 
     public override Vector3 GetValue(float p_i, float p_j, float p_k)
     {

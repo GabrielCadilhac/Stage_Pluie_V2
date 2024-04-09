@@ -5,6 +5,8 @@
 // ====== Buffers ======
 RWStructuredBuffer<float3> Velocities;
 RWStructuredBuffer<float3> Positions;
+RWStructuredBuffer<float3> SplashPos;
+RWStructuredBuffer<float> SplashTime;
 
 // ====== Settings ======
 const uint _NumParticles;
@@ -41,9 +43,20 @@ void CSMain (uint3 id : SV_DispatchThreadID)
 {
     while (id.x < _NumParticles)
     {
+        // Splash
+        SplashPos[id.x] = float3(0.0, 0.0, 0.0);
+        SplashTime[id.x] -= 0.1;
+        if (SplashTime[id.x] < 0.0)
+            SplashTime[id.x] = 0.0;
+        
+        
         // Verifier les collisions avec les bords de la boite
-        if (Positions[id.x].y < _Min.y)
+        if (Positions[id.x].y < _Min.y) // Collision avec le sol de la boite
         {
+            // Dessiner un splash sur le ground
+            SplashPos[id.x] = float3(Positions[id.x].x, _Min.y, Positions[id.x].z);
+            SplashTime[id.x] = 1.0;
+            
             float dist = Positions[id.x].y - _Min.y;
             changePosVel(id, float3(Positions[id.x].x, _Max.y + dist, Positions[id.x].z));
         }

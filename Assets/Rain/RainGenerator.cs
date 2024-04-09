@@ -18,6 +18,8 @@ public class RainGenerator
     public RainGenerator(ComputeShader p_updateShader,
                         ComputeShader p_collisionShader,
                         GraphicsBuffer p_posBuffer,
+                        GraphicsBuffer p_splashPosBuffer,
+                        ComputeBuffer p_timeSplash,
                         Bounds p_windGrid,
                         Transform p_transform,
                         float p_deltaTime = 1f,
@@ -62,6 +64,8 @@ public class RainGenerator
 
         _collisionShader.SetBuffer(0, "Positions", p_posBuffer);
         _collisionShader.SetBuffer(0, "Velocities", _velBuffer);
+        _collisionShader.SetBuffer(0, "SplashPos", p_splashPosBuffer);
+        _collisionShader.SetBuffer(0, "SplashTime", p_timeSplash);
 
         _collisionShader.SetInt("_NumParticles", p_nbMaxParticles);
         _collisionShader.SetInt("_Resolution", _nbBlocks);

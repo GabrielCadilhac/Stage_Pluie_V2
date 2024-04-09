@@ -8,7 +8,6 @@ public class RainManager : MonoBehaviour
 {
     // General parameter
     private Bounds _bounds;
-    private GraphicsBuffer _posBuffer;
     [SerializeField] private BezierCurve _bezierCurve;
     [SerializeField] private bool _showGizmos;
 
@@ -25,21 +24,38 @@ public class RainManager : MonoBehaviour
     [SerializeField] private ComputeShader _collisionShader;
     [SerializeField] private float _forceRotation;
 
+    // Splash
+    [SerializeField] private GameObject _splashPlane;
+    private SplashRenderer _splashRenderer;
+
     void Start()
     {
+        // Init wind grid
         _bounds = GetComponent<BoxCollider>().bounds;
         _windGenerator = new WindGenerator(_bounds, _bezierCurve, _globalWind, 1, _primitiveSpeed, _localWindForce, _deltaTime);
 
+        // Init rain shader
         Material material = GetComponent<Renderer>().material;
         _renderer = new RainRenderer(material, _bounds, transform, _nbParticles);
 
         GetComponent<MeshFilter>().sharedMesh = _renderer.GetMesh();
 
-        _posBuffer = _renderer.GetPositionsBuffer();
-        _rainGenerator = new RainGenerator(_updateShader, _collisionShader, _posBuffer, _bounds, transform, _deltaTime, _nbParticles);
+        // Init splash shader
+        material = _splashPlane.GetComponent<Renderer>().material;
+        Bounds splashBounds = new Bounds(_bounds.center, new Vector3(_bounds.size.x, 0f, _bounds.size.z));
+        _splashRenderer = new SplashRenderer(material, splashBounds, transform, _nbParticles);
+        GraphicsBuffer splashPosBuffer = _splashRenderer.GetPositions();
+        ComputeBuffer  splashTime = _splashRenderer.GetTimeSplash();
 
-        _posBuffer.Release();
-        _posBuffer = null;
+        _splashPlane.GetComponent<MeshFilter>().sharedMesh = _splashRenderer.GetMesh();
+
+        // Init rain generator (compute buffer)
+        GraphicsBuffer posBuffer = _renderer.GetPositionsBuffer();
+        _rainGenerator = new RainGenerator(_updateShader, _collisionShader, posBuffer, splashPosBuffer, splashTime, _bounds, transform, _deltaTime, _nbParticles);
+
+        posBuffer.Release();
+        splashPosBuffer.Release();
+        splashTime.Release();
     }
 
     void Update()
@@ -76,6 +92,7 @@ public class RainManager : MonoBehaviour
     public void OnDisable()
     {
         _rainGenerator.Disable();
+        _splashRenderer.Disable();
         _renderer.Disable();
     }
 

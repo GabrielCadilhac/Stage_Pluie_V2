@@ -16,7 +16,11 @@ public class RainManagerEditor : Editor
     private SerializedProperty _forceRotationProp;
     private SerializedProperty _updateShaderProp, _collisionShaderProp;
 
+    // Splash parameters
+    private SerializedProperty _splashPlaneProp;
+
     private RainManager _rainManager;
+    
     void OnEnable()
     {
         _bezierCurveProp     = serializedObject.FindProperty("_bezierCurve");
@@ -29,6 +33,7 @@ public class RainManagerEditor : Editor
         _updateShaderProp    = serializedObject.FindProperty("_updateShader");
         _collisionShaderProp = serializedObject.FindProperty("_collisionShader");
         _showGizmosProp      = serializedObject.FindProperty("_showGizmos");
+        _splashPlaneProp     = serializedObject.FindProperty("_splashPlane");
 
         _rainManager = target as RainManager;
     }
@@ -64,6 +69,9 @@ public class RainManagerEditor : Editor
         EditorGUILayout.PropertyField(_forceRotationProp);
         EditorGUILayout.PropertyField(_updateShaderProp);
         EditorGUILayout.PropertyField(_collisionShaderProp);
+
+        EditorGUILayout.LabelField("Splash properties", EditorStyles.boldLabel);
+        EditorGUILayout.PropertyField(_splashPlaneProp);
 
         serializedObject.ApplyModifiedProperties();
     }
