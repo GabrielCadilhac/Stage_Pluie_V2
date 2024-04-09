@@ -62,9 +62,9 @@ public class RainGenerator
         // Init collision Compute Shader
         _collisionShader = p_collisionShader;
 
-        _collisionShader.SetBuffer(0, "Positions", p_posBuffer);
+        _collisionShader.SetBuffer(0, "Positions",  p_posBuffer);
         _collisionShader.SetBuffer(0, "Velocities", _velBuffer);
-        _collisionShader.SetBuffer(0, "SplashPos", p_splashPosBuffer);
+        _collisionShader.SetBuffer(0, "SplashPos",  p_splashPosBuffer);
         _collisionShader.SetBuffer(0, "SplashTime", p_timeSplash);
 
         _collisionShader.SetInt("_NumParticles", p_nbMaxParticles);
@@ -107,11 +107,12 @@ public class RainGenerator
     public void Disable()
     {
         _posBuffer.Release();
-        _velBuffer.Release();
-        _windBuffer.Release();
-
         _posBuffer = null;
+
+        _velBuffer.Release();
         _velBuffer  = null;
+
+        _windBuffer.Release();
         _windBuffer = null;
     }
 }

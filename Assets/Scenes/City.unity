@@ -1455,14 +1455,14 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _bezierCurve: {fileID: 2005144588}
   _showGizmos: 0
-  _globalWind: {x: -0.65, y: 0, z: -0.65}
-  _localWindForce: 1
+  _globalWind: {x: 0, y: 0, z: 0}
+  _localWindForce: 0
   _deltaTime: 6
-  _primitiveSpeed: 0.15
-  _nbParticles: 20000
+  _primitiveSpeed: 0.18
+  _nbParticles: 3
   _updateShader: {fileID: 7200000, guid: bc70226b2d209074e98b76c1548e73f6, type: 3}
   _collisionShader: {fileID: 7200000, guid: 205411dfba100874f9c822f3aa0e75ff, type: 3}
-  _forceRotation: 3
+  _forceRotation: 1
   _splashPlane: {fileID: 1870956509}
 --- !u!4 &1604704846
 Transform:
@@ -1705,7 +1705,6 @@ GameObject:
   - component: {fileID: 1870956510}
   - component: {fileID: 1870956512}
   - component: {fileID: 1870956511}
-  - component: {fileID: 1870956513}
   m_Layer: 0
   m_Name: Splash
   m_TagString: Untagged
@@ -1722,7 +1721,7 @@ Transform:
   m_GameObject: {fileID: 1870956509}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: -17.5, z: 0}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -1780,27 +1779,6 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1870956509}
   m_Mesh: {fileID: 0}
---- !u!65 &1870956513
-BoxCollider:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1870956509}
-  m_Material: {fileID: 0}
-  m_IncludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ExcludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_LayerOverridePriority: 0
-  m_IsTrigger: 0
-  m_ProvidesContacts: 0
-  m_Enabled: 1
-  serializedVersion: 3
-  m_Size: {x: 80, y: 0, z: 50}
-  m_Center: {x: 0, y: 0, z: 0}
 --- !u!1 &2005144587
 GameObject:
   m_ObjectHideFlags: 0
@@ -1831,10 +1809,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _points:
-  - {x: -21.697975, y: 11.627304, z: -7.511176}
-  - {x: -26.58113, y: 20.130318, z: 58.529907}
-  - {x: 2.5953884, y: 1.871355, z: 16.881533}
-  - {x: 19.743053, y: -11.3654375, z: 29.896173}
+  - {x: -37.27466, y: -16.85615, z: -7.6752853}
+  - {x: -25.33566, y: 3.3995113, z: 23.16114}
+  - {x: 5.338129, y: 12.8985405, z: 15.963816}
+  - {x: 35.114117, y: 14.337521, z: 36.259823}
 --- !u!4 &2005144589
 Transform:
   m_ObjectHideFlags: 0

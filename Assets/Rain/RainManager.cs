@@ -53,9 +53,6 @@ public class RainManager : MonoBehaviour
         GraphicsBuffer posBuffer = _renderer.GetPositionsBuffer();
         _rainGenerator = new RainGenerator(_updateShader, _collisionShader, posBuffer, splashPosBuffer, splashTime, _bounds, transform, _deltaTime, _nbParticles);
 
-        posBuffer.Release();
-        splashPosBuffer.Release();
-        splashTime.Release();
     }
 
     void Update()

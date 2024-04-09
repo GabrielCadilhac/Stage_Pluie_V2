@@ -11,21 +11,24 @@ public class SplashRenderer
     private ComputeBuffer _timeBuffer;
     public SplashRenderer(Material p_material, Bounds p_bounds, Transform p_transform, int p_nbMaxParticles = 1000)
     {
+        Vector3[] positions = new Vector3[p_nbMaxParticles];
+        float[] times = new float[p_nbMaxParticles];
+        int[] indices = new int[p_nbMaxParticles];
+        for (int i = 0; i < p_nbMaxParticles; i++)
+        {
+            positions[i] = Vector3.zero;
+            indices[i]   = i;
+            times[i]     = 0f;
+        }
+
         _timeBuffer = new ComputeBuffer(p_nbMaxParticles, sizeof(float));
+        _timeBuffer.SetData(times);
 
         _material = p_material;
         _material.enableInstancing = true;
         _material.SetBuffer("TimeBuffer", _timeBuffer);
 
         _mesh = new Mesh() { name = "SplashMesh" };
-
-        Vector3[] positions = new Vector3[p_nbMaxParticles];
-        int[] indices = new int[p_nbMaxParticles];
-        for (int i = 0; i < p_nbMaxParticles; i++)
-        {
-            positions[i] = Vector3.zero;
-            indices[i]   = i;
-        }
 
         // Mesh initialization
         var layout = new[]
