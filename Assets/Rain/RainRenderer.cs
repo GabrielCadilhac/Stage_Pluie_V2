@@ -57,6 +57,11 @@ public class RainRenderer
         _material.SetFloat("_ForceRotation", p_forceRotation);
     }
 
+    public void SetVelBuffer(ComputeBuffer p_velBuffer)
+    {
+        _material.SetBuffer("Velocities", p_velBuffer);
+    }
+
     public GraphicsBuffer GetPositionsBuffer()
     {
         return _posBuffer;

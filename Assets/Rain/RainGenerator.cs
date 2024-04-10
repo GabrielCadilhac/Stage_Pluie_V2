@@ -80,6 +80,11 @@ public class RainGenerator
         _collisionShader.Dispatch(0, _nbBlocks, 1, 1);
     }
 
+    public ComputeBuffer GetVelBuffer()
+    {
+        return _velBuffer;
+    }
+
     public void SetWinds(Vector3[] p_winds)
     {
         if (p_winds != null)

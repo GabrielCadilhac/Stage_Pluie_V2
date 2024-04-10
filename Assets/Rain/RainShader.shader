@@ -29,7 +29,9 @@ Shader "Unlit/RainShader"
             #pragma multi_compile_fog
         
             #include "UnityCG.cginc"
-    
+
+            uniform StructuredBuffer<float3> Velocities;
+
             struct appdata
             {
                 float4 vertex : POSITION;
@@ -42,6 +44,7 @@ Shader "Unlit/RainShader"
                 float4 vertex : SV_POSITION;
                 float2 vertexId : TEXCOORD0;
                 float3 normal : NORMAL;
+                float3 rotation : TEXCOORD1;
                 fixed4 color : COLOR;
             };
 
@@ -87,6 +90,8 @@ Shader "Unlit/RainShader"
                 float colorVariation = range11(v.vertexId, -0.2, 0.2);
                 o.color = _Color + colorVariation;
 
+                o.rotation = -Velocities[v.vertexId] * float3(_ForceRotation, 1., _ForceRotation);
+
                 return o;
             }
 
@@ -116,8 +121,8 @@ Shader "Unlit/RainShader"
             void geom(point v2g vertIn[1], inout TriangleStream<g2f> triStream)
             {
                 float3 pos = vertIn[0].vertex.xyz;
-                _WindRotation.y -= 2.0 * _ForceRotation;
-                float3 up = normalize(_WindRotation) * _Size.x + range11(vertIn[0].vertexId.x, -0.01, 0.01);
+                //_WindRotation.y -= 2.0 * _ForceRotation;
+                float3 up = normalize(vertIn[0].rotation) * _Size.x + range11(vertIn[0].vertexId.x, -0.01, 0.01);
                 float3 right = float3(1.0, 0.0, 0.0) * _Size.y + range11(vertIn[0].vertexId.x, -0.01, 0.01);
 
                 // ===== Verifier si la particule est derriere la camera =====

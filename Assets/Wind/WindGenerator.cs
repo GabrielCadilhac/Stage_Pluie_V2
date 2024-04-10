@@ -37,10 +37,10 @@ public class WindGenerator
         Vector3 randPos = new Vector3(Random.Range(0f, Common.NB_CELLS.x), Random.Range(0f, Common.NB_CELLS.y), 0f);
 
         // A super primitive composed with a vortex and a source
-        Primitive[] primComp = new Primitive[2] { new Primitive(WindPrimitiveType.SOURCE, 1f),
+        Primitive[] primComp = new Primitive[2] { new Primitive(WindPrimitiveType.SINK, 1f),
                                                   new Primitive(WindPrimitiveType.VORTEX, 10f)
                                                 };
-        _primitives[0]  = new SuperPrimitive(p_bezierCurve, primComp, randPos, p_primitiveSpeed, p_localWindForce, 0.25f);
+        _primitives[0]  = new SuperPrimitive(p_bezierCurve, primComp, randPos, p_primitiveSpeed, p_localWindForce, 0.3f);
     }
 
     public void Update()
