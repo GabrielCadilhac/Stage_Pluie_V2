@@ -13,9 +13,6 @@ public class WindGenerator
 
     private Vector3 _globalWind;
     private float   _deltaTime;
-    private float   _localWindForce;
-
-    private float _primitiveSpeed;
 
     public WindGenerator(Bounds p_box,
                          BezierCurve p_bezierCurve,
@@ -29,8 +26,6 @@ public class WindGenerator
         _box = p_box;
         _globalWind = p_globalWind == null ? Vector3.zero : (Vector3) p_globalWind;
         _deltaTime = p_deltaTime;
-        _localWindForce = p_localWindForce;
-        _primitiveSpeed = p_primitiveSpeed;
 
         _curvePos = new List<Vector3Int>();
 
@@ -40,18 +35,17 @@ public class WindGenerator
         _primitives = new SuperPrimitive[p_nbPrimitives];
 
         Vector3 randPos = new Vector3(Random.Range(0f, Common.NB_CELLS.x), Random.Range(0f, Common.NB_CELLS.y), 0f);
-        float randSpeed = Random.Range(0f, p_primitiveSpeed);
 
         // A super primitive composed with a vortex and a source
         Primitive[] primComp = new Primitive[2] { new Primitive(WindPrimitiveType.SOURCE, 1f),
                                                   new Primitive(WindPrimitiveType.VORTEX, 10f)
                                                 };
-        _primitives[0]  = new SuperPrimitive(p_bezierCurve, primComp, randPos, randSpeed, 0.3f);
+        _primitives[0]  = new SuperPrimitive(p_bezierCurve, primComp, randPos, p_primitiveSpeed, p_localWindForce, 0.25f);
     }
 
     public void Update()
     {
-        Vector3 min = _box.center - _box.size / 2.0f;
+        Vector3 min  = _box.center - _box.size / 2.0f;
         Vector3 temp = Common.Divide(Common.NB_CELLS, _box.size);
 
         // Reset Grid
@@ -82,7 +76,7 @@ public class WindGenerator
 
                     if (direction.magnitude != 0f)
                     {
-                        _windsGrid.Add(i, j, k, direction * direction.magnitude * _localWindForce);
+                        _windsGrid.Add(i, j, k, direction * direction.magnitude);
                         _curvePos.Add(new Vector3Int(i, j, k));
                     }
                 }
@@ -91,12 +85,13 @@ public class WindGenerator
     public void SetGlobalWind(Vector3 p_globalWind)
     {
         _globalWind = p_globalWind;
-        _windsGrid.Reset(p_globalWind);
+        _windsGrid.Reset(_globalWind * _globalWind.magnitude);
     }
 
     public void SetLocalWindForce(float p_localWindForce)
     {
-        _localWindForce = p_localWindForce;
+        foreach (SuperPrimitive prim in _primitives)
+            prim.SetForce(p_localWindForce);
     }
 
     public void SetDeltaTime(float p_deltaTime)

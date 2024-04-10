@@ -1455,11 +1455,11 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _bezierCurve: {fileID: 2005144588}
   _showGizmos: 1
-  _globalWind: {x: -0.8, y: 0, z: -0.8}
-  _localWindForce: 1.6
+  _globalWind: {x: -1, y: 0, z: 0.6}
+  _localWindForce: 1.65
   _deltaTime: 5
-  _primitiveSpeed: 0.15
-  _nbParticles: 20000
+  _primitiveSpeed: 0.16
+  _nbParticles: 25000
   _updateShader: {fileID: 7200000, guid: bc70226b2d209074e98b76c1548e73f6, type: 3}
   _collisionShader: {fileID: 7200000, guid: 205411dfba100874f9c822f3aa0e75ff, type: 3}
   _forceRotation: 1
@@ -1809,10 +1809,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _points:
-  - {x: -37.27466, y: -16.85615, z: -7.6752853}
-  - {x: -25.33566, y: 3.3995113, z: 23.16114}
-  - {x: 5.338129, y: 12.8985405, z: 15.963816}
-  - {x: 35.114117, y: 14.337521, z: 36.259823}
+  - {x: -0.3653736, y: -16.85615, z: -2.2651315}
+  - {x: -50.963997, y: 3.3995113, z: 34.651268}
+  - {x: -1.9451351, y: 12.8985405, z: 42.103436}
+  - {x: 30.930473, y: 14.337521, z: 32.979267}
 --- !u!4 &2005144589
 Transform:
   m_ObjectHideFlags: 0

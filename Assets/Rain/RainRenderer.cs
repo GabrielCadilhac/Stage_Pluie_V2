@@ -6,9 +6,9 @@ using UnityEngine.UIElements;
 public class RainRenderer
 {
     // Renderer elements
+    private GraphicsBuffer _posBuffer;
     private Material _material;
     private Mesh _mesh;
-    private GraphicsBuffer _posBuffer;
 
     public RainRenderer(Material p_material, Bounds p_minMax, Transform p_transform, int p_nbMaxParticles = 1000)
     {

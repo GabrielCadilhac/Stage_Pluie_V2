@@ -7,8 +7,11 @@ Shader "Unlit/RainShader"
     }
     SubShader
     {
-        Tags { "RenderType"="Opaque" }
-        Blend SrcAlpha OneMinusSrcAlpha
+        Tags{ "Queue" = "Transparent" "IgnoreProjector" = "True" "RenderType" = "Transparent" "DisableBatching" = "True" }
+
+		ZWrite Off
+		Blend SrcAlpha OneMinusSrcAlpha
+
         LOD 100
 
         Pass

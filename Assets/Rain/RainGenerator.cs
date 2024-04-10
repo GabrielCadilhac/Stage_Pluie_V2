@@ -92,7 +92,7 @@ public class RainGenerator
     public void SetDeltaTime(float p_deltaTime)
     {
         _deltaTime = p_deltaTime;
-        _updateShader.SetFloat("_DeltaTime", p_deltaTime * Time.deltaTime);
+        _updateShader.SetFloat("_DeltaTime", p_deltaTime);
     }
 
     public void ResetParticles(int p_nbParticles)

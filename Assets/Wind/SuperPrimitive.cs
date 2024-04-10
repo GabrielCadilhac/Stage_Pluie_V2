@@ -24,26 +24,27 @@ public struct Primitive
 
 public class SuperPrimitive
 {
-    private Vector2 _randSpeedRange    = new Vector2(-0.05f, 0.05f);
-    private Vector2 _randStrenghtRange = new Vector2(1f, 1.5f);
+    private float _randStrenghtPerc = 0.15f;
+    private float _speedVarPerc     = 0.1f;
 
     protected Vector3 _position;
     protected float _speed, _force, _size, _currentLerp;
-    protected float _baseSpeed;
+    protected float _baseSpeed, _baseForce;
 
     private BezierCurve _bezierCurve;
 
     List<BasePrimitive> _basePrimitives;
 
-    public SuperPrimitive(BezierCurve bezierCurve, Primitive[] p_WindPrimitiveType, Vector3 position, float p_speed, float size)
+    public SuperPrimitive(BezierCurve bezierCurve, Primitive[] p_WindPrimitiveType, Vector3 position, float p_speed, float p_strenght, float size)
     {
         _bezierCurve = bezierCurve;
         _position = position;
 
         _baseSpeed = p_speed;
-        _speed = _baseSpeed + Random.Range(-0.05f, 0.05f);
+        _speed = _baseSpeed + Random.Range(-_baseSpeed * _speedVarPerc, _baseSpeed * _speedVarPerc);
 
-        _force = Random.Range(1f, 1.5f);
+        _baseForce = p_strenght;
+        _force = _baseForce + Random.Range(-_baseForce * _randStrenghtPerc, _baseForce * _randStrenghtPerc);
 
         _size = size;
 
@@ -83,7 +84,7 @@ public class SuperPrimitive
         foreach (BasePrimitive prim in _basePrimitives)
             prim.SetPosition(_position);
 
-        _currentLerp += _speed * p_deltaTime * Time.deltaTime;
+        _currentLerp += _speed * p_deltaTime;
     }
 
     public void CheckCollision()
@@ -91,14 +92,19 @@ public class SuperPrimitive
         if ( _currentLerp > 1f )
         {
             _currentLerp = 0f;
-            _speed = _baseSpeed + Random.Range(_randSpeedRange.x, _randSpeedRange.y);
-            _force = Random.Range(_randStrenghtRange.x, _randStrenghtRange.y);
+            _speed = _baseSpeed + Random.Range(-_baseSpeed * _speedVarPerc, _baseSpeed * _speedVarPerc);
+            _force = _baseForce + Random.Range(-_baseForce * _randStrenghtPerc, _baseForce * _randStrenghtPerc);
         }
     }
 
     public void SetSpeed(float p_newSpeed)
     {
         _speed = p_newSpeed;
+    }
+
+    public void SetForce(float p_newForce)
+    {
+        _baseForce = p_newForce;
     }
 
     public Vector3 GetValue(float p_j, float p_i, float p_k)
