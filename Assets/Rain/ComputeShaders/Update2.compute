@@ -24,6 +24,8 @@ const float _DeltaTime;
 const float _DropsCX;
 const float _DropDiam;
 
+const float4x4 _WorldToLocal;
+
 const float3 _Gravity = float3(0.0, -9.81, 0.0);
 
 float3 CartToCyl(float3 coord)
@@ -50,41 +52,43 @@ float2 CylToCart(float2 coord)
 
 float3 GetValue(float3 partPos, Primitive prim)
 {
-    float3 vect = abs(prim.position - partPos);
-    float size = 0.3;
+    float4 tempPos = mul(_WorldToLocal, float4(prim.position, 1.));
+    float3 localPos = tempPos.xyz / tempPos.w;
+    
+    float3 vect = abs(localPos - partPos);
+    float size = 10.;
     
     if (length(vect) > size)
         return float3(0., 0., 0.);
     
     if (prim.type == 0) // Uniform
     {
-        float3 direction = float3(-prim.type, 0., 0.);
-        return mul(float3(1., 1., 1.) - vect, normalize(direction));
+        float3 direction = float3(prim.param, 0., 0.);
+        return mul(float3(size, 0., 0.) - vect, direction);
     }
     
     float3 cylCoord = CartToCyl(vect);
     
     if (prim.type == 1) // Source
         cylCoord.x = prim.param / (2. * PI * size);
-    else if (prim.type == 2) // Sink
-        cylCoord.x = -prim.param / (2. * PI * size);
-    // Vortex
-    cylCoord.y = prim.param / (2. * PI * size);
+    else // Vortex
+        cylCoord.y = prim.param / (2. * PI * size);        
     
     return float3(cylCoord.x * cos(cylCoord.y), cylCoord.x * sin(cylCoord.y), -cylCoord.z);
 }
 
-void ComputeWind(float3 pos)
+float3 ComputeWind(float3 pos)
 {
     uint numStructs = 0;
     uint stride = 0;
     Primitives.GetDimensions(numStructs, stride);
         
     float3 totalWind = float3(0., 0., 0.);
+    
     for (uint i = 0; i < numStructs; i++)
-    {
         totalWind += GetValue(pos, Primitives[i]);
-    }
+    
+    return totalWind;
 }
 
 [numthreads(SIZE, 1, 1)]
@@ -96,7 +100,7 @@ void CSMain(uint3 id : SV_DispatchThreadID)
         //float acceleration = _Gravity + (0.9195 * _DropsCX / _DropDiam) * (wind * length(wind) - Velocities[id.x] * length(Velocities[id.x]);
         float3 acceleration = _Gravity + (0.9195 * _DropsCX / _DropDiam) * wind;
         Velocities[id.x] += acceleration * _DeltaTime;
-        Positions[id.x] += Velocities[id.x] * _DeltaTime;
+        Positions[id.x]  += Velocities[id.x] * _DeltaTime;
         
         id.x += SIZE * _Resolution;
     }

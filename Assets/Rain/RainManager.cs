@@ -28,6 +28,8 @@ public class RainManager : MonoBehaviour
     [SerializeField] private GameObject _splashPlane;
     private SplashRenderer _splashRenderer;
 
+    GameObject _sphere;
+
     void Start()
     {
         // Init wind grid
@@ -51,9 +53,13 @@ public class RainManager : MonoBehaviour
 
         // Init rain generator (compute buffer)
         GraphicsBuffer posBuffer = _renderer.GetPositionsBuffer();
-        _rainGenerator = new RainGenerator(_updateShader, _collisionShader, posBuffer, splashPosBuffer, splashTime, _bounds, transform, _deltaTime, _nbParticles);
+        _rainGenerator = new RainGenerator(_updateShader, _collisionShader, posBuffer, splashPosBuffer, splashTime, _bounds, transform, _deltaTime * Time.deltaTime, _nbParticles);
 
         _renderer.SetVelBuffer(_rainGenerator.GetVelBuffer());
+
+        _sphere = GameObject.CreatePrimitive(PrimitiveType.Sphere);
+        _sphere.name = "Sphere";
+        _sphere.transform.position = Vector3.zero;
     }
 
     void Update()
@@ -66,7 +72,9 @@ public class RainManager : MonoBehaviour
 
         _windGenerator.Update();
 
-        _rainGenerator.SetWinds(_windGenerator.GetWinds());
+        GPUPrimitive[] temp = _windGenerator.GetPrimitives();
+        _sphere.transform.position = temp[0].position;
+        _rainGenerator.SetPrimitives(temp);
         _rainGenerator.Dispatch();
 
         _renderer.SetWindRotation(_globalWind, _forceRotation);

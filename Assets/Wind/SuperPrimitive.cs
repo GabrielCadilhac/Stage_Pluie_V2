@@ -4,10 +4,10 @@ using UnityEngine;
 
 public enum WindPrimitiveType
 {
-    UNIFORM,
-    SOURCE,
-    SINK,
-    VORTEX
+    UNIFORM = 0,
+    SOURCE = 1,
+    SINK = 2,
+    VORTEX = 3
 }
 
 public struct Primitive
@@ -25,7 +25,7 @@ public struct Primitive
 public class SuperPrimitive
 {
     private float _randStrenghtPerc = 0.15f;
-    private float _speedVarPerc     = 0.1f;
+    private float _speedVarPerc = 0.1f;
 
     protected Vector3 _position;
     protected float _speed, _force, _size, _currentLerp;
@@ -48,7 +48,7 @@ public class SuperPrimitive
 
         _size = size;
 
-        _currentLerp = 0f;
+        _currentLerp = 0.5f;
 
         _basePrimitives = new List<BasePrimitive>();
         foreach (Primitive prim in p_WindPrimitiveType)
@@ -79,17 +79,18 @@ public class SuperPrimitive
         float i = (point.y - p_min.y) * p_nDivSize.y;
         float k = (point.z - p_min.z) * p_nDivSize.z;
 
-        _position = new Vector3(j, i, k);
+        _position = point;
+        //_position = new Vector3(j, i, k);
 
         foreach (BasePrimitive prim in _basePrimitives)
             prim.SetPosition(_position);
 
-        _currentLerp += _speed * p_deltaTime;
+        //_currentLerp += _speed * p_deltaTime;
     }
 
     public void CheckCollision()
     {
-        if ( _currentLerp > 1f )
+        if (_currentLerp > 1f)
         {
             _currentLerp = 0f;
             _speed = _baseSpeed + Random.Range(-_baseSpeed * _speedVarPerc, _baseSpeed * _speedVarPerc);
@@ -114,5 +115,39 @@ public class SuperPrimitive
             result += prim.GetValue(p_j, p_i, p_k);
 
         return result * _force;
+    }
+
+    public Vector3 GetPosition()
+    {
+        return _position;
+    }
+
+    public GPUPrimitive[] GetGpuPrimitive()
+    {
+        GPUPrimitive[] gpuPrim = new GPUPrimitive[_basePrimitives.Count];
+        for (int i = 0; i < _basePrimitives.Count; i++)
+        {
+            BasePrimitive basePrim = _basePrimitives[i];
+            GPUPrimitive newPrim = new GPUPrimitive();
+            newPrim.position = _position;
+            newPrim.param = basePrim.GetParam();
+            
+            switch (basePrim)
+            {
+                case UniformPrimitive:
+                    newPrim.type = 0;
+                    break;
+                case SourcePrimitive:
+                    newPrim.type = 1;
+                    break;
+                case VortexPrimitive:
+                    newPrim.type = 2;
+                    break;
+            }
+
+            gpuPrim[i] = newPrim;
+        }
+
+        return gpuPrim;
     }
 }
