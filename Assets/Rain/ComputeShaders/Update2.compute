@@ -1,0 +1,103 @@
+// Each #kernel tells which function to compile; you can have many kernels
+#pragma kernel CSMain
+
+#define SIZE 1024
+#define PI 3.1415
+
+struct Primitive
+{
+    int type;
+    float3 position;
+    float param;
+};
+
+// ====== Buffers ======
+RWStructuredBuffer<float3> Velocities;
+RWStructuredBuffer<float3> Positions;
+RWStructuredBuffer<Primitive> Primitives;
+
+// ====== Settings ======
+const uint _NumParticles;
+const uint _Resolution;
+
+const float _DeltaTime;
+const float _DropsCX;
+const float _DropDiam;
+
+const float3 _Gravity = float3(0.0, -9.81, 0.0);
+
+float3 CartToCyl(float3 coord)
+{
+    float r = sqrt(coord.x * coord.x + coord.y * coord.y);
+    float theta = 0.;
+    if (coord.x != 0.)
+        theta = atan(coord.y / coord.x);
+    else if (coord.y > 0.)
+        theta = PI / 2.;
+    else if (coord.y < 0.)
+        theta = -PI / 2.;
+    
+    if (coord.x < 0.)
+        theta += PI;
+    
+    return float3(r, theta, coord.z);
+}
+
+float2 CylToCart(float2 coord)
+{
+    return float2(coord.x * cos(coord.y), coord.x * sin(coord.y));
+}
+
+float3 GetValue(float3 partPos, Primitive prim)
+{
+    float3 vect = abs(prim.position - partPos);
+    float size = 0.3;
+    
+    if (length(vect) > size)
+        return float3(0., 0., 0.);
+    
+    if (prim.type == 0) // Uniform
+    {
+        float3 direction = float3(-prim.type, 0., 0.);
+        return mul(float3(1., 1., 1.) - vect, normalize(direction));
+    }
+    
+    float3 cylCoord = CartToCyl(vect);
+    
+    if (prim.type == 1) // Source
+        cylCoord.x = prim.param / (2. * PI * size);
+    else if (prim.type == 2) // Sink
+        cylCoord.x = -prim.param / (2. * PI * size);
+    // Vortex
+    cylCoord.y = prim.param / (2. * PI * size);
+    
+    return float3(cylCoord.x * cos(cylCoord.y), cylCoord.x * sin(cylCoord.y), -cylCoord.z);
+}
+
+void ComputeWind(float3 pos)
+{
+    uint numStructs = 0;
+    uint stride = 0;
+    Primitives.GetDimensions(numStructs, stride);
+        
+    float3 totalWind = float3(0., 0., 0.);
+    for (uint i = 0; i < numStructs; i++)
+    {
+        totalWind += GetValue(pos, Primitives[i]);
+    }
+}
+
+[numthreads(SIZE, 1, 1)]
+void CSMain(uint3 id : SV_DispatchThreadID)
+{
+    while (id.x < _NumParticles)
+    {
+        float3 wind = ComputeWind(Positions[id.x]);
+        //float acceleration = _Gravity + (0.9195 * _DropsCX / _DropDiam) * (wind * length(wind) - Velocities[id.x] * length(Velocities[id.x]);
+        float3 acceleration = _Gravity + (0.9195 * _DropsCX / _DropDiam) * wind;
+        Velocities[id.x] += acceleration * _DeltaTime;
+        Positions[id.x] += Velocities[id.x] * _DeltaTime;
+        
+        id.x += SIZE * _Resolution;
+    }
+}
