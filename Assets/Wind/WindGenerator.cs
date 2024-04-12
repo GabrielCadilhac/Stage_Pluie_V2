@@ -40,7 +40,7 @@ public class WindGenerator
         //Primitive[] primComp = new Primitive[2] { new Primitive(WindPrimitiveType.SINK, 1f),
         //                                          new Primitive(WindPrimitiveType.VORTEX, 10f)
         //                                        };
-        Primitive[] primComp = new Primitive[1] { new Primitive(WindPrimitiveType.UNIFORM, -1f) };
+        Primitive[] primComp = new Primitive[1] { new Primitive(WindPrimitiveType.Uniform, -1f) };
         _primitives[0] = new SuperPrimitive(p_bezierCurve, primComp, randPos, p_primitiveSpeed, p_localWindForce, 0.3f);
     }
 

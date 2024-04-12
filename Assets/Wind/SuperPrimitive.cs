@@ -4,10 +4,10 @@ using UnityEngine;
 
 public enum WindPrimitiveType
 {
-    UNIFORM = 0,
-    SOURCE = 1,
-    SINK = 2,
-    VORTEX = 3
+    Uniform = 0,
+    Source = 1,
+    Sink = 2,
+    Vortex = 3
 }
 
 public struct Primitive
@@ -24,18 +24,22 @@ public struct Primitive
 
 public class SuperPrimitive
 {
-    private float _randStrenghtPerc = 0.15f;
-    private float _speedVarPerc = 0.1f;
+    private readonly float _randStrenghtPerc = 0.15f;
+    private readonly float _speedVarPerc = 0.1f;
 
-    protected Vector3 _position;
-    protected float _speed, _force, _size, _currentLerp;
-    protected float _baseSpeed, _baseForce;
+    private Vector3 _position;
+    private float _speed, _force;
+    private readonly float _size;
+
+    private float _currentLerp;
+    private readonly float _baseSpeed;
+    private float _baseForce;
 
     private BezierCurve _bezierCurve;
 
     List<BasePrimitive> _basePrimitives;
 
-    public SuperPrimitive(BezierCurve bezierCurve, Primitive[] p_WindPrimitiveType, Vector3 position, float p_speed, float p_strenght, float size)
+    public SuperPrimitive(BezierCurve bezierCurve, Primitive[] p_WindPrimitiveType, Vector3 position, float p_speed, float p_strenght, float p_size)
     {
         _bezierCurve = bezierCurve;
         _position = position;
@@ -46,7 +50,7 @@ public class SuperPrimitive
         _baseForce = p_strenght;
         _force = _baseForce + Random.Range(-_baseForce * _randStrenghtPerc, _baseForce * _randStrenghtPerc);
 
-        _size = size;
+        _size = p_size;
 
         _currentLerp = 0.5f;
 
@@ -55,16 +59,16 @@ public class SuperPrimitive
         {
             switch (prim.type)
             {
-                case WindPrimitiveType.SOURCE:
+                case WindPrimitiveType.Source:
                     _basePrimitives.Add(new SourcePrimitive(_position, prim.parameter, _speed, _size));
                     break;
-                case WindPrimitiveType.SINK:
+                case WindPrimitiveType.Sink:
                     _basePrimitives.Add(new SourcePrimitive(_position, -prim.parameter, _speed, _size));
                     break;
-                case WindPrimitiveType.VORTEX:
+                case WindPrimitiveType.Vortex:
                     _basePrimitives.Add(new VortexPrimitive(_position, prim.parameter, _speed, _size));
                     break;
-                case WindPrimitiveType.UNIFORM:
+                case WindPrimitiveType.Uniform:
                     _basePrimitives.Add(new UniformPrimitive(_position, prim.parameter, _speed, _size));
                     break;
             }
@@ -85,7 +89,7 @@ public class SuperPrimitive
         foreach (BasePrimitive prim in _basePrimitives)
             prim.SetPosition(_position);
 
-        //_currentLerp += _speed * p_deltaTime;
+        _currentLerp += _speed * p_deltaTime;
     }
 
     public void CheckCollision()

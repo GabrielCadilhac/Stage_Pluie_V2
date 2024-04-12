@@ -37,7 +37,7 @@ public class RainGenerator
         Vector3 min = p_windGrid.center - p_windGrid.size / 2f;
         Vector3 max = p_windGrid.center + p_windGrid.size / 2f;
 
-        Debug.Log(string.Format("Min {0} et max {1}", min, max));
+        Debug.Log($"Min {min} et max {max}");
 
         // Generate velocities
         Vector3[] tempVel = new Vector3[p_nbMaxParticles];
@@ -58,7 +58,9 @@ public class RainGenerator
         _updateShader.SetFloat("_DeltaTime", _deltaTime);
         _updateShader.SetFloat("_DropsCX", 0.42f);
         _updateShader.SetFloat("_DropDiam", 0.78f);
+        _updateShader.SetVector("_GlobalWind", Vector3.zero);
         _updateShader.SetMatrix("_WorldToLocal", p_transform.worldToLocalMatrix);
+
 
         // Init collision Compute Shader
         _collisionShader = p_collisionShader;
@@ -110,7 +112,17 @@ public class RainGenerator
         _updateShader.SetFloat("_DeltaTime", p_deltaTime);
     }
 
-    public void ResetParticles(int p_nbParticles)
+    public void SetGlobalWind(Vector3 p_globalWind)
+    {
+        _updateShader.SetVector("_GlobalWind", p_globalWind);
+    }
+
+    public void SetLocalWindForce(float p_localWindForce)
+    {
+        _updateShader.SetFloat("_LocalWindForce", p_localWindForce);
+    }
+
+	public void ResetParticles(int p_nbParticles)
     {
         Vector3[] newVel = new Vector3[p_nbParticles];
         for (int i = 0; i < p_nbParticles; i++)

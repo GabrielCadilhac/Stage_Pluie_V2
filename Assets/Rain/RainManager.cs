@@ -54,6 +54,8 @@ public class RainManager : MonoBehaviour
         // Init rain generator (compute buffer)
         GraphicsBuffer posBuffer = _renderer.GetPositionsBuffer();
         _rainGenerator = new RainGenerator(_updateShader, _collisionShader, posBuffer, splashPosBuffer, splashTime, _bounds, transform, _deltaTime * Time.deltaTime, _nbParticles);
+        _rainGenerator.SetGlobalWind(_globalWind);
+        _rainGenerator.SetLocalWindForce(_localWindForce);
 
         _renderer.SetVelBuffer(_rainGenerator.GetVelBuffer());
 
@@ -83,11 +85,13 @@ public class RainManager : MonoBehaviour
     public void GlobalWindChanged()
     {
         _windGenerator?.SetGlobalWind(_globalWind);
+        _rainGenerator?.SetGlobalWind(_globalWind);
     }
 
     public void LocalWindForceChanged()
     {
         _windGenerator?.SetLocalWindForce(_localWindForce);
+        _rainGenerator?.SetLocalWindForce(_localWindForce);
     }
 
     public void PrimitiveSpeedChanged()
@@ -120,7 +124,7 @@ public class RainManager : MonoBehaviour
 
         Debug.Log("Particules réinitialisées !");
     }
-
+    /*
     private void OnDrawGizmos()
     {
         if (!_showGizmos || _windGenerator == null) return;
@@ -153,4 +157,5 @@ public class RainManager : MonoBehaviour
             }
         }
     }
+    */
 }
