@@ -4,10 +4,10 @@ using UnityEngine;
 
 public enum WindPrimitiveType
 {
-    Uniform = 0,
-    Source = 1,
-    Sink = 2,
-    Vortex = 3
+    UNIFORM,
+    SOURCE,
+    SINK,
+    VORTEX
 }
 
 public struct Primitive
@@ -24,22 +24,18 @@ public struct Primitive
 
 public class SuperPrimitive
 {
-    private readonly float _randStrenghtPerc = 0.15f;
-    private readonly float _speedVarPerc = 0.1f;
+    private float _randStrenghtPerc = 0.15f;
+    private float _speedVarPerc     = 0.1f;
 
-    private Vector3 _position;
-    private float _speed, _force;
-    private readonly float _size;
-
-    private float _currentLerp;
-    private readonly float _baseSpeed;
-    private float _baseForce;
+    protected Vector3 _position;
+    protected float _speed, _force, _size, _currentLerp;
+    protected float _baseSpeed, _baseForce;
 
     private BezierCurve _bezierCurve;
 
     List<BasePrimitive> _basePrimitives;
 
-    public SuperPrimitive(BezierCurve bezierCurve, Primitive[] p_WindPrimitiveType, Vector3 position, float p_speed, float p_strenght, float p_size)
+    public SuperPrimitive(BezierCurve bezierCurve, Primitive[] p_WindPrimitiveType, Vector3 position, float p_speed, float p_strenght, float size)
     {
         _bezierCurve = bezierCurve;
         _position = position;
@@ -50,25 +46,25 @@ public class SuperPrimitive
         _baseForce = p_strenght;
         _force = _baseForce + Random.Range(-_baseForce * _randStrenghtPerc, _baseForce * _randStrenghtPerc);
 
-        _size = p_size;
+        _size = size;
 
-        _currentLerp = 0.5f;
+        _currentLerp = 0f;
 
         _basePrimitives = new List<BasePrimitive>();
         foreach (Primitive prim in p_WindPrimitiveType)
         {
             switch (prim.type)
             {
-                case WindPrimitiveType.Source:
+                case WindPrimitiveType.SOURCE:
                     _basePrimitives.Add(new SourcePrimitive(_position, prim.parameter, _speed, _size));
                     break;
-                case WindPrimitiveType.Sink:
+                case WindPrimitiveType.SINK:
                     _basePrimitives.Add(new SourcePrimitive(_position, -prim.parameter, _speed, _size));
                     break;
-                case WindPrimitiveType.Vortex:
+                case WindPrimitiveType.VORTEX:
                     _basePrimitives.Add(new VortexPrimitive(_position, prim.parameter, _speed, _size));
                     break;
-                case WindPrimitiveType.Uniform:
+                case WindPrimitiveType.UNIFORM:
                     _basePrimitives.Add(new UniformPrimitive(_position, prim.parameter, _speed, _size));
                     break;
             }
@@ -83,8 +79,7 @@ public class SuperPrimitive
         float i = (point.y - p_min.y) * p_nDivSize.y;
         float k = (point.z - p_min.z) * p_nDivSize.z;
 
-        _position = point;
-        //_position = new Vector3(j, i, k);
+        _position = new Vector3(j, i, k);
 
         foreach (BasePrimitive prim in _basePrimitives)
             prim.SetPosition(_position);
@@ -94,7 +89,7 @@ public class SuperPrimitive
 
     public void CheckCollision()
     {
-        if (_currentLerp > 1f)
+        if ( _currentLerp > 1f )
         {
             _currentLerp = 0f;
             _speed = _baseSpeed + Random.Range(-_baseSpeed * _speedVarPerc, _baseSpeed * _speedVarPerc);
@@ -119,39 +114,5 @@ public class SuperPrimitive
             result += prim.GetValue(p_j, p_i, p_k);
 
         return result * _force;
-    }
-
-    public Vector3 GetPosition()
-    {
-        return _position;
-    }
-
-    public GPUPrimitive[] GetGpuPrimitive()
-    {
-        GPUPrimitive[] gpuPrim = new GPUPrimitive[_basePrimitives.Count];
-        for (int i = 0; i < _basePrimitives.Count; i++)
-        {
-            BasePrimitive basePrim = _basePrimitives[i];
-            GPUPrimitive newPrim = new GPUPrimitive();
-            newPrim.position = _position;
-            newPrim.param = basePrim.GetParam();
-            
-            switch (basePrim)
-            {
-                case UniformPrimitive:
-                    newPrim.type = 0;
-                    break;
-                case SourcePrimitive:
-                    newPrim.type = 1;
-                    break;
-                case VortexPrimitive:
-                    newPrim.type = 2;
-                    break;
-            }
-
-            gpuPrim[i] = newPrim;
-        }
-
-        return gpuPrim;
     }
 }

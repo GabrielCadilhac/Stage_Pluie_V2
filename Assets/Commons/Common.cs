@@ -9,13 +9,6 @@ public static class Constants
     public const int BLOCK_SIZE = 1024;
 }
 
-public struct GPUPrimitive
-{
-    public int type;
-    public Vector3 position;
-    public float param;
-}
-
 public static class Common
 {
     public static Vector3Int NB_CELLS = new Vector3Int(9, 9, 9);

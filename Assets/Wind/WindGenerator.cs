@@ -37,11 +37,10 @@ public class WindGenerator
         Vector3 randPos = new Vector3(Random.Range(0f, Common.NB_CELLS.x), Random.Range(0f, Common.NB_CELLS.y), 0f);
 
         // A super primitive composed with a vortex and a source
-        //Primitive[] primComp = new Primitive[2] { new Primitive(WindPrimitiveType.SINK, 1f),
-        //                                          new Primitive(WindPrimitiveType.VORTEX, 10f)
-        //                                        };
-        Primitive[] primComp = new Primitive[1] { new Primitive(WindPrimitiveType.Uniform, -1f) };
-        _primitives[0] = new SuperPrimitive(p_bezierCurve, primComp, randPos, p_primitiveSpeed, p_localWindForce, 0.3f);
+        Primitive[] primComp = new Primitive[2] { new Primitive(WindPrimitiveType.SINK, 1f),
+                                                  new Primitive(WindPrimitiveType.VORTEX, 10f)
+                                                };
+        _primitives[0]  = new SuperPrimitive(p_bezierCurve, primComp, randPos, p_primitiveSpeed, p_localWindForce, 0.3f);
     }
 
     public void Update()
@@ -104,19 +103,6 @@ public class WindGenerator
     {
         foreach (SuperPrimitive prim in _primitives)
             prim.SetSpeed(p_primitiveSpeed);
-    }
-
-    public GPUPrimitive[] GetPrimitives()
-    {
-        List<GPUPrimitive> primitives = new List<GPUPrimitive>();
-        foreach (SuperPrimitive prim in _primitives)
-        {
-            GPUPrimitive[] newPrim = prim.GetGpuPrimitive();
-            foreach (GPUPrimitive prim2 in newPrim)
-                primitives.Add(prim2);
-        }
-
-        return primitives.ToArray();
     }
 
     public Vector3[] GetWinds()
