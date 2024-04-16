@@ -17,8 +17,6 @@ public class Grid
         _cellSize = Common.Divide(_gridSize.size, _nbCells);
 
         _grid = new Vector3[_nbCells.x * _nbCells.y * _nbCells.z];
-
-        Reset(p_defaultValue);
     }
 
     public void Reset(Vector3? p_defaultValue = null)
@@ -29,8 +27,13 @@ public class Grid
             for (int i = 0; i < _nbCells.y; i++)
                 for (int j = 0; j < _nbCells.x; j++)
                 {
-                    Set(i, j, k, value * value.magnitude);
+                    Set(i, j, k, value);
                 }
+    }
+
+    public Vector3 FloatTo01(Vector3 p_coords)
+    {
+        return Common.Divide(p_coords, _gridSize.size);
     }
 
     public void Set(int i, int j, int k, Vector3 p_value)

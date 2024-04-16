@@ -19,6 +19,11 @@ public class BezierCurve : MonoBehaviour
     {
         _points = p_newPoints;
     }
+
+    public void SetPoint(int p_index, Vector3 p_point)
+    {
+        _points[p_index] = p_point;
+    }
     
     public Vector3 GetPoint(float t, bool p_transformPoint = true)
     {

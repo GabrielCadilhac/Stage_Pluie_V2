@@ -16,6 +16,7 @@ public class WindGenerator
 
     public WindGenerator(Bounds p_box,
                          BezierCurve p_bezierCurve,
+                         Transform p_transform,
                          Vector3? p_globalWind = null,
                          int p_nbPrimitives = 1,
                          float p_primitiveSpeed = 1f,
@@ -29,8 +30,10 @@ public class WindGenerator
 
         _curvePos = new List<Vector3Int>();
 
-        _windsGrid = new Grid(Common.NB_CELLS, p_box, _globalWind * _globalWind.magnitude);
-        
+        _windsGrid = new Grid(Common.NB_CELLS, p_box);
+        ComputeGlobalWind();
+        InitBezierCurve(p_bezierCurve, p_box, _windsGrid, p_transform);
+
         // Init Prmitives
         _primitives = new SuperPrimitive[p_nbPrimitives];
 
@@ -43,6 +46,46 @@ public class WindGenerator
         _primitives[0]  = new SuperPrimitive(p_bezierCurve, primComp, randPos, p_primitiveSpeed, p_localWindForce, 0.3f);
     }
 
+    private void ComputeGlobalWind()
+    {
+        for (int j = 0; j < Common.NB_CELLS.x; j++)
+            for (int i = 0; i < Common.NB_CELLS.y; i++)
+                for (int k = 0; k < Common.NB_CELLS.z; k++)
+                {
+                    float t = ((float) j / (float) (Common.NB_CELLS.x-1));
+                    Vector3 newWind = new Vector3(t * _globalWind.x, 0f, (1f - t) * _globalWind.z);
+                    _windsGrid.Set(i, j, k, newWind * _globalWind.magnitude);
+                }
+    }
+
+    private void InitBezierCurve(BezierCurve p_bezierCurve, Bounds p_bounds, Grid p_windGrid, Transform p_transform)
+    {
+        Vector3 min = p_bezierCurve.transform.InverseTransformPoint(p_bounds.min);
+        Vector3 max = p_bezierCurve.transform.InverseTransformPoint(p_bounds.max);
+
+        float t    = 0.25f;
+        Vector3 c1 = (1f - t) * min + t * max;
+        Vector3 c2 = t * min + (1f - t) * max;
+
+        //Vector3    windC1   = p_windGrid.FloatTo01(c1 - new Vector3(0f, 0f, 15f)); // TODO mettre la position de la boite
+        //Vector3Int tempWind = Vector3Int.FloorToInt(Common.Multiply(windC1, Common.NB_CELLS - Vector3.one));
+        //Vector3 changeC1 = p_windGrid.Get(tempWind.x, tempWind.y, tempWind.z);
+
+        Vector3 testC2 = c2 - p_transform.position;
+        Debug.Log($"vraie c2 {c2} et faux {testC2}");
+        Debug.Log($"vraie c1 {c1}");
+
+        Vector3 coordC2 = p_windGrid.FloatTo01(c2 - new Vector3(0f, 0f, 15f)); // TODO mettre la position de la boite
+        Vector3Int tempWind = Vector3Int.FloorToInt(Common.Multiply(coordC2, Common.NB_CELLS - Vector3.one));
+        Vector3 windC2 = p_windGrid.Get(tempWind.x, tempWind.y, tempWind.z) * 20f;
+
+        // Initialiser la courbe comme une ligne droite
+        p_bezierCurve.SetPoint(0, min);
+        p_bezierCurve.SetPoint(1, c1);
+        p_bezierCurve.SetPoint(2, c2 + windC2);
+        p_bezierCurve.SetPoint(3, max);
+    }
+
     public void Update()
     {
         Vector3 min  = _box.center - _box.size / 2.0f;
@@ -50,7 +93,11 @@ public class WindGenerator
 
         // Reset Grid
         foreach (Vector3Int idx in _curvePos)
-            _windsGrid.Set(idx.x, idx.y, idx.z, _globalWind * _globalWind.magnitude);
+        {
+            float t = ((float) idx.y / (float) (Common.NB_CELLS.x-1));
+            Vector3 newWind = Common.Multiply(new Vector3(t, 0f, (1f - t)), _globalWind);
+            _windsGrid.Set(idx.x, idx.y, idx.z, newWind * _globalWind.magnitude);
+        }
 
         _curvePos.Clear();
 
@@ -76,8 +123,8 @@ public class WindGenerator
 
                     if (direction.magnitude != 0f)
                     {
-                        _windsGrid.Add(i, j, k, direction * direction.magnitude);
-                        _curvePos.Add(new Vector3Int(i, j, k));
+                        //_windsGrid.Add(i, j, k, direction * direction.magnitude);
+                        //_curvePos.Add(new Vector3Int(i, j, k));
                     }
                 }
     }
@@ -85,7 +132,7 @@ public class WindGenerator
     public void SetGlobalWind(Vector3 p_globalWind)
     {
         _globalWind = p_globalWind;
-        _windsGrid.Reset(_globalWind * _globalWind.magnitude);
+        ComputeGlobalWind();
     }
 
     public void SetLocalWindForce(float p_localWindForce)
