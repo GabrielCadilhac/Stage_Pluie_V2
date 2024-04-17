@@ -48,12 +48,22 @@ public class WindGenerator
 
     private void ComputeGlobalWind()
     {
+        float range = 1f / 3f;
         for (int j = 0; j < Common.NB_CELLS.x; j++)
             for (int i = 0; i < Common.NB_CELLS.y; i++)
                 for (int k = 0; k < Common.NB_CELLS.z; k++)
                 {
                     float t = ((float) j / (float) (Common.NB_CELLS.x-1));
-                    Vector3 newWind = t * _hodographPoints[0] + (1f - t) * _hodographPoints[3];
+                    float tempT = range;
+                    int hodoId = 0;
+                    while (tempT < t)
+                    {
+                        tempT += range;
+                        hodoId++;
+                    }
+                    tempT = (tempT - (float) hodoId * range) / range;
+
+                    Vector3 newWind = tempT * _hodographPoints[hodoId] + (1f - tempT) * _hodographPoints[hodoId + 1];
                     newWind = Common.Multiply(newWind, new Vector3(1f, 0f, 1f));
 
                     //Vector3 newWind = new Vector3(t * _globalWind.x, 0f, (1f - t) * _globalWind.z);
@@ -100,7 +110,7 @@ public class WindGenerator
 
                     if (direction.magnitude != 0f)
                     {
-                        _windsGrid.Add(i, j, k, direction * direction.magnitude);
+                        //_windsGrid.Add(i, j, k, direction * direction.magnitude);
                         _curvePos.Add(new Vector3Int(i, j, k));
                     }
                 }
