@@ -7,6 +7,7 @@ using UnityEditor;
 public class RainManagerEditor : Editor
 {
     private SerializedProperty _bezierCurveProp, _showGizmosProp, _nbParticlesProp;
+    private SerializedProperty _hodographProp;
 
     // Wind parameters
     private SerializedProperty _globalWindProp;
@@ -24,6 +25,7 @@ public class RainManagerEditor : Editor
     void OnEnable()
     {
         _bezierCurveProp     = serializedObject.FindProperty("_bezierCurve");
+        _hodographProp       = serializedObject.FindProperty("_hodograph");
         _globalWindProp      = serializedObject.FindProperty("_globalWind");
         _nbParticlesProp     = serializedObject.FindProperty("_nbParticles");
         _localWindForceProp  = serializedObject.FindProperty("_localWindForce");
@@ -46,6 +48,7 @@ public class RainManagerEditor : Editor
         EditorGUILayout.PropertyField(_nbParticlesProp);
         EditorGUILayout.PropertyField(_showGizmosProp);
         EditorGUILayout.PropertyField(_bezierCurveProp);
+        EditorGUILayout.PropertyField(_hodographProp);
 
         EditorGUILayout.LabelField("Wind properties", EditorStyles.boldLabel);
         EditorGUI.BeginChangeCheck();
