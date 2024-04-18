@@ -7,6 +7,8 @@ public static class Constants
 {
     public const int MAX_BLOCKS_NUMBER = 65536;
     public const int BLOCK_SIZE = 1024;
+
+    public const float COEFF_KINETIC = 30f;
 }
 
 public static class Common
