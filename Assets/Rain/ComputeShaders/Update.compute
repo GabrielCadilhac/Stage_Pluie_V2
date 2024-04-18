@@ -34,8 +34,12 @@ void CSMain (uint3 id : SV_DispatchThreadID)
         int k = min(_NbCells.z - 1, floor((pos.z - _Min.z) * _NbCells.z / _WindGridSize.z));
         int idxPos = (k * _NbCells.y + j) * _NbCells.x + i;
         
+        float localWindForce = 0.75;
+        float3 globalWind = float3(-1.2, 0., .35);
+        float3 totalWind  = Winds[idxPos] * localWindForce + globalWind;
+        
         //float acceleration = _Gravity + (0.9195 * _DropsCX / _DropDiam) * (wind * length(wind) - Velocities[id.x] * length(Velocities[id.x]);
-        float3 acceleration = _Gravity + (0.9195 * _DropsCX / _DropDiam) * Winds[idxPos] * length(Winds[idxPos]);
+        float3 acceleration = _Gravity + (0.9195 * _DropsCX / _DropDiam) * totalWind * length(totalWind);
         Velocities[id.x]   += acceleration * _DeltaTime;
         Positions[id.x]    += Velocities[id.x] * _DeltaTime;
         

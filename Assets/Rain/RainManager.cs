@@ -136,7 +136,7 @@ public class RainManager : MonoBehaviour
                     Vector3 cellCenter = grid.GetCellCenter(new Vector3(x, y, z));
                     Vector3 wind = grid.Get(j, i, k);
                     Vector3 globWind = _globalWind * _globalWind.magnitude;
-                    if (Mathf.Abs((wind.normalized - globWind.normalized).magnitude) <= 0.1f) continue;
+                    //if (Mathf.Abs((wind.normalized - globWind.normalized).magnitude) <= 0.1f) continue;
 
                     Vector3 temp = wind * 0.5f + Vector3.one * 0.5f;
                     Color c = new Color(temp.x, temp.y, temp.z);
