@@ -8,20 +8,21 @@ public class WindGenerator
     private List<SuperPrimitive> _primitives;
     private BezierCurve _bezierCurve;
 
-    private List<Vector3Int> _curvePos;
-
     private Grid _windsGrid;
     private Bounds _box;
+    private Vector3 _min, _cellSize;
 
     private Vector3 _globalWind;
     private float   _deltaTime;
+    private float _localWindForce, _primitiveSpeed;
 
     private Vector3[] _hodographPoints;
+
+    private WindPrimitiveType[] _newPrimitives;
 
     public WindGenerator(Bounds p_box,
                          BezierCurve p_bezierCurve,
                          Vector3? p_globalWind = null,
-                         int p_nbPrimitives = 1,
                          float p_primitiveSpeed = 1f,
                          float p_localWindForce = 1f,
                          float p_deltaTime = 1f)
@@ -30,47 +31,67 @@ public class WindGenerator
 
         // Init Parameters
         _box = p_box;
+        _min = _box.center - _box.size / 2.0f;
+        _cellSize = Common.Divide(Common.NB_CELLS, _box.size);
+
+        _localWindForce = p_localWindForce;
+        _primitiveSpeed = p_primitiveSpeed;
+        _newPrimitives = new WindPrimitiveType[3] { WindPrimitiveType.SINK, WindPrimitiveType.SOURCE, WindPrimitiveType.UNIFORM };
+
         _globalWind = p_globalWind ?? Vector3.zero;
         _deltaTime = p_deltaTime;
         _bezierCurve = p_bezierCurve;
-
-        _curvePos = new List<Vector3Int>();
 
         _windsGrid = new Grid(Common.NB_CELLS, p_box);
 
         // Init Prmitives
         _primitives = new List<SuperPrimitive>();
 
-        // A super primitive composed with a vortex and a source
-        WindPrimitive[] primComp = new WindPrimitive[2] { new WindPrimitive(WindPrimitiveType.SINK, 1f),
-                                                          new WindPrimitive(WindPrimitiveType.VORTEX, 10f)
-                                                        };
+        // Générer les primitives de bases
+        for (int i = 0; i < 4; i++)
+            _primitives.Add(GenerateSuperPrimitive(_primitiveSpeed));
+    }
 
-        _primitives.Add(new SuperPrimitive(p_bezierCurve, primComp, p_primitiveSpeed, p_localWindForce, 0.3f));
+    private SuperPrimitive GenerateSuperPrimitive(float p_primitiveSpeed)
+    {
+        int newPrimId = Random.Range(0, 3);
+        // A super primitive composed with a vortex and another type
+        WindPrimitive[] primComp = new WindPrimitive[2] { new WindPrimitive(_newPrimitives[newPrimId], 2f),
+                                                              new WindPrimitive(WindPrimitiveType.VORTEX, 10f)
+                                                         };
+        float randSize = 0.4f + Random.Range(-0.04f, 0.04f);
+        float randLerp = Random.Range(0f, 1f);
+        return new SuperPrimitive(_bezierCurve, primComp, p_primitiveSpeed, _localWindForce, randSize, randLerp);
+    }
+
+    private (float, int) ComputeLerp(float p_t, int p_nbPoints)
+    {
+        float range = 1f / (float) p_nbPoints;
+        float tempT = range;
+        int id = 0;
+        while (tempT < p_t)
+        {
+            tempT += range;
+            id++;
+        }
+
+        return ((p_t - (float) id * range) / range, id);
     }
 
     private void ComputeGlobalWind()
     {
-        float range = 1f / 3f;
         for (int j = 0; j < Common.NB_CELLS.x; j++)
             for (int i = 0; i < Common.NB_CELLS.y; i++)
                 for (int k = 0; k < Common.NB_CELLS.z; k++)
                 {
-                    float t = ((float) j / (float) (Common.NB_CELLS.x-1));
+                    float t = (float) j / (float) (Common.NB_CELLS.x-1);
+                    int hodoId;
 
-                    float tempT = range;
-                    int hodoId = 0;
-                    while (tempT < t)
-                    {
-                        tempT += range;
-                        hodoId++;
-                    }
-                    t = (t - (float) hodoId * range) / range;
-    
+                    (t, hodoId) = ComputeLerp(t, Constants.HODOGRAPH_POINTS - 1);
+
                     Vector3 newWind = t * _hodographPoints[hodoId + 1] + (1f - t) * _hodographPoints[hodoId];
                     newWind = Common.Multiply(newWind, new Vector3(1f, 0f, 1f));
 
-                    //Vector3 newWind = new Vector3(t * _globalWind.x, 0f, (1f - t) * _globalWind.z);
                     _windsGrid.Set(i, j, k, newWind * _globalWind.magnitude * 0.1f);
                 }
     }
@@ -79,25 +100,20 @@ public class WindGenerator
     {
         ComputeGlobalWind();
 
-        Vector3 min  = _box.center - _box.size / 2.0f;
-        Vector3 temp = Common.Divide(Common.NB_CELLS, _box.size);
-
-        // Reset Grid
-        foreach (Vector3Int idx in _curvePos)
+        // Ajouter une nouvelle primitive
+        if (Random.Range(0f, 1f) < 1f / (100f * (float)_primitives.Count) && _primitives.Count > 0)
         {
-            float t = ((float) idx.y / (float) (Common.NB_CELLS.x-1));
-            Vector3 newWind = Common.Multiply(new Vector3(t, 0f, (1f - t)), _globalWind);
-            _windsGrid.Set(idx.x, idx.y, idx.z, newWind * _globalWind.magnitude);
+            Debug.Log($"Nouvelle primitive !");
+            _primitives.Add(GenerateSuperPrimitive(_primitiveSpeed));
         }
 
-        _curvePos.Clear();
-
-        //Update Primitives
+        // Mettre à jours les primitives
         for (int i = 0; i < _primitives.Count; i++)
         {
-            bool needDivide = _primitives[i].Update(_deltaTime, min, temp);
+            bool needDivide = _primitives[i].Update(_deltaTime, _min, _cellSize);
             _primitives[i].CheckCollision();
 
+            // Si la primitive est en fin de vie, la diviser en primitives plus petite
             if (needDivide)
             {
                 List<SuperPrimitive> newPrimitives = DividePrimitive(_primitives[i]);
@@ -108,12 +124,12 @@ public class WindGenerator
                 foreach (SuperPrimitive prim in newPrimitives)
                 {
                     _primitives.Add(prim);
-                    totalEnergies += prim.GetSpeed() * prim.GetSpeed() * Constants.COEFF_KINETIC;
+                    totalEnergies += prim.GetSpeed() * prim.GetSpeed() * Constants.KINETIC_COEFF;
                 }
             }
         }
 
-        // Update Wind Grid
+        // Ajouter des perturbations à la grille pour créer des rafales
         for (int j = 0; j < Common.NB_CELLS.x; j++)
             for (int i = 0; i < Common.NB_CELLS.y; i++)
                 for (int k = 0; k < Common.NB_CELLS.z; k++)
@@ -126,18 +142,14 @@ public class WindGenerator
                     foreach (SuperPrimitive prim in _primitives)
                         direction += prim.GetValue(x, y, z);
 
-                    if (direction.magnitude != 0f)
-                    {
-                        _windsGrid.Add(i, j, k, direction * direction.magnitude);
-                        _curvePos.Add(new Vector3Int(i, j, k));
-                    }
+                    _windsGrid.Add(i, j, k, direction * direction.magnitude);
                 }
     }
 
     private List<SuperPrimitive> DividePrimitive(SuperPrimitive p_superPrim)
     {
         // Ajouter un facteur de dissipation car il y a toujours un peu d'énergie perdu
-        float k = p_superPrim.GetSpeed() * p_superPrim.GetSpeed() * Constants.COEFF_KINETIC * 0.95f;
+        float k = p_superPrim.GetSpeed() * p_superPrim.GetSpeed() * Constants.KINETIC_COEFF * Constants.KINETIC_DUMPING;
         int nbNewPrim = Random.Range(2, 6);
 
         // Fonction discrète de valeurs cumulé pour distribuer l'énergie cinétique
@@ -150,19 +162,20 @@ public class WindGenerator
         }
 
         List<SuperPrimitive> windPrimitives = new List<SuperPrimitive>();
-        WindPrimitive[] primComp = new WindPrimitive[2] { new WindPrimitive(WindPrimitiveType.SINK, 1f),
-                                                          new WindPrimitive(WindPrimitiveType.VORTEX, 10f)
-                                                        };
         for (int i = 0; i < nbNewPrim; i++)
         {
             float newEnergy = k * kinEnergies[i] / totalEnergy;
             // Créer une nouvelle primitive si assez d'énergie
             // Sinon l'énergie est dissipé par la viscosité
-            if (newEnergy > 0.05f)
+            if (newEnergy > Constants.KINETIC_MIN)
             {
+                int newPrimId = Random.Range(0, 3);
+                WindPrimitive[] primComp = new WindPrimitive[2] { new WindPrimitive(_newPrimitives[newPrimId], 2f),
+                                                                  new WindPrimitive(WindPrimitiveType.VORTEX, 10f)
+                                                                };
                 float newSize = kinEnergies[i] * p_superPrim.GetSize();
-                float newSpeed  = Mathf.Sqrt(newEnergy / Constants.COEFF_KINETIC);
-                windPrimitives.Add(new SuperPrimitive(_bezierCurve, primComp, newSpeed, newEnergy, newSize));
+                float newSpeed  = Mathf.Sqrt(newEnergy / Constants.KINETIC_COEFF);
+                windPrimitives.Add(new SuperPrimitive(_bezierCurve, primComp, newSpeed, _localWindForce, newSize, p_superPrim.GetLerp()));
             }
         }
 

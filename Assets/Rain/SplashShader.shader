@@ -12,10 +12,10 @@ Shader "Unlit/SplashShader"
 
 		ZWrite Off
 		Blend SrcAlpha OneMinusSrcAlpha
+        Cull Off
 
         Pass
         {
-            Cull off
              
             CGPROGRAM
             #pragma require geometry

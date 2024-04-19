@@ -26,38 +26,38 @@ public struct WindPrimitive
 
 public class SuperPrimitive
 {
-    private float _randStrenghtPerc = 0.15f;
-    //private float _speedVarPerc     = 0.1f;
-    private float _dissipativeCoeff = 0.1f;
+    private float _dissipativeCoeff;
+    private float _strengthFactor, _offsetRange, _currentLerp;
 
     protected Vector3 _position;
     protected Vector2 _randomOffset;
-    protected float _speed, _force, _size, _currentLerp, _lifeTime;
-    protected float _baseSpeed, _baseForce, _offsetRange;
+    protected float _speed, _force, _size, _lifeTime;
 
     private BezierCurve _bezierCurve;
 
-    List<BasePrimitive> _basePrimitives;
+    private List<BasePrimitive> _basePrimitives;
 
-    GameObject _sphere;
+    private GameObject _sphere;
 
-    public SuperPrimitive(BezierCurve p_bezierCurve, WindPrimitive[] p_WindPrimitiveType, float p_speed, float p_strenght, float p_size)
+    public SuperPrimitive(BezierCurve p_bezierCurve, WindPrimitive[] p_WindPrimitiveType, float p_speed, float p_strenght, float p_size, float p_lerp = 0f)
     {
         _bezierCurve = p_bezierCurve;
         _size = p_size;
         _position = Vector3.zero;
 
         _speed = p_speed;
-        //_baseSpeed = p_speed;
-        //_speed = _baseSpeed + Random.Range(-_baseSpeed * _speedVarPerc, _baseSpeed * _speedVarPerc);
 
-        _baseForce = p_strenght;
-        _force = _baseForce + Random.Range(-_baseForce * _randStrenghtPerc, _baseForce * _randStrenghtPerc);
+        float k = (_speed * _speed) * Constants.KINETIC_COEFF;
+        _dissipativeCoeff = (k * k * k) / _size;
+        _lifeTime = k / _dissipativeCoeff;
 
-        _offsetRange = 5f;
+        _strengthFactor = p_strenght;
+        _force = k;
+
+        _offsetRange = 8f;
         _randomOffset = new Vector2(Random.Range(-_offsetRange, _offsetRange), Random.Range(-_offsetRange, _offsetRange));
 
-        _currentLerp = 0f;
+        _currentLerp = p_lerp;
 
         _basePrimitives = new List<BasePrimitive>();
         foreach (WindPrimitive prim in p_WindPrimitiveType)
@@ -79,15 +79,12 @@ public class SuperPrimitive
             }
         }
 
-        float k = (_speed * _speed) * Constants.COEFF_KINETIC;
-        _dissipativeCoeff = (k * k * k) / _size;
-        _lifeTime = k / _dissipativeCoeff;
-
-        Debug.Log($"kineticEnergy {k} | lifeTime {_lifeTime} | dissipativeCoeff {_dissipativeCoeff}");
+        //Debug.Log($"kineticEnergy {k} | lifeTime {_lifeTime} | dissipativeCoeff {_dissipativeCoeff}");
 
         _sphere = GameObject.CreatePrimitive(PrimitiveType.Sphere);
         _sphere.name = "Debug Sphere";
         _sphere.transform.localScale = Vector3.one * _size * 10f;
+        _sphere.SetActive(false);
     }
     
     // Retourne vraie s'il faut diviser la primitive
@@ -118,8 +115,6 @@ public class SuperPrimitive
         if ( _currentLerp > 1f )
         {
             _currentLerp = 0f;
-            //_speed = _baseSpeed + Random.Range(-_baseSpeed * _speedVarPerc, _baseSpeed * _speedVarPerc);
-            _force = _baseForce + Random.Range(-_baseForce * _randStrenghtPerc, _baseForce * _randStrenghtPerc);
             _randomOffset = new Vector2(Random.Range(-_offsetRange, _offsetRange), Random.Range(_offsetRange, -_offsetRange));
         }
     }
@@ -131,7 +126,7 @@ public class SuperPrimitive
 
     public void SetForce(float p_newForce)
     {
-        _baseForce = p_newForce;
+        _strengthFactor = p_newForce;
     }
 
     public Vector3 GetValue(float p_j, float p_i, float p_k)
@@ -140,7 +135,7 @@ public class SuperPrimitive
         foreach (BasePrimitive prim in _basePrimitives)
             result += prim.GetValue(p_j, p_i, p_k);
 
-        return result * _force;
+        return result * _force * _strengthFactor;
     }
 
     public float GetSpeed()
@@ -153,8 +148,14 @@ public class SuperPrimitive
         return _size;
     }
 
+    public float GetLerp()
+    {
+        return _currentLerp;
+    }
+
     public void DestroySphere()
     {
+        _sphere.SetActive(true);
         _sphere.AddComponent<DestroyObject>();
     }
 }

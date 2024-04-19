@@ -1,8 +1,5 @@
 using System.Collections;
-using System.Collections.Generic;
-using Unity.VisualScripting;
 using UnityEngine;
-using UnityEngine.UIElements;
 
 public class RainManager : MonoBehaviour
 {
@@ -33,7 +30,7 @@ public class RainManager : MonoBehaviour
     {
         // Init wind grid
         _bounds = GetComponent<BoxCollider>().bounds;
-        _windGenerator = new WindGenerator(_bounds, _bezierCurve, _globalWind, 1, _primitiveSpeed, _localWindForce, _deltaTime * Time.deltaTime);
+        _windGenerator = new WindGenerator(_bounds, _bezierCurve, _globalWind, _primitiveSpeed, _localWindForce, _deltaTime * Time.deltaTime);
         _windGenerator.SetHodograph(_hodograph.GetPoints());
 
         // Init rain shader

@@ -6,6 +6,7 @@ public class DestroyObject : MonoBehaviour
 {
     public void OnEnable()
     {
+        Debug.Log("Sphere supprimée !");
         Destroy(gameObject);
     }
 }

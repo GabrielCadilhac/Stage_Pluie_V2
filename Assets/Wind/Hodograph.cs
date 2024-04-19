@@ -11,7 +11,7 @@ public class Hodograph : MonoBehaviour
     
     private Bounds _bounds;
 
-    private GameObject[] _hodoPoints;
+    private Vector3[] _hodoPos;
     
     private RectTransform _rectTransform;
 
@@ -21,7 +21,7 @@ public class Hodograph : MonoBehaviour
     public void Awake()
     {
         _rectTransform = GetComponent<RectTransform>();
-        _hodoPoints = new GameObject[transform.childCount];
+        _hodoPos = new Vector3[transform.childCount];
         _bounds = _boxCollider.bounds;
         
         // Rayon est égal à la taille la plus petite / 2
@@ -29,17 +29,10 @@ public class Hodograph : MonoBehaviour
         _right = new Vector3(1f, 0f, 0f);
 
         for (int i = 0; i < transform.childCount; i++)
-        {
-            _hodoPoints[i] = GameObject.CreatePrimitive(PrimitiveType.Sphere);
-            _hodoPoints[i].name = "Sphere" + i;
-            _hodoPoints[i].transform.localScale *= 0.5f;
-            _hodoPoints[i].transform.parent = _parent.transform;
-
-            ComputeChildPos(i);
-        }
+            _hodoPos[i] = ComputeChildPos(i);
     }
 
-    private void ComputeChildPos(int p_index)
+    private Vector3 ComputeChildPos(int p_index)
     {
         Transform child = transform.GetChild(p_index);
 
@@ -50,19 +43,21 @@ public class Hodograph : MonoBehaviour
         float cosTheta = Vector3.Dot(_right, dir.normalized);
         float sinTheta = Mathf.Sqrt(1f - cosTheta * cosTheta) * ySign;
 
-        _hodoPoints[p_index].transform.localPosition = new Vector3(distance * _radius * cosTheta, _bounds.center.y, distance * _radius * sinTheta);
+        return new Vector3(distance * _radius * cosTheta, _bounds.center.y, distance * _radius * sinTheta);
     }
 
     public void Update()
     {
-        //for (int i = 0; i < transform.childCount; i++)
-        //    computeChildPos(i);
+        if (_rectTransform == null) return;
 
-        //Vector3[] curvePoints = new Vector3[_hodoPoints.Length];
-        //for (int i = 0; i < _hodoPoints.Length; i++)
-        //    curvePoints[i] = _hodoPoints[i].transform.localPosition;
+        for (int i = 0; i < transform.childCount; i++)
+            _hodoPos[i] = ComputeChildPos(i);
 
-        //_bezierCurve.SetPoint(curvePoints);
+        Vector3[] curvePoints = new Vector3[_hodoPos.Length];
+        for (int i = 0; i < _hodoPos.Length; i++)
+            curvePoints[i] = _hodoPos[i];
+
+        UpdateCurve(curvePoints);
     }
 
     private void UpdateCurve(Vector3[] p_curvePoints)
@@ -71,8 +66,8 @@ public class Hodograph : MonoBehaviour
         Vector3 max = _bezierCurve.transform.InverseTransformPoint(_bounds.max);
 
         float t = 0.25f;
-        Vector3 c1 = (1f - t) * min + t * max + p_curvePoints[1];
-        Vector3 c2 = t * min + (1f - t) * max + p_curvePoints[2];
+        Vector3 c1 = (1f - t) * min + t * max - p_curvePoints[1];
+        Vector3 c2 = t * min + (1f - t) * max - p_curvePoints[2];
 
         _bezierCurve.SetPoint(0, min);
         _bezierCurve.SetPoint(1, c1);
@@ -80,26 +75,8 @@ public class Hodograph : MonoBehaviour
         _bezierCurve.SetPoint(3, max);
     }
 
-    private void OnDrawGizmos()
-    {
-        if (_rectTransform == null) return;
-
-        for (int i = 0; i < transform.childCount; i++)
-            ComputeChildPos(i);
-
-        Vector3[] curvePoints = new Vector3[_hodoPoints.Length];
-        for (int i = 0; i < _hodoPoints.Length; i++)
-            curvePoints[i] = _hodoPoints[i].transform.localPosition;
-
-        UpdateCurve(curvePoints);
-    }
-
     public Vector3[] GetPoints()
     {
-        Vector3[] curvePoints = new Vector3[_hodoPoints.Length];
-        for (int i = 0; i < _hodoPoints.Length; i++)
-            curvePoints[i] = _hodoPoints[i].transform.localPosition;
-
-        return curvePoints;
+        return _hodoPos;
     }
 }

@@ -7,8 +7,11 @@ public static class Constants
 {
     public const int MAX_BLOCKS_NUMBER = 65536;
     public const int BLOCK_SIZE = 1024;
+    public const int HODOGRAPH_POINTS = 4;
 
-    public const float COEFF_KINETIC = 30f;
+    public const float KINETIC_COEFF = 20f;
+    public const float KINETIC_DUMPING = 0.95f;
+    public const float KINETIC_MIN = 0.05f;
 }
 
 public static class Common
