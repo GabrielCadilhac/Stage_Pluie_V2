@@ -1,15 +1,14 @@
 using System.Collections;
 using System.Collections.Generic;
-using System.Runtime.CompilerServices;
-using TMPro;
 using UnityEngine;
 
+// Les types de primitives possibles
 public enum WindPrimitiveType
 {
-    UNIFORM,
-    SOURCE,
-    SINK,
-    VORTEX
+    Uniform,
+    Source,
+    Sink,
+    Vortex
 }
 
 public struct WindPrimitive
@@ -26,60 +25,56 @@ public struct WindPrimitive
 
 public class SuperPrimitive
 {
-    private float _dissipativeCoeff;
-    private float _strengthFactor, _offsetRange, _currentLerp;
+    private float _offsetRange, _currentLerp;
 
     protected Vector3 _position;
     protected Vector2 _randomOffset;
-    protected float _speed, _force, _size, _lifeTime;
-
-    private BezierCurve _bezierCurve;
 
     private List<BasePrimitive> _basePrimitives;
-
+    private BezierCurve _bezierCurve;
     private GameObject _sphere;
 
-    public SuperPrimitive(BezierCurve p_bezierCurve, WindPrimitive[] p_WindPrimitiveType, float p_speed, float p_strenght, float p_size, float p_lerp = 0f)
+    protected float _speed, _strength, _size;
+    float _energySize     = 1f;
+    float _energyStrength = 0.8f;
+    float _energySpeed    = 0.25f;
+
+    public SuperPrimitive(BezierCurve p_bezierCurve, WindPrimitive[] p_windComp, float p_energy, float p_lerp = 0f)
     {
         _bezierCurve = p_bezierCurve;
-        _size = p_size;
         _position = Vector3.zero;
 
-        _speed = p_speed;
+        _size     = p_energy * _energySize;
+        _strength = p_energy * _energyStrength;
+        _speed    = p_energy * _energySpeed;
 
-        float k = (_speed * _speed) * Constants.KINETIC_COEFF;
-        _dissipativeCoeff = (k * k * k) / _size;
-        _lifeTime = k / _dissipativeCoeff;
-
-        _strengthFactor = p_strenght;
-        _force = k;
+        Debug.Log($"Energy {p_energy} | size {_size} | force {_strength} | speed {_speed} ");
 
         _offsetRange = 8f;
         _randomOffset = new Vector2(Random.Range(-_offsetRange, _offsetRange), Random.Range(-_offsetRange, _offsetRange));
 
         _currentLerp = p_lerp;
-
+        
+        // Composition de la super primitive
         _basePrimitives = new List<BasePrimitive>();
-        foreach (WindPrimitive prim in p_WindPrimitiveType)
+        foreach (WindPrimitive prim in p_windComp)
         {
             switch (prim.type)
             {
-                case WindPrimitiveType.SOURCE:
+                case WindPrimitiveType.Source:
                     _basePrimitives.Add(new SourcePrimitive(_position, prim.parameter, _speed, _size));
                     break;
-                case WindPrimitiveType.SINK:
+                case WindPrimitiveType.Sink:
                     _basePrimitives.Add(new SourcePrimitive(_position, -prim.parameter, _speed, _size));
                     break;
-                case WindPrimitiveType.VORTEX:
+                case WindPrimitiveType.Vortex:
                     _basePrimitives.Add(new VortexPrimitive(_position, prim.parameter, _speed, _size));
                     break;
-                case WindPrimitiveType.UNIFORM:
+                case WindPrimitiveType.Uniform:
                     _basePrimitives.Add(new UniformPrimitive(_position, prim.parameter, _speed, _size));
                     break;
             }
         }
-
-        //Debug.Log($"kineticEnergy {k} | lifeTime {_lifeTime} | dissipativeCoeff {_dissipativeCoeff}");
 
         _sphere = GameObject.CreatePrimitive(PrimitiveType.Sphere);
         _sphere.name = "Debug Sphere";
@@ -88,14 +83,14 @@ public class SuperPrimitive
     }
     
     // Retourne vraie s'il faut diviser la primitive
-    public void Update(float p_deltaTime, Vector3 p_min, Vector3 p_nDivSize)
+    public void Update(float p_deltaTime, Vector3 p_min, Vector3 p_cellSize)
     {
         Vector3 point = _bezierCurve.GetPoint(_currentLerp, true);
         point += new Vector3(_randomOffset.x, _randomOffset.y, 0f);
 
-        float j = (point.x - p_min.x) * p_nDivSize.x;
-        float i = (point.y - p_min.y) * p_nDivSize.y;
-        float k = (point.z - p_min.z) * p_nDivSize.z;
+        float j = (point.x - p_min.x) * p_cellSize.x;
+        float i = (point.y - p_min.y) * p_cellSize.y;
+        float k = (point.z - p_min.z) * p_cellSize.z;
 
         _position = new Vector3(j, i, k);
 
@@ -104,30 +99,20 @@ public class SuperPrimitive
 
         _sphere.transform.position = point;
         _currentLerp += _speed * p_deltaTime;
-
-        _lifeTime -= _dissipativeCoeff;
     }
 
     public void AddEnergy(float p_energy)
     {
-        float energySize = 0.1f;
-        float energyStrength = 0.1f;
-        float energySpeed = 0.1f;
-
-        _size  += p_energy * energySize;
-        _force += p_energy * energyStrength;
-        _speed += p_energy * energySpeed;
+        _size     += p_energy * _energySize;
+        _strength += p_energy * _energyStrength;
+        _speed    += p_energy * _energySpeed;
     }
 
     public void SubEnergy(float p_energy)
     {
-        float energySize = 0.1f;
-        float energyStrength = 0.1f;
-        float energySpeed = 0.1f;
-
-        _size  -= p_energy * energySize;
-        _force -= p_energy * energyStrength;
-        _speed -= p_energy * energySpeed;
+        _size     -= p_energy * _energySize;
+        _strength -= p_energy * _energyStrength;
+        _speed    -= p_energy * _energySpeed;
     }
 
     public void CheckCollision()
@@ -139,28 +124,19 @@ public class SuperPrimitive
         }
     }
 
-    public void SetSpeed(float p_newSpeed)
-    {
-        _speed = p_newSpeed;
-    }
-
-    public void SetForce(float p_newForce)
-    {
-        _strengthFactor = p_newForce;
-    }
-
-    public bool NeedDivide()
-    {
-        return _lifeTime <= 0f;
-    }
-
     public Vector3 GetValue(float p_j, float p_i, float p_k)
     {
         Vector3 result = Vector3.zero;
         foreach (BasePrimitive prim in _basePrimitives)
             result += prim.GetValue(p_j, p_i, p_k);
 
-        return result * _force * _strengthFactor;
+        return result * _strength;
+    }
+
+    // Change how to compute the energy
+    public float GetEnergy()
+    {
+        return _speed;
     }
 
     public float GetSpeed()

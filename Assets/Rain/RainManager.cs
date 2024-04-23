@@ -11,7 +11,7 @@ public class RainManager : MonoBehaviour
 
     // Wind parameters
     private WindGenerator _windGenerator;
-    [SerializeField] private float _localWindForce, _globalWindForce, _deltaTime, _primitiveSpeed;
+    [SerializeField] private float _localWindForce, _globalWindForce, _deltaTime;
 
     // Rain parameters
     private RainRenderer _renderer;
@@ -29,7 +29,7 @@ public class RainManager : MonoBehaviour
     {
         // Init wind grid
         _bounds = GetComponent<BoxCollider>().bounds;
-        _windGenerator = new WindGenerator(_bounds, _bezierCurve, _primitiveSpeed, _globalWindForce, _localWindForce, _deltaTime * Time.deltaTime);
+        _windGenerator = new WindGenerator(_bounds, _bezierCurve, _globalWindForce, _localWindForce, _deltaTime * Time.deltaTime);
         _windGenerator.SetHodograph(_hodograph.GetPoints());
 
         // Init rain shader
@@ -79,11 +79,6 @@ public class RainManager : MonoBehaviour
     public void GlobalWindForceChanged()
     {
         _windGenerator?.SetGlobalWindForce(_globalWindForce);
-    }
-
-    public void PrimitiveSpeedChanged()
-    {
-        _windGenerator?.SetPrimitiveSpeed(_primitiveSpeed);
     }
 
     public void OnDisable()
