@@ -60,7 +60,6 @@ Shader "Unlit/RainShader"
 
             uint   _ParticlesNumber;
             float  _ForceRotation; 
-            float3 _WindRotation;
 
             // Return a random between 0 and 1
             float hash11(float p)
@@ -121,7 +120,6 @@ Shader "Unlit/RainShader"
             void geom(point v2g vertIn[1], inout TriangleStream<g2f> triStream)
             {
                 float3 pos = vertIn[0].vertex.xyz;
-                //_WindRotation.y -= 2.0 * _ForceRotation;
                 float3 up = normalize(vertIn[0].rotation) * _Size.x + range11(vertIn[0].vertexId.x, -0.01, 0.01);
                 float3 right = float3(1.0, 0.0, 0.0) * _Size.y + range11(vertIn[0].vertexId.x, -0.01, 0.01);
 

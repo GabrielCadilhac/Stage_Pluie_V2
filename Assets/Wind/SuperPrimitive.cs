@@ -88,7 +88,7 @@ public class SuperPrimitive
     }
     
     // Retourne vraie s'il faut diviser la primitive
-    public bool Update(float p_deltaTime, Vector3 p_min, Vector3 p_nDivSize)
+    public void Update(float p_deltaTime, Vector3 p_min, Vector3 p_nDivSize)
     {
         Vector3 point = _bezierCurve.GetPoint(_currentLerp, true);
         point += new Vector3(_randomOffset.x, _randomOffset.y, 0f);
@@ -106,8 +106,28 @@ public class SuperPrimitive
         _currentLerp += _speed * p_deltaTime;
 
         _lifeTime -= _dissipativeCoeff;
+    }
 
-        return _lifeTime <= 0f;
+    public void AddEnergy(float p_energy)
+    {
+        float energySize = 0.1f;
+        float energyStrength = 0.1f;
+        float energySpeed = 0.1f;
+
+        _size  += p_energy * energySize;
+        _force += p_energy * energyStrength;
+        _speed += p_energy * energySpeed;
+    }
+
+    public void SubEnergy(float p_energy)
+    {
+        float energySize = 0.1f;
+        float energyStrength = 0.1f;
+        float energySpeed = 0.1f;
+
+        _size  -= p_energy * energySize;
+        _force -= p_energy * energyStrength;
+        _speed -= p_energy * energySpeed;
     }
 
     public void CheckCollision()
@@ -127,6 +147,11 @@ public class SuperPrimitive
     public void SetForce(float p_newForce)
     {
         _strengthFactor = p_newForce;
+    }
+
+    public bool NeedDivide()
+    {
+        return _lifeTime <= 0f;
     }
 
     public Vector3 GetValue(float p_j, float p_i, float p_k)
@@ -151,6 +176,11 @@ public class SuperPrimitive
     public float GetLerp()
     {
         return _currentLerp;
+    }
+
+    public BezierCurve GetCurve()
+    {
+        return _bezierCurve;
     }
 
     public void DestroySphere()

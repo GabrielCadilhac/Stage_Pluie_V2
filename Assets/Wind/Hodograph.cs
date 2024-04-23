@@ -57,7 +57,7 @@ public class Hodograph : MonoBehaviour
         for (int i = 0; i < _hodoPos.Length; i++)
             curvePoints[i] = _hodoPos[i];
 
-        UpdateCurve(curvePoints);
+        //UpdateCurve(curvePoints);
     }
 
     private void UpdateCurve(Vector3[] p_curvePoints)

@@ -33,7 +33,7 @@ public class SplashRenderer
         // Mesh initialization
         var layout = new[]
         {
-                new VertexAttributeDescriptor(VertexAttribute.Position, VertexAttributeFormat.Float32, 3),
+            new VertexAttributeDescriptor(VertexAttribute.Position, VertexAttributeFormat.Float32, 3),
         };
 
         _mesh.SetVertices(positions);

@@ -10,8 +10,7 @@ public class RainManagerEditor : Editor
     private SerializedProperty _hodographProp;
 
     // Wind parameters
-    private SerializedProperty _globalWindProp;
-    private SerializedProperty _localWindForceProp, _deltaTimeProp, _primitiveSpeedProp;
+    private SerializedProperty _localWindForceProp, _globalWindForceProp, _deltaTimeProp, _primitiveSpeedProp;
 
     // Rain parameters
     private SerializedProperty _forceRotationProp;
@@ -26,9 +25,9 @@ public class RainManagerEditor : Editor
     {
         _bezierCurveProp     = serializedObject.FindProperty("_bezierCurve");
         _hodographProp       = serializedObject.FindProperty("_hodograph");
-        _globalWindProp      = serializedObject.FindProperty("_globalWind");
         _nbParticlesProp     = serializedObject.FindProperty("_nbParticles");
         _localWindForceProp  = serializedObject.FindProperty("_localWindForce");
+        _globalWindForceProp = serializedObject.FindProperty("_globalWindForce");
         _deltaTimeProp       = serializedObject.FindProperty("_deltaTime");
         _primitiveSpeedProp  = serializedObject.FindProperty("_primitiveSpeed");
         _forceRotationProp   = serializedObject.FindProperty("_forceRotation");
@@ -55,11 +54,11 @@ public class RainManagerEditor : Editor
         EditorGUILayout.PropertyField(_localWindForceProp);
         if (EditorGUI.EndChangeCheck())
             _rainManager.LocalWindForceChanged();
-        
+
         EditorGUI.BeginChangeCheck();
-        EditorGUILayout.PropertyField(_globalWindProp);
+        EditorGUILayout.PropertyField(_globalWindForceProp);
         if (EditorGUI.EndChangeCheck())
-            _rainManager.GlobalWindChanged();
+            _rainManager.GlobalWindForceChanged();
 
         EditorGUI.BeginChangeCheck();
         EditorGUILayout.PropertyField(_primitiveSpeedProp);

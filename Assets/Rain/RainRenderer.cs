@@ -51,9 +51,8 @@ public class RainRenderer
         _material.SetInteger("_ParticlesNumber", p_nbMaxParticles);
     }
 
-    public void SetWindRotation(Vector3 p_rotation, float p_forceRotation = 1f)
+    public void SetWindRotation(float p_forceRotation = 1f)
     {
-        _material.SetVector("_WindRotation", p_rotation);
         _material.SetFloat("_ForceRotation", p_forceRotation);
     }
 
@@ -75,7 +74,6 @@ public class RainRenderer
     public void SetParticles(Vector3[] p_newPos)
     {
         _mesh.SetVertices(p_newPos);
-
     }
 
     public void Disable()
