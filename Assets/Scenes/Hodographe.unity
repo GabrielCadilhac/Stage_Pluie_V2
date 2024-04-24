@@ -252,7 +252,7 @@ MeshRenderer:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 138686726}
-  m_Enabled: 0
+  m_Enabled: 1
   m_CastShadows: 1
   m_ReceiveShadows: 1
   m_DynamicOccludee: 1
@@ -312,7 +312,7 @@ MonoBehaviour:
   _bezierCurve: {fileID: 1300722074}
   _showGizmos: 1
   _hodograph: {fileID: 367300051}
-  _localWindForce: 4.5
+  _localWindForce: 6
   _globalWindForce: 0.1
   _deltaTime: 5
   _nbParticles: 30000
@@ -769,7 +769,7 @@ MeshRenderer:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 413734557}
-  m_Enabled: 0
+  m_Enabled: 1
   m_CastShadows: 1
   m_ReceiveShadows: 1
   m_DynamicOccludee: 1
@@ -2025,9 +2025,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _points:
   - {x: -21.520617, y: -16.85615, z: -0.041095734}
-  - {x: -13.339098, y: -7.9561005, z: 42.39069}
-  - {x: 20.806368, y: 6.743971, z: 8.66251}
-  - {x: 20.080845, y: 14.337521, z: 40.092995}
+  - {x: -16.7416, y: -7.9561005, z: 17.559704}
+  - {x: 7.6257763, y: 6.743971, z: 3.0372849}
+  - {x: 19.012552, y: 14.337521, z: 19.462646}
 --- !u!4 &1300722075
 Transform:
   m_ObjectHideFlags: 0
