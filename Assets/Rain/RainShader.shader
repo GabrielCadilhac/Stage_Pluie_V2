@@ -4,6 +4,7 @@ Shader "Unlit/RainShader"
     {
         _Color ("Drop Color", Color) = (1,1,1,1)
         _Size  ("Drop Size", Vector) = (1.0, .02, 0., 0.)
+        _Depth ("Drop Depth", Float) = 1.
     }
     SubShader
     {
@@ -52,11 +53,13 @@ Shader "Unlit/RainShader"
             {
                 float4 vertex : SV_POSITION;
                 fixed4 color : COLOR;
+                float distance : TEXCOORD0;
                 UNITY_FOG_COORDS(1)
             };
 
             fixed4 _Color;
             float2 _Size;
+            float _Depth;
 
             uint   _ParticlesNumber;
             float  _ForceRotation; 
@@ -74,7 +77,7 @@ Shader "Unlit/RainShader"
             float range11(float p_p, float p_min, float p_max)
             {
                 float r = hash11(p_p);
-                return p_min * ( 1.0 - r) + p_max * r;
+                return p_min * (1.0 - r) + p_max * r;
             }
 
             v2g vert(appdata v)
@@ -104,6 +107,16 @@ Shader "Unlit/RainShader"
                 outVertex.color = color;
                 UNITY_TRANSFER_FOG(outVertex, outVertex.vertex);
 
+                float3 worldPos = vertPos + float3(
+                                unity_ObjectToWorld[0].w,
+                                unity_ObjectToWorld[1].w,
+                                unity_ObjectToWorld[2].w
+                            );
+
+                float3 pos2Camera = worldPos - _WorldSpaceCameraPos;
+
+                outVertex.distance = pos2Camera.z;
+
                 triStream.Append(outVertex);
             }
 
@@ -132,7 +145,7 @@ Shader "Unlit/RainShader"
                 //             );
 
                 // Calculer la de la position vers la camera
-                // float2 pos2Camera = worldPos - _WorldSpaceCameraPos;
+                // float3 pos2Camera = worldPos - _WorldSpaceCameraPos;
                 // float distanceToCamera = length(pos2Camera);
                 // pos2Camera /= distanceToCamera;
 
@@ -150,6 +163,7 @@ Shader "Unlit/RainShader"
             fixed4 frag(g2f i) : SV_Target
             {
                 fixed4 col = i.color;
+                col.a = clamp(i.distance * i.distance * _Depth, 0., 0.8);
 
                 // apply fog
                 UNITY_APPLY_FOG(i.fogCoord, col);

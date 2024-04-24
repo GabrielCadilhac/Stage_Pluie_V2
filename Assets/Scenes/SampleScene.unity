@@ -480,14 +480,15 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _bezierCurve: {fileID: 2065306523}
   _showGizmos: 1
-  _globalWind: {x: -1, y: 0, z: -1}
+  _hodograph: {fileID: 0}
   _localWindForce: 2.5
+  _globalWindForce: 0
   _deltaTime: 5
-  _primitiveSpeed: 0.2
   _nbParticles: 20000
   _updateShader: {fileID: 7200000, guid: bc70226b2d209074e98b76c1548e73f6, type: 3}
   _collisionShader: {fileID: 7200000, guid: 205411dfba100874f9c822f3aa0e75ff, type: 3}
   _forceRotation: 1
+  _splashPlane: {fileID: 0}
 --- !u!4 &788456217
 Transform:
   m_ObjectHideFlags: 0

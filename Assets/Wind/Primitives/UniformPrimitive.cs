@@ -18,6 +18,6 @@ public class UniformPrimitive : BasePrimitive
             return Vector3.zero;
 
         Vector3 temp = Common.Multiply(Vector3.one - OP, direction.normalized);
-        return temp;
+        return temp.normalized * (_size - OP.magnitude);
     }
 }

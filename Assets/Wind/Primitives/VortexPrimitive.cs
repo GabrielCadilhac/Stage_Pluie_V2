@@ -19,7 +19,8 @@ public class VortexPrimitive : BasePrimitive
         Vector3 cylCoord = Common.Cart2Cyl(OP);
         cylCoord.y += _param / (2f * Mathf.PI * _size);
 
-        return new Vector3(cylCoord.x * Mathf.Cos(cylCoord.y), cylCoord.x * Mathf.Sin(cylCoord.y), -cylCoord.z) * 3f;
+        Vector3 cartCoord = new Vector3(cylCoord.x * Mathf.Cos(cylCoord.y), cylCoord.x * Mathf.Sin(cylCoord.y), -cylCoord.z);
+        return cartCoord.normalized * (_size - OP.magnitude) * 3f;
 
     }
 }

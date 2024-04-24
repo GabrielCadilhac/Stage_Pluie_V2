@@ -14,10 +14,10 @@ OcclusionCullingSettings:
 RenderSettings:
   m_ObjectHideFlags: 0
   serializedVersion: 10
-  m_Fog: 0
+  m_Fog: 1
   m_FogColor: {r: 0.34233716, g: 0.41283208, b: 0.46226418, a: 1}
   m_FogMode: 2
-  m_FogDensity: 0.06
+  m_FogDensity: 0.04
   m_LinearFogStart: 0
   m_LinearFogEnd: 40
   m_AmbientSkyColor: {r: 0.212, g: 0.227, b: 0.259, a: 1}
@@ -312,8 +312,8 @@ MonoBehaviour:
   _bezierCurve: {fileID: 1300722074}
   _showGizmos: 1
   _hodograph: {fileID: 367300051}
-  _localWindForce: 6
-  _globalWindForce: 0.1
+  _localWindForce: 12
+  _globalWindForce: 0.15
   _deltaTime: 5
   _nbParticles: 30000
   _updateShader: {fileID: 7200000, guid: bc70226b2d209074e98b76c1548e73f6, type: 3}

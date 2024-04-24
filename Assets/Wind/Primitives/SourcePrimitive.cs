@@ -20,6 +20,8 @@ public class SourcePrimitive : BasePrimitive
         Vector3 cylCoord = Common.Cart2Cyl(OP);
         cylCoord.x = _param / (2f * Mathf.PI * _size);
 
-        return new Vector3(cylCoord.x * Mathf.Cos(cylCoord.y), cylCoord.x * Mathf.Sin(cylCoord.y), -cylCoord.z);
+        float sign = Mathf.Sign(_param);
+        Vector3 cartCoord = new Vector3(cylCoord.x * Mathf.Cos(cylCoord.y), cylCoord.x * Mathf.Sin(cylCoord.y), sign * cylCoord.z);
+        return cartCoord.normalized * (_size - OP.magnitude);
     }
 }

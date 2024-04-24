@@ -35,23 +35,22 @@ public class SuperPrimitive
     private GameObject _sphere;
 
     protected float _speed, _strength, _size;
-    float _energySize     = 1f;
-    float _energyStrength = 1.2f;
-    float _energySpeed    = 0.25f;
+    float _energyStrength = 2f;
+    float _energySpeed    = 0.35f;
 
     float _coeffDissip = 0.01f;
-    float _coeffTransfert = 0.1f;
+    float _coeffTransfert = 0.2f;
 
     public SuperPrimitive(BezierCurve p_bezierCurve, WindPrimitive[] p_windComp, float p_energy, float p_lerp = 0f)
     {
         _bezierCurve = p_bezierCurve;
         _position = Vector3.zero;
 
-        _size     = p_energy * _energySize;
+        _size = p_energy;
         _strength = p_energy * _energyStrength * _size;
         _speed    = p_energy * _energySpeed;
 
-        Debug.Log($"Energy {p_energy} | size {_size} | force {_strength} | speed {_speed} ");
+        //Debug.Log($"Energy {p_energy} | size {_size} | force {_strength} | speed {_speed} ");
 
         _offsetRange = 8f;
         _randomOffset = new Vector2(Random.Range(-_offsetRange, _offsetRange), Random.Range(-_offsetRange, _offsetRange));
@@ -106,15 +105,15 @@ public class SuperPrimitive
 
     public void AddEnergy(float p_energy)
     {
-        _size     += p_energy * _energySize;
-        _strength += p_energy * _energyStrength;
+        _size     += p_energy;
+        _strength += p_energy * _energyStrength * _size;
         _speed    += p_energy * _energySpeed;
     }
 
     public void SubEnergy(float p_energy)
     {
-        _size     -= p_energy * _energySize;
-        _strength -= p_energy * _energyStrength;
+        _strength -= p_energy * _energyStrength * _size;
+        _size     -= p_energy;
         _speed    -= p_energy * _energySpeed;
     }
 
@@ -138,12 +137,12 @@ public class SuperPrimitive
 
     public float GetDissipEnergy()
     {
-        return _speed * _coeffDissip / _size;
+        return (_speed / _energySpeed) * _coeffDissip / _size;
     }
 
     public float GetTransferEnergy()
     {
-        return _speed * _size * _coeffTransfert;
+        return (_speed / _energySpeed) * _size * _coeffTransfert;
     }
 
     public float GetSpeed()

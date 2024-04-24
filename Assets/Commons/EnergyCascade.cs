@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using System.Security.Cryptography;
 using Unity.Collections;
 using UnityEngine;
 
@@ -10,9 +11,9 @@ public class EnergyCascade
     float _stdNewEnergy     = 0.5f;   // Pourcentage de différence entre les nouvelles énergies
     float _minSizeTall    = 0.2f;    // Taille minimale d'une grande primitive
     float _minSizeMedium     = 0.1f;    // Taille minimale d'une primitive moyenne
-    float _minSizeDestroy   = 0.005f;   // Taille minimale d'une petite primitive (avant destruction)
+    float _minSizeDestroy   = 0.01f;   // Taille minimale d'une petite primitive (avant destruction)
 
-    int _nbPrimitives = 6;
+    int _nbPrimitives = 10;
 
     // Variables
     List<SuperPrimitive> _primitives;
@@ -91,7 +92,7 @@ public class EnergyCascade
                 }
             }
         }
-        
+
         foreach (SuperPrimitive prim in primToRemove)
         {
             _energyDissip += prim.GetDissipEnergy();
@@ -106,7 +107,8 @@ public class EnergyCascade
             float newEnergy = maxEnergyDissip < _energyDissip ? maxEnergyDissip : _energyDissip;
 
             WindPrimitive[] primComp = GenerateWindComp();
-            _primitives.Add(new SuperPrimitive(_primitives[0].GetCurve(), primComp, newEnergy));
+            float randLerp = Random.Range(0f, 1f);
+            _primitives.Add(new SuperPrimitive(_primitives[0].GetCurve(), primComp, newEnergy * 1.1f, randLerp));
 
             _energyDissip -= newEnergy;
         }
@@ -124,14 +126,25 @@ public class EnergyCascade
         // Mettre à jour la cascade à énergie
         CollectEnergies(p_deltaTime);
         DiffuseEnergies();
+    
+        if (_primitives.Count <= _nbPrimitives - 1)
+        {
+            Debug.Log("Nouvelle primitives");
+
+            WindPrimitive[] primComp = GenerateWindComp();
+
+            float randLerp = Random.Range(0f, 1f);
+            float energy = _minEnergyNewPrim + Random.Range(-_minEnergyNewPrim * _stdNewEnergy, _minEnergyNewPrim * _stdNewEnergy);
+            _primitives.Add(new SuperPrimitive(_primitives[0].GetCurve(), primComp, energy, randLerp));
+        }
     }
 
     // Utilitaire
     private WindPrimitive[] GenerateWindComp()
     {
         WindPrimitiveType[] newPrimitives = new WindPrimitiveType[3] { WindPrimitiveType.Sink, WindPrimitiveType.Source, WindPrimitiveType.Uniform};
-        int newPrimId = 2;
-        return new WindPrimitive[2] { new WindPrimitive(newPrimitives[newPrimId], 1f),
+        int newPrimId = 2; // Random.Range(0, newPrimitives.Length);
+        return new WindPrimitive[2] { new WindPrimitive(newPrimitives[newPrimId], 2f),
                                       new WindPrimitive(WindPrimitiveType.Vortex, 10f)
                                     };
     }
