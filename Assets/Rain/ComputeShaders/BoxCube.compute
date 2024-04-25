@@ -15,6 +15,7 @@ const uint _Resolution;
 const float3 _Min;
 const float3 _Max;
 const float3 _InitialVel;
+const float3 _GlobalWind;
 
 //Generateur de nombre aleatoire
 float hash12(float2 p_p)
@@ -24,18 +25,49 @@ float hash12(float2 p_p)
     return frac((p3.x + p3.y) * p3.z);
 }
 
+uint2 pcg2d(uint2 v)
+{
+    v = v * 1664525u + 1013904223u;
+
+    v.x += v.y * 1664525u;
+    v.y += v.x * 1664525u;
+
+    v = v ^ (v >> 16u);
+
+    v.x += v.y * 1664525u;
+    v.y += v.x * 1664525u;
+
+    v = v ^ (v >> 16u);
+
+    return v;
+}
+
 // Retourne un nombre aleatoire entre p_Min et p_Max
-float range12(float2 p_p, float p_Min, float p_Max)
+float range12_hash(float2 p_p, float p_Min, float p_Max)
 {
     float r = hash12(p_p);
     return p_Min * (1.0 - r) + p_Max * r;
 }
 
+float range12(uint2 p_p, float p_Min, float p_Max)
+{
+    uint2 r = pcg2d(p_p);
+    float rand = float(r.x) * float(r.y);
+    return p_Min * (1.0 - rand) + p_Max * rand;
+}
+
 // Mise a jour de la vitesse et de la position
 void changePosVel(uint3 p_id, float3 p_newPos)
 {
+    float3 globalWind = _GlobalWind;
     Positions[p_id.x] = p_newPos;
-    Velocities[p_id.x] = _InitialVel + float3(0.0, range12(p_id.xz, _InitialVel.y, _InitialVel.y+1.0), 0.0);
+    
+    float varPerc = 1.;
+    float randX = globalWind.x + range12_hash(p_id.xz, -globalWind.x * varPerc, globalWind.x * varPerc);
+    float randY = range12_hash(p_id.xz, _InitialVel.y, _InitialVel.y + 1.0);
+    float randZ = globalWind.z + range12_hash(p_id.xz, -globalWind.z * varPerc, globalWind.z * varPerc);
+    
+    Velocities[p_id.x] = _InitialVel + float3(randX, randY, randZ);
 }
 
 [numthreads(SIZE,1,1)]

@@ -25,7 +25,7 @@ public struct WindPrimitive
 
 public class SuperPrimitive
 {
-    private float _offsetRange, _currentLerp;
+    private float _currentLerp;
 
     protected Vector3 _position;
     protected Vector2 _randomOffset;
@@ -34,9 +34,11 @@ public class SuperPrimitive
     private BezierCurve _bezierCurve;
     private GameObject _sphere;
 
+    private float _offsetRange = 8f;
+
     protected float _speed, _strength, _size;
-    float _energyStrength = 2f;
-    float _energySpeed    = 0.35f;
+    float _energyStrength = 3f;
+    float _energySpeed    = 0.25f;
 
     float _coeffDissip = 0.01f;
     float _coeffTransfert = 0.2f;
@@ -52,7 +54,6 @@ public class SuperPrimitive
 
         //Debug.Log($"Energy {p_energy} | size {_size} | force {_strength} | speed {_speed} ");
 
-        _offsetRange = 8f;
         _randomOffset = new Vector2(Random.Range(-_offsetRange, _offsetRange), Random.Range(-_offsetRange, _offsetRange));
 
         _currentLerp = p_lerp;

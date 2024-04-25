@@ -22,6 +22,6 @@ public class SourcePrimitive : BasePrimitive
 
         float sign = Mathf.Sign(_param);
         Vector3 cartCoord = new Vector3(cylCoord.x * Mathf.Cos(cylCoord.y), cylCoord.x * Mathf.Sin(cylCoord.y), sign * cylCoord.z);
-        return cartCoord.normalized * (_size - OP.magnitude);
+        return cartCoord.normalized;// * (_size - OP.magnitude);
     }
 }

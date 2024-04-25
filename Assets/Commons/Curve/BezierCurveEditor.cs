@@ -41,6 +41,7 @@ public class BezierCurveEditor : Editor
         point = Handles.DoPositionHandle(point, _handleRotation);
         if (EditorGUI.EndChangeCheck())
         {
+            Debug.Log("Position" + point);
             Undo.RecordObject(_curve, "Move Point");
             EditorUtility.SetDirty(_curve);
             _curve._points[index] = _handleTransform.InverseTransformPoint(point);

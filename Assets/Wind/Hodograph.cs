@@ -53,11 +53,7 @@ public class Hodograph : MonoBehaviour
         for (int i = 0; i < transform.childCount; i++)
             _hodoPos[i] = ComputeChildPos(i);
 
-        Vector3[] curvePoints = new Vector3[_hodoPos.Length];
-        for (int i = 0; i < _hodoPos.Length; i++)
-            curvePoints[i] = _hodoPos[i];
-
-        //UpdateCurve(curvePoints);
+        //UpdateCurve(_hodoPos);
     }
 
     private void UpdateCurve(Vector3[] p_curvePoints)
@@ -65,9 +61,11 @@ public class Hodograph : MonoBehaviour
         Vector3 min = _bezierCurve.transform.InverseTransformPoint(_bounds.min);
         Vector3 max = _bezierCurve.transform.InverseTransformPoint(_bounds.max);
 
-        float t = 0.25f;
-        Vector3 c1 = (1f - t) * min + t * max - p_curvePoints[1];
-        Vector3 c2 = t * min + (1f - t) * max - p_curvePoints[2];
+        p_curvePoints[1].z += _bounds.max.y / 2f;
+        p_curvePoints[2].z += _bounds.max.y / 2f;
+
+        Vector3 c1 = p_curvePoints[1] - p_curvePoints[0];
+        Vector3 c2 = p_curvePoints[2] - p_curvePoints[0];
 
         _bezierCurve.SetPoint(0, min);
         _bezierCurve.SetPoint(1, c1);

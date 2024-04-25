@@ -11,6 +11,7 @@ public class RainManager : MonoBehaviour
 
     // Wind parameters
     private WindGenerator _windGenerator;
+    [SerializeField] private Vector3 _globalWind;
     [SerializeField] private float _localWindForce, _globalWindForce, _deltaTime;
 
     // Rain parameters
@@ -50,6 +51,7 @@ public class RainManager : MonoBehaviour
         // Init rain generator (compute buffer)
         GraphicsBuffer posBuffer = _renderer.GetPositionsBuffer();
         _rainGenerator = new RainGenerator(_updateShader, _collisionShader, posBuffer, splashPosBuffer, splashTime, _bounds, transform, _deltaTime, _nbParticles);
+        _rainGenerator.SetGlobalWind(_globalWind, _globalWindForce);
 
         _renderer.SetVelBuffer(_rainGenerator.GetVelBuffer());
     }
@@ -61,7 +63,8 @@ public class RainManager : MonoBehaviour
 
         _windGenerator.SetDeltaTime(_deltaTime * Time.deltaTime);
         _rainGenerator.SetDeltaTime(_deltaTime * Time.deltaTime);
-
+        _rainGenerator.SetHodograph(_hodograph.GetPoints());
+        
         _windGenerator.SetHodograph(_hodograph.GetPoints());
         _windGenerator.Update();
 
@@ -78,6 +81,7 @@ public class RainManager : MonoBehaviour
 
     public void GlobalWindForceChanged()
     {
+        _rainGenerator?.SetGlobalWind(_globalWind, _globalWindForce);
         _windGenerator?.SetGlobalWindForce(_globalWindForce);
     }
 
@@ -128,7 +132,7 @@ public class RainManager : MonoBehaviour
                     Vector3 wind = grid.Get(j, i, k);
                     
                     //Vector3 globWind = _globalWind * _globalWind.magnitude;
-                    //if (Mathf.Abs((wind.normalized - Vector3.zero).magnitude) <= 0.1f) continue;
+                    if (Mathf.Abs((wind.normalized - Vector3.zero).magnitude) <= 0.1f) continue;
 
                     Vector3 temp = wind * 0.5f + Vector3.one * 0.5f;
                     Color c = new Color(temp.x, temp.y, temp.z);

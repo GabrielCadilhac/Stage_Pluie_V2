@@ -67,7 +67,8 @@ public class WindGenerator
                     Vector3 newWind = t * _hodographPoints[hodoId + 1] + (1f - t) * _hodographPoints[hodoId];
                     newWind = Common.Multiply(newWind, new Vector3(1f, 0f, 1f));
 
-                    _windsGrid.Set(i, j, k, newWind * _globalWindForce);
+                    _windsGrid.Set(i, j, k, Vector3.zero);
+                    //_windsGrid.Set(i, j, k, newWind * _globalWindForce);
                 }
     }
 

@@ -1,7 +1,5 @@
 using System.Collections;
 using System.Collections.Generic;
-using System.Security.Cryptography;
-using Unity.Collections;
 using UnityEngine;
 
 public class EnergyCascade
@@ -9,11 +7,11 @@ public class EnergyCascade
     // Constantes
     float _minEnergyNewPrim = 0.3f;    // Energie minimale pour créer une nouvelle primitive
     float _stdNewEnergy     = 0.5f;   // Pourcentage de différence entre les nouvelles énergies
-    float _minSizeTall    = 0.2f;    // Taille minimale d'une grande primitive
-    float _minSizeMedium     = 0.1f;    // Taille minimale d'une primitive moyenne
+    float _minSizeTall      = 0.2f;    // Taille minimale d'une grande primitive
+    float _minSizeMedium    = 0.1f;    // Taille minimale d'une primitive moyenne
     float _minSizeDestroy   = 0.01f;   // Taille minimale d'une petite primitive (avant destruction)
 
-    int _nbPrimitives = 10;
+    int _nbPrimitives = 6;
 
     // Variables
     List<SuperPrimitive> _primitives;
@@ -142,8 +140,9 @@ public class EnergyCascade
     // Utilitaire
     private WindPrimitive[] GenerateWindComp()
     {
-        WindPrimitiveType[] newPrimitives = new WindPrimitiveType[3] { WindPrimitiveType.Sink, WindPrimitiveType.Source, WindPrimitiveType.Uniform};
-        int newPrimId = 2; // Random.Range(0, newPrimitives.Length);
+        WindPrimitiveType[] newPrimitives = new WindPrimitiveType[2] { WindPrimitiveType.Uniform, WindPrimitiveType.Sink };
+        int newPrimId = Random.Range(0, newPrimitives.Length);
+        //return new WindPrimitive[1] { new WindPrimitive(newPrimitives[newPrimId], 2f) };
         return new WindPrimitive[2] { new WindPrimitive(newPrimitives[newPrimId], 2f),
                                       new WindPrimitive(WindPrimitiveType.Vortex, 10f)
                                     };

@@ -5,7 +5,7 @@ using UnityEngine;
 
 public class RainGenerator
 {
-    private ComputeBuffer _velBuffer, _windBuffer;
+    private ComputeBuffer _velBuffer, _windBuffer, _hodographBuffer;
     private GraphicsBuffer _posBuffer;
 
     private float _deltaTime;
@@ -28,6 +28,7 @@ public class RainGenerator
         _posBuffer = p_posBuffer;
         _velBuffer  = new ComputeBuffer(p_nbMaxParticles, 3 * sizeof(float));
         _windBuffer = new ComputeBuffer(Common.NB_CELLS.x * Common.NB_CELLS.y * Common.NB_CELLS.z, 3 * sizeof(float));
+        _hodographBuffer = new ComputeBuffer(4, 3 * sizeof(float));
 
         _deltaTime = p_deltaTime;
         _nbBlocks  = Mathf.Clamp(Mathf.FloorToInt((float) p_nbMaxParticles / (float) Constants.BLOCK_SIZE + 0.5f), 1, Constants.MAX_BLOCKS_NUMBER);
@@ -100,6 +101,20 @@ public class RainGenerator
         _updateShader.SetFloat("_DeltaTime", p_deltaTime);
     }
 
+    public void SetHodograph(Vector3[] p_hodographPoints)
+    {
+        _hodographBuffer.SetData(p_hodographPoints);
+        _updateShader.SetBuffer(0, "HodoPoints", _hodographBuffer);
+    }
+
+    public void SetGlobalWind(Vector3 p_globalWind, float p_strength)
+    {
+        _collisionShader.SetVector("_GlobalWind", p_globalWind);
+
+        _updateShader.SetVector("_GlobalWind", p_globalWind);
+        _updateShader.SetFloat("_GlobalWindStrength", p_strength);
+    }
+
     public void ResetParticles(int p_nbParticles)
     {
         Vector3[] newVel = new Vector3[p_nbParticles];
@@ -119,5 +134,8 @@ public class RainGenerator
 
         _windBuffer.Release();
         _windBuffer = null;
+
+        _hodographBuffer.Release();
+        _hodographBuffer = null;
     }
 }

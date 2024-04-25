@@ -7,11 +7,13 @@
 RWStructuredBuffer<float3> Velocities;
 RWStructuredBuffer<float3> Positions;
 RWStructuredBuffer<float3> Winds;
+RWStructuredBuffer<float3> HodoPoints;
 
 // ====== Settings ======
 const uint _NumParticles;
 const uint _Resolution;
 
+const float _GlobalWindStrength;
 const float _DeltaTime;
 const float _DropsCX;
 const float _DropDiam;
@@ -20,6 +22,21 @@ const float3 _Gravity = float3(0.0, -9.81, 0.0);
 const float3 _WindGridSize;
 const float3 _NbCells;
 const float3 _Min;
+const float3 _GlobalWind;
+
+float ComputeLerp(float p_t, int p_nbPoints, out int p_id)
+{
+    float range = 1. / (float) p_nbPoints;
+    float tempT = range;
+    
+    while (tempT < p_t)
+    {
+        tempT += range;
+        p_id++;
+    }
+
+    return (p_t - (float) p_id * range) / range;
+}
 
 [numthreads(SIZE,1,1)]
 void CSMain (uint3 id : SV_DispatchThreadID)
@@ -34,12 +51,25 @@ void CSMain (uint3 id : SV_DispatchThreadID)
         int k = min(_NbCells.z - 1, floor((pos.z - _Min.z) * _NbCells.z / _WindGridSize.z));
         int idxPos = (k * _NbCells.y + j) * _NbCells.x + i;
         
-        float localWindForce = 0.75;
-        float3 globalWind = float3(-1.2, 0., .35);
-        float3 totalWind  = Winds[idxPos] * localWindForce + globalWind;
+        float3 globalWind = _GlobalWind;
         
-        //float acceleration = _Gravity + (0.9195 * _DropsCX / _DropDiam) * (wind * length(wind) - Velocities[id.x] * length(Velocities[id.x]);
-        float3 acceleration = _Gravity + (0.9195 * _DropsCX / _DropDiam) * totalWind * length(totalWind);
+        float t = pos.y / _WindGridSize.y; // Interpolation sur la hauteur
+        
+        int hodoId = 0;
+        uint nbPoints, stride;
+        HodoPoints.GetDimensions(nbPoints, stride);
+        
+        t = ComputeLerp(t, nbPoints, hodoId); // Calculer l interpolation entre plusieurs points
+        
+        float3 globalWindPert = t * HodoPoints[hodoId + 1] + (1. - t) * HodoPoints[hodoId]; // En deduire le vent global entre deux points
+        globalWindPert = -globalWindPert * float3(1., 0., 1.) * _GlobalWindStrength;
+        
+        // Vent total = vent global + vent local + cisaillement du vent
+        float3 totalWind = globalWind * length(globalWind) + Winds[idxPos] * length(Winds[idxPos]) + globalWindPert * length(globalWindPert);
+        
+        //float3 friction = Velocities[id.x] * length(Velocities[id.x]);
+        float3 acceleration = _Gravity + (0.9195 * _DropsCX / _DropDiam) * totalWind;
+        
         Velocities[id.x]   += acceleration * _DeltaTime;
         Positions[id.x]    += Velocities[id.x] * _DeltaTime;
         
