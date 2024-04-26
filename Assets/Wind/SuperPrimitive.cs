@@ -48,7 +48,7 @@ public class SuperPrimitive
         _bezierCurve = p_bezierCurve;
         _position = Vector3.zero;
 
-        _size = p_energy;
+        _size     = p_energy;
         _strength = p_energy * _energyStrength * _size;
         _speed    = p_energy * _energySpeed;
 
@@ -60,21 +60,29 @@ public class SuperPrimitive
         
         // Composition de la super primitive
         _basePrimitives = new List<BasePrimitive>();
+        Color primColor = Color.black;
         foreach (WindPrimitive prim in p_windComp)
         {
             switch (prim.type)
             {
                 case WindPrimitiveType.Source:
+                    primColor = Color.yellow;
                     _basePrimitives.Add(new SourcePrimitive(_position, prim.parameter, _speed, _size));
                     break;
                 case WindPrimitiveType.Sink:
+                    primColor = Color.green;
                     _basePrimitives.Add(new SourcePrimitive(_position, -prim.parameter, _speed, _size));
                     break;
                 case WindPrimitiveType.Vortex:
+                    primColor = Color.blue;
                     _basePrimitives.Add(new VortexPrimitive(_position, prim.parameter, _speed, _size));
                     break;
                 case WindPrimitiveType.Uniform:
+                    primColor = Color.red;
                     _basePrimitives.Add(new UniformPrimitive(_position, prim.parameter, _speed, _size));
+                    break;
+                default:
+                    primColor = Color.black;
                     break;
             }
         }
@@ -82,7 +90,10 @@ public class SuperPrimitive
         _sphere = GameObject.CreatePrimitive(PrimitiveType.Sphere);
         _sphere.name = "Debug Sphere";
         _sphere.transform.localScale = Vector3.one * _size * 10f;
-        _sphere.SetActive(false);
+        Material mat = new Material(Shader.Find("Universal Render Pipeline/Lit"));
+        mat.color = primColor;
+        _sphere.GetComponent<Renderer>().material = mat;
+        //_sphere.SetActive(false);
     }
     
     // Retourne vraie s'il faut diviser la primitive
@@ -97,10 +108,14 @@ public class SuperPrimitive
 
         _position = new Vector3(j, i, k);
 
+        // Mise à jour des positions des primitives
         foreach (BasePrimitive prim in _basePrimitives)
             prim.SetPosition(_position);
 
+        // Mise à jour de la sphère
         _sphere.transform.position = point;
+        _sphere.transform.localScale = Vector3.one * _size * 10f;
+
         _currentLerp += _speed * p_deltaTime;
     }
 

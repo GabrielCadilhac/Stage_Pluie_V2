@@ -20,6 +20,8 @@ public class EnergyCascade
 
     public EnergyCascade(BezierCurve p_curve)
     {
+        Random.InitState(0);
+
         _primitives = new List<SuperPrimitive>();
         _energiesTransfert = new float[2];
         _energyDissip      = 0f;
@@ -141,10 +143,11 @@ public class EnergyCascade
     private WindPrimitive[] GenerateWindComp()
     {
         WindPrimitiveType[] newPrimitives = new WindPrimitiveType[2] { WindPrimitiveType.Uniform, WindPrimitiveType.Sink };
-        int newPrimId = Random.Range(0, newPrimitives.Length);
+        int newPrimId = Random.Range(0, 100);
+        newPrimId = newPrimId < 50 ? 0 : 1;
         //return new WindPrimitive[1] { new WindPrimitive(newPrimitives[newPrimId], 2f) };
-        return new WindPrimitive[2] { new WindPrimitive(newPrimitives[newPrimId], 2f),
-                                      new WindPrimitive(WindPrimitiveType.Vortex, 10f)
+        return new WindPrimitive[2] { new WindPrimitive(WindPrimitiveType.Vortex, 10f),
+                                      new WindPrimitive(newPrimitives[newPrimId], 2f)
                                     };
     }
 
