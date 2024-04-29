@@ -14,6 +14,12 @@ public class RainManager : MonoBehaviour
     [SerializeField] private Vector3 _globalWind;
     [SerializeField] private float _localWindForce, _globalWindForce, _deltaTime;
 
+    // Energy Cascade parameters
+    // x : energy moyenne, y : ecart type de l'énergie
+    [SerializeField] private Vector2 _turbEnergyStats = new Vector2(0.35f, 0.25f);
+    // x : intervalle haut, y : intervalle milieu, z : intervalle bas (avant destruction)
+    [SerializeField] private Vector3 _turbSizeRanges  = new Vector3(0.2f, 0.1f, 0.01f);
+
     // Rain parameters
     private RainRenderer _renderer;
     private RainGenerator _rainGenerator;
@@ -82,7 +88,7 @@ public class RainManager : MonoBehaviour
     public void GlobalWindForceChanged()
     {
         _rainGenerator?.SetGlobalWind(_globalWind, _globalWindForce);
-        _windGenerator?.SetGlobalWindForce(_globalWindForce);
+        _windGenerator?.SetGlobalWindStrength(_globalWindForce);
     }
 
     public void OnDisable()

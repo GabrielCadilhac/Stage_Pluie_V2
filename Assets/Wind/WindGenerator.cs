@@ -12,26 +12,26 @@ public class WindGenerator
     private Vector3 _min, _cellSize;
 
     private float   _deltaTime;
-    private float _localWindForce, _globalWindForce;
+    private float _localWindStrength, _globalWindStrength;
 
     private Vector3[] _hodographPoints;
 
     public WindGenerator(Bounds p_box,
                          BezierCurve p_bezierCurve,
-                         float p_globalWindForce = 1f,
-                         float p_localWindForce = 1f,
+                         float p_globalWindStrength = 1f,
+                         float p_localWindStrength  = 1f,
                          float p_deltaTime = 1f)
     {
         Random.InitState(0);
 
         // Init Parameters
         _box = p_box;
-        _min = _box.center - _box.size / 2.0f;
+        _min = _box.center - _box.size / 2f;
         _cellSize = Common.Divide(Common.NB_CELLS, _box.size);
 
-        _localWindForce = p_localWindForce;
+        _localWindStrength = p_localWindStrength;
 
-        _globalWindForce = p_globalWindForce;
+        _globalWindStrength = p_globalWindStrength;
         _deltaTime = p_deltaTime;
 
         _windsGrid = new Grid(Common.NB_CELLS, p_box);
@@ -53,6 +53,7 @@ public class WindGenerator
         return ((p_t - (float) id * range) / range, id);
     }
 
+    // Calcul de la grille de vent global
     private void ComputeGlobalWind()
     {
         for (int j = 0; j < Common.NB_CELLS.x; j++)
@@ -67,8 +68,7 @@ public class WindGenerator
                     Vector3 newWind = t * _hodographPoints[hodoId + 1] + (1f - t) * _hodographPoints[hodoId];
                     newWind = Common.Multiply(newWind, new Vector3(1f, 0f, 1f));
 
-                    _windsGrid.Set(i, j, k, Vector3.zero);
-                    //_windsGrid.Set(i, j, k, newWind * _globalWindForce);
+                    _windsGrid.Set(i, j, k, newWind * _globalWindStrength);
                 }
     }
 
@@ -93,17 +93,17 @@ public class WindGenerator
                     foreach (SuperPrimitive prim in primitives)
                         direction += prim.GetValue(x, y, z);
 
-                    _windsGrid.Add(i, j, k, direction * _localWindForce);
+                    _windsGrid.Add(i, j, k, direction * _localWindStrength);
                 }
     }
 
     public void SetLocalWindForce(float p_localWindForce)
     {
-        _localWindForce = p_localWindForce;
+        _localWindStrength = p_localWindForce;
     }
-    public void SetGlobalWindForce(float p_windForce)
+    public void SetGlobalWindStrength(float p_windStrength)
     {
-        _globalWindForce = p_windForce;
+        _globalWindStrength = p_windStrength;
     }
 
     public void SetDeltaTime(float p_deltaTime)

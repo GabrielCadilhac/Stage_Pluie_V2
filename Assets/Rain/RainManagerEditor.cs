@@ -48,6 +48,7 @@ public class RainManagerEditor : Editor
         EditorGUILayout.PropertyField(_showGizmosProp);
         EditorGUILayout.PropertyField(_bezierCurveProp);
         EditorGUILayout.PropertyField(_hodographProp);
+        EditorGUILayout.Space();
 
         EditorGUILayout.LabelField("Wind properties", EditorStyles.boldLabel);
         EditorGUI.BeginChangeCheck();
@@ -62,11 +63,13 @@ public class RainManagerEditor : Editor
             _rainManager.GlobalWindForceChanged();
 
         EditorGUILayout.PropertyField(_deltaTimeProp);
+        EditorGUILayout.Space();
 
         EditorGUILayout.LabelField("Rain properties", EditorStyles.boldLabel);
         EditorGUILayout.PropertyField(_forceRotationProp);
         EditorGUILayout.PropertyField(_updateShaderProp);
         EditorGUILayout.PropertyField(_collisionShaderProp);
+        EditorGUILayout.Space();
 
         EditorGUILayout.LabelField("Splash properties", EditorStyles.boldLabel);
         EditorGUILayout.PropertyField(_splashPlaneProp);
