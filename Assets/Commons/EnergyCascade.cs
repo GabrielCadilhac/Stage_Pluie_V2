@@ -140,6 +140,8 @@ public class EnergyCascade
         // Mettre à jour la cascade à énergie
         CollectEnergies(p_deltaTime);
         DiffuseEnergies();
+
+        Debug.Log($"Longueur courbe {_curve.GetLength()}");
     }
 
     // Utilitaire

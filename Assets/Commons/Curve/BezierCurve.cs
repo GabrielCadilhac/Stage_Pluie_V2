@@ -42,4 +42,11 @@ public class BezierCurve : MonoBehaviour
     {
         return GetVelocity(t).normalized;
     }
+
+    public float GetLength()
+    {
+        return Vector3.Distance(_points[0], _points[1]) +
+               Vector3.Distance(_points[1], _points[2]) +
+               Vector3.Distance(_points[2], _points[3]);
+    }
 }

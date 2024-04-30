@@ -35,6 +35,7 @@ public class SuperPrimitive
     private GameObject _sphere;
 
     private float _offsetRange = 8f;
+    private float _sphereSize = 20f;
 
     protected float _speed, _strength, _size;
 
@@ -50,7 +51,6 @@ public class SuperPrimitive
         _speed    = p_energy * Constants.ENERGY_SPEED;
 
         _id = p_id;
-        //Debug.Log($"Energy {p_energy} | size {_size} | force {_strength} | speed {_speed} ");
 
         _randomOffset = new Vector2(Random.Range(-_offsetRange, _offsetRange), Random.Range(-_offsetRange, _offsetRange));
 
@@ -92,7 +92,7 @@ public class SuperPrimitive
 
         _sphere = GameObject.CreatePrimitive(PrimitiveType.Sphere);
         _sphere.name = $"Debug Sphere {_id}";
-        _sphere.transform.localScale = Vector3.one * _size * 10f;
+        _sphere.transform.localScale = Vector3.one * _size * _sphereSize;
 
         Material mat = new Material(Shader.Find("Universal Render Pipeline/Lit"));
         mat.color = primColor;
@@ -119,7 +119,7 @@ public class SuperPrimitive
 
         // Mise a jour de la sph�re
         _sphere.transform.position = point;
-        _sphere.transform.localScale = Vector3.one * _size * 10f;
+        _sphere.transform.localScale = Vector3.one * _size * _sphereSize;
         _currentLerp += _speed * p_deltaTime;
     }
 

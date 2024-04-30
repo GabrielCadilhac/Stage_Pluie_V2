@@ -30,6 +30,8 @@ public class Hodograph : MonoBehaviour
 
         for (int i = 0; i < transform.childCount; i++)
             _hodoPos[i] = ComputeChildPos(i);
+
+        UpdateCurve(_hodoPos);
     }
 
     private Vector3 ComputeChildPos(int p_index)
@@ -53,24 +55,24 @@ public class Hodograph : MonoBehaviour
         for (int i = 0; i < transform.childCount; i++)
             _hodoPos[i] = ComputeChildPos(i);
 
-        //UpdateCurve(_hodoPos);
+        UpdateCurve(_hodoPos);
     }
 
     private void UpdateCurve(Vector3[] p_curvePoints)
     {
-        Vector3 min = _bezierCurve.transform.InverseTransformPoint(_bounds.min);
-        Vector3 max = _bezierCurve.transform.InverseTransformPoint(_bounds.max);
+        float spacing = 1f / (Constants.HODOGRAPH_POINTS - 1f);
 
-        p_curvePoints[1].z += _bounds.max.y / 2f;
-        p_curvePoints[2].z += _bounds.max.y / 2f;
+        Vector3 start = new Vector3(p_curvePoints[0].x, 0f, p_curvePoints[0].z  + 17.5f);
+        Vector3 end   = new Vector3(p_curvePoints[3].x, 35f, p_curvePoints[3].z + 17.5f);
 
-        Vector3 c1 = p_curvePoints[1] - p_curvePoints[0];
-        Vector3 c2 = p_curvePoints[2] - p_curvePoints[0];
+        _bezierCurve.SetPoint(0, start);
+        _bezierCurve.SetPoint(3, end);
 
-        _bezierCurve.SetPoint(0, min);
+        Vector3 c1 = _bezierCurve.GetPoint(spacing);
+        Vector3 c2 = _bezierCurve.GetPoint(2f * spacing);
+
         _bezierCurve.SetPoint(1, c1);
         _bezierCurve.SetPoint(2, c2);
-        _bezierCurve.SetPoint(3, max);
     }
 
     public Vector3[] GetPoints()

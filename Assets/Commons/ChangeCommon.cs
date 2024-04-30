@@ -10,20 +10,6 @@ public class ChangeCommon : MonoBehaviour
 
     [SerializeField] private float _meanEnergy, _stdEnergyPrim, _minSizeTall, _minSizeMedium, _minSizeSmall;
 
-    private void OnEnable()
-    {
-        _energyStrength = Constants.ENERGY_STRENGTH;
-        _energySpeed = Constants.ENERGY_SPEED;
-        _coeffDissip = Constants.COEFF_DISSIP;
-        _coeffTransfert = Constants.COEFF_TRANSFERT;
-
-        _meanEnergy = Constants.MEAN_ENERGY_PRIM;
-        _stdEnergyPrim = Constants.STD_ENERGY_PRIM;
-        _minSizeTall = Constants.MIN_SIZE_TALL;
-        _minSizeMedium = Constants.MIN_SIZE_MEDIUM;
-        _minSizeSmall = Constants.MIN_SIZE_SMALL;
-    }
-
     public void ChangeConstants()
     {
         Constants.ENERGY_STRENGTH = _energyStrength;

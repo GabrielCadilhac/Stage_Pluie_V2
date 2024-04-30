@@ -118,9 +118,9 @@ Shader "Unlit/SplashShader"
             fixed4 frag(g2f i) : SV_Target
             {
                 fixed4 col = tex2D(_MainTex, i.uv.xy);
-                col.a = col.x * i.color.a;
+                col.a = col.x * i.color.a * 3.0;
 
-                if (col.a <= 0.1)
+                if (col.a <= 0.01)
                     discard;
 
                 // apply fog
