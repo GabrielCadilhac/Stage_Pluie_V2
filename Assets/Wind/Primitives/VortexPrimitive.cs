@@ -4,8 +4,8 @@ using UnityEngine;
 
 public class VortexPrimitive : BasePrimitive
 {
-    public VortexPrimitive(Vector3 position, float p_param, float p_speed, float size)
-        : base(position, p_param, p_speed, size)
+    public VortexPrimitive(Vector3 position, float p_param, float p_speed, float p_size, float p_strength = 1f)
+        : base(position, p_param, p_speed, p_size, p_strength)
     { }
 
     public override Vector3 GetValue(float p_i, float p_j, float p_k)
@@ -20,7 +20,7 @@ public class VortexPrimitive : BasePrimitive
         cylCoord.y += _param / (2f * Mathf.PI * _size);
 
         Vector3 cartCoord = new Vector3(cylCoord.x * Mathf.Cos(cylCoord.y), cylCoord.x * Mathf.Sin(cylCoord.y), -cylCoord.z);
-        return cartCoord.normalized * 3f;// * (_size - OP.magnitude);
+        return cartCoord.normalized * _strength;
 
     }
 }

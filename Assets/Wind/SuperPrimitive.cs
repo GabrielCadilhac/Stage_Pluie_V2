@@ -65,22 +65,22 @@ public class SuperPrimitive
             {
                 case WindPrimitiveType.Source:
                     primColor = Color.yellow;
-                    _basePrimitives.Add(new SourcePrimitive(_position, prim.parameter, _speed, _size));
+                    _basePrimitives.Add(new SourcePrimitive(_position, prim.parameter, _speed, _size, Constants.SOURCE_STRENGTH));
                     primColor = Color.red;
                     break;
                 case WindPrimitiveType.Sink:
                     primColor = Color.green;
-                    _basePrimitives.Add(new SourcePrimitive(_position, -prim.parameter, _speed, _size));
+                    _basePrimitives.Add(new SourcePrimitive(_position, -prim.parameter, _speed, _size, Constants.SINK_STRENGTH));
                     primColor = Color.green;
                     break;
                 case WindPrimitiveType.Vortex:
                     primColor = Color.blue;
-                    _basePrimitives.Add(new VortexPrimitive(_position, prim.parameter, _speed, _size));
+                    _basePrimitives.Add(new VortexPrimitive(_position, prim.parameter, _speed, _size, Constants.VORTEX_STRENGTH));
                     primColor = Color.blue;
                     break;
                 case WindPrimitiveType.Uniform:
                     primColor = Color.red;
-                    _basePrimitives.Add(new UniformPrimitive(_position, prim.parameter, _speed, _size));
+                    _basePrimitives.Add(new UniformPrimitive(_position, prim.parameter, _speed, _size, Constants.UNIFORM_STRENGTH));
                     primColor = Color.yellow;
                     break;
                 default:
@@ -113,11 +113,11 @@ public class SuperPrimitive
 
         _position = new Vector3(j, i, k);
 
-        // Mise � jour des positions des primitives
+        // Mise a jour des positions des primitives
         foreach (BasePrimitive prim in _basePrimitives)
             prim.SetPosition(_position);
 
-        // Mise � jour de la sph�re
+        // Mise a jour de la sph�re
         _sphere.transform.position = point;
         _sphere.transform.localScale = Vector3.one * _size * 10f;
         _currentLerp += _speed * p_deltaTime;

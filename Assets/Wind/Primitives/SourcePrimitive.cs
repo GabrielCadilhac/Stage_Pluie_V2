@@ -4,8 +4,8 @@ using UnityEngine;
 
 public class SourcePrimitive : BasePrimitive
 {
-    public SourcePrimitive(Vector3 position, float p_param, float p_speed, float size)
-        : base(position, p_param, p_speed, size)
+    public SourcePrimitive(Vector3 position, float p_param, float p_speed, float p_size, float p_strength = 1f)
+        : base(position, p_param, p_speed, p_size, p_strength)
     {}
 
     public override Vector3 GetValue(float p_i, float p_j, float p_k)
@@ -22,6 +22,6 @@ public class SourcePrimitive : BasePrimitive
 
         float sign = Mathf.Sign(_param);
         Vector3 cartCoord = new Vector3(cylCoord.x * Mathf.Cos(cylCoord.y), cylCoord.x * Mathf.Sin(cylCoord.y), sign * cylCoord.z);
-        return cartCoord.normalized;// * (_size - OP.magnitude);
+        return cartCoord.normalized * _strength;
     }
 }

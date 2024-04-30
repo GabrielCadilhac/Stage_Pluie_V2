@@ -67,6 +67,9 @@ public class RainManager : MonoBehaviour
         if (Input.GetKeyDown(KeyCode.Space))
             ResetParticles();
 
+        if (Input.GetKeyDown(KeyCode.C))
+            _windGenerator.CheckEnergy();
+
         _windGenerator.SetDeltaTime(_deltaTime * Time.deltaTime);
         _rainGenerator.SetDeltaTime(_deltaTime * Time.deltaTime);
         _rainGenerator.SetHodograph(_hodograph.GetPoints());

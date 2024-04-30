@@ -97,6 +97,11 @@ public class WindGenerator
                 }
     }
 
+    public void CheckEnergy()
+    {
+        _energyCascade.CheckEnergy();
+    }
+
     public void SetLocalWindForce(float p_localWindForce)
     {
         _localWindStrength = p_localWindForce;

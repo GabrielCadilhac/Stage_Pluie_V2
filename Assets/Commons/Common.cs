@@ -2,7 +2,6 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-
 public static class Constants
 {
     // GPU
@@ -13,19 +12,24 @@ public static class Constants
     public const int HODOGRAPH_POINTS = 4;
 
     // Super Primitive
-    public const  float ENERGY_STRENGTH = 3f;      // Rapport entre l'énergie et la force
-    public const  float ENERGY_SPEED    = 0.25f;   // Rapport entre l'énergie et la vitesse
-    
-    public const  float COEFF_DISSIP    = 0.01f;   // Quantité d'énergie dissipé à chq pas de temps
-    public const  float COEFF_TRANSFERT = 0.2f;    // Quantité d'énergie transféré à chq pas de temps
+    public static float ENERGY_STRENGTH = 3f;      // Rapport entre l'énergie et la force
+    public static float ENERGY_SPEED    = 0.25f;   // Rapport entre l'énergie et la vitesse
+
+    public static float COEFF_DISSIP    = 0.01f;   // Quantité d'énergie dissipé à chq pas de temps
+    public static float COEFF_TRANSFERT = 0.2f;    // Quantité d'énergie transféré à chq pas de temps
+
+    public static float UNIFORM_STRENGTH = 4f; // Modifier la force des primitives en fonction de leur types
+    public static float VORTEX_STRENGTH  = 3f;
+    public static float SOURCE_STRENGTH  = 2f;
+    public static float SINK_STRENGTH    = 1f;
 
     // Energy Cascade
-    public const float MEAN_ENERGY_PRIM = 0.30f;   // Energie minimale pour créer une nouvelle primitive
-    public const float STD_ENERGY_PRIM  = 0.25f;   // Pourcentage de différence entre les nouvelles énergies
+    public static float MEAN_ENERGY_PRIM = 0.30f;   // Energie minimale pour créer une nouvelle primitive
+    public static float STD_ENERGY_PRIM  = 0.25f;   // Pourcentage de différence entre les nouvelles 
 
-    public const float MIN_SIZE_TALL    = 0.2f;    // Taille minimale d'une grande primitive
-    public const float MIN_SIZE_MEDIUM  = 0.1f;    // Taille minimale d'une primitive moyenne
-    public const float MIN_SIZE_SMALL   = 0.01f;   // Taille minimale d'une petite primitive (avant destruction)
+    public static float MIN_SIZE_TALL    = 0.2f;    // Taille minimale d'une grande primitive
+    public static float MIN_SIZE_MEDIUM  = 0.1f;    // Taille minimale d'une primitive moyenne
+    public static float MIN_SIZE_SMALL   = 0.01f;   // Taille minimale d'une petite primitive (avant destruction)
 }
 
 public static class Common

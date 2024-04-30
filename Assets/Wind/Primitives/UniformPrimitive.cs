@@ -4,8 +4,8 @@ using UnityEngine;
 
 public class UniformPrimitive : BasePrimitive
 {
-    public UniformPrimitive(Vector3 position, float p_param, float p_speed, float p_size)
-        : base(position, p_param, p_speed, p_size)
+    public UniformPrimitive(Vector3 position, float p_param, float p_speed, float p_size, float p_strength = 1f)
+        : base(position, p_param, p_speed, p_size, p_strength)
     {}
 
     public override Vector3 GetValue(float p_i, float p_j, float p_k)
@@ -18,6 +18,6 @@ public class UniformPrimitive : BasePrimitive
             return Vector3.zero;
 
         Vector3 temp = Common.Multiply(Vector3.one - OP, direction.normalized);
-        return temp.normalized;// * (_size - OP.magnitude);
+        return temp.normalized * _strength;
     }
 }
