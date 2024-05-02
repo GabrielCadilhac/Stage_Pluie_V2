@@ -44,7 +44,6 @@ Shader "Unlit/SplashShader"
                 float4 vertex : SV_POSITION;
                 float2 vertexId : TEXCOORD0;
                 float3 normal : NORMAL;
-                fixed4 color : COLOR;
             };
 
             struct g2f
@@ -59,7 +58,6 @@ Shader "Unlit/SplashShader"
             sampler2D _MainTex;
             float4 _MainTex_ST;
             
-            fixed4 _Color;
             float2 _Size;
 
             v2g vert (appdata v)
@@ -70,9 +68,6 @@ Shader "Unlit/SplashShader"
                 o.normal     = v.normal;
                 o.vertexId.x = v.vertexId;
 
-                o.color      = _Color;
-                o.color.a    = TimeBuffer[v.vertexId];
-
                 // Discard splash si la position est nulle
                 if (TimeBuffer[v.vertexId] <= 0.0)
                     o.vertex = 0.0 / 0.0;
@@ -80,15 +75,13 @@ Shader "Unlit/SplashShader"
                 return o;
             }
 
-            void AddVertex(float3 vertPos, fixed4 color, float2 uv, inout TriangleStream<g2f> triStream)
+            void AddVertex(float3 vertPos, float2 uv, inout TriangleStream<g2f> triStream)
             {
                 g2f outVertex;
 
                 UNITY_INITIALIZE_OUTPUT(g2f, outVertex);
 
-                outVertex.vertex  = UnityObjectToClipPos(vertPos);
-                outVertex.color   = color;
-
+                outVertex.vertex = UnityObjectToClipPos(vertPos);
                 outVertex.uv = uv;
                  
                 UNITY_TRANSFER_FOG(outVertex, outVertex.vertex);
@@ -96,12 +89,12 @@ Shader "Unlit/SplashShader"
                 triStream.Append(outVertex);
             }
 
-            void CreateQuad(float4 vertPos, fixed4 color, float3 up, float3 right, inout TriangleStream<g2f> triStream)
+            void CreateQuad(float4 vertPos, float3 up, float3 right, inout TriangleStream<g2f> triStream)
             {
-                AddVertex(vertPos - right, color, float2(0., 0.), triStream);
-                AddVertex(vertPos + right, color, float2(1., 0.), triStream);
-                AddVertex(vertPos + up - right, color, float2(0., 1.), triStream);
-                AddVertex(vertPos + up + right, color, float2(1., 1.), triStream);
+                AddVertex(vertPos - right, float2(0., 0.), triStream);
+                AddVertex(vertPos + right, float2(1., 0.), triStream);
+                AddVertex(vertPos + up - right, float2(0., 1.), triStream);
+                AddVertex(vertPos + up + right, float2(1., 1.), triStream);
                 triStream.RestartStrip();
             }
 
@@ -112,16 +105,13 @@ Shader "Unlit/SplashShader"
                 float3 right = float3(1., 0., 0.) * _Size.y * 0.5;
 
                 // Creer un Quad autour de la particule
-                CreateQuad(vertIn[0].vertex, vertIn[0].color, up, right, triStream);
+                CreateQuad(vertIn[0].vertex, up, right, triStream);
             }
 
             fixed4 frag(g2f i) : SV_Target
             {
                 fixed4 col = tex2D(_MainTex, i.uv.xy);
-                col.a = col.x * i.color.a * 3.0;
-
-                if (col.a <= 0.01)
-                    discard;
+                col.a = col.x;
 
                 // apply fog
                 UNITY_APPLY_FOG(i.fogCoord, col);

@@ -14,6 +14,9 @@ public class CommonEditor : Editor
     private SerializedProperty _meanEnergyProp, _stdEnergyPrimProp;
     private SerializedProperty _minSizeTallProp, _minSizeMediumProp, _minSizeSmallProp;
 
+    // Debug
+    private SerializedProperty _renderSphereProp, _sphereSizeProp; 
+
     private ChangeCommon _common;
 
     void OnEnable()
@@ -29,6 +32,9 @@ public class CommonEditor : Editor
         _minSizeMediumProp = serializedObject.FindProperty("_minSizeMedium");
         _minSizeSmallProp = serializedObject.FindProperty("_minSizeSmall");
 
+        _renderSphereProp = serializedObject.FindProperty("_renderSphere");
+        _sphereSizeProp   = serializedObject.FindProperty("_sphereSize");
+
         _common = target as ChangeCommon;
     }
 
@@ -37,8 +43,9 @@ public class CommonEditor : Editor
         serializedObject.Update();
 
         EditorGUI.BeginChangeCheck();
+
         EditorGUILayout.LabelField("Energy cascade", EditorStyles.boldLabel);
-        EditorGUILayout.Slider(_energyStrengthProp, 1f, 5f);
+        EditorGUILayout.Slider(_energyStrengthProp, 1f, 10f);
         EditorGUILayout.Slider(_energySpeedProp, 0.1f, 0.4f);
         EditorGUILayout.Slider(_coeffDissipProp, 0.001f, 0.1f);
         EditorGUILayout.Slider(_coeffTransfertProp, 0.01f, 0.3f);
@@ -52,9 +59,15 @@ public class CommonEditor : Editor
         EditorGUILayout.PropertyField(_minSizeTallProp);
         EditorGUILayout.PropertyField(_minSizeMediumProp);
         EditorGUILayout.PropertyField(_minSizeSmallProp);
+        EditorGUILayout.Space();
+
+        EditorGUILayout.LabelField("Energy cascade", EditorStyles.boldLabel);
+        EditorGUILayout.PropertyField(_renderSphereProp);
+        EditorGUILayout.Slider(_sphereSizeProp, 20f, 100f);
+        EditorGUILayout.Space();
 
         if (EditorGUI.EndChangeCheck())
-            _common.ChangeConstants();
+            _common.ChangeConstants(_renderSphereProp.boolValue);
 
         serializedObject.ApplyModifiedProperties();
     }

@@ -35,20 +35,20 @@ public class SuperPrimitive
     private GameObject _sphere;
 
     private float _offsetRange = 8f;
-    private float _sphereSize = 20f;
 
     protected float _speed, _strength, _size;
 
     int _id;
 
-    public SuperPrimitive(BezierCurve p_bezierCurve, WindPrimitive[] p_windComp, float p_energy, float p_lerp = 0f, int p_id = 0)
+    public SuperPrimitive(BezierCurve p_bezierCurve, WindPrimitive[] p_windComp, float p_energy, float p_coeffShear = 1f, float p_lerp = 0f, int p_id = 0)
     {
         _bezierCurve = p_bezierCurve;
         _position = Vector3.zero;
 
         _size     = p_energy;
-        _strength = p_energy * Constants.ENERGY_STRENGTH * _size;
         _speed    = p_energy * Constants.ENERGY_SPEED;
+        // La force dépend de l'énergie, de la taille et du cisaillement, plus un coefficient pour contrôler la force
+        _strength = p_energy * _size * Constants.ENERGY_STRENGTH * (p_coeffShear / 85f);
 
         _id = p_id;
 
@@ -88,17 +88,27 @@ public class SuperPrimitive
                     break;
             }
         }
-        primColor.a = 0.5f;
+        primColor.a = 0.35f;
 
         _sphere = GameObject.CreatePrimitive(PrimitiveType.Sphere);
         _sphere.name = $"Debug Sphere {_id}";
-        _sphere.transform.localScale = Vector3.one * _size * _sphereSize;
+        _sphere.transform.localScale = Vector3.one * _size * Constants.SPHERE_SIZE;
 
         Material mat = new Material(Shader.Find("Universal Render Pipeline/Lit"));
+        mat.SetFloat("_Surface", 1.0f);
+        mat.SetOverrideTag("RenderType", "Transparent");
+        mat.SetInt("_SrcBlend", (int)UnityEngine.Rendering.BlendMode.SrcAlpha);
+        mat.SetInt("_DstBlend", (int)UnityEngine.Rendering.BlendMode.OneMinusSrcAlpha);
+        mat.SetInt("_ZWrite", 0);
+        mat.DisableKeyword("_ALPHATEST_ON");
+        mat.EnableKeyword("_ALPHABLEND_ON");
+        mat.DisableKeyword("_ALPHAPREMULTIPLY_ON");
+        mat.renderQueue = (int)UnityEngine.Rendering.RenderQueue.Transparent;
+        mat.SetFloat("_Mode", 1.0f);
         mat.color = primColor;
-        
+
+        _sphere.SetActive(Constants.RENDER_SPHERE);
         _sphere.GetComponent<Renderer>().material = mat;
-        _sphere.SetActive(true);
     }
     
     // Retourne vraie s'il faut diviser la primitive
@@ -119,7 +129,8 @@ public class SuperPrimitive
 
         // Mise a jour de la sph�re
         _sphere.transform.position = point;
-        _sphere.transform.localScale = Vector3.one * _size * _sphereSize;
+        _sphere.transform.localScale = Vector3.one * _size * Constants.SPHERE_SIZE;
+        _sphere.SetActive(Constants.RENDER_SPHERE);
         _currentLerp += _speed * p_deltaTime;
     }
 

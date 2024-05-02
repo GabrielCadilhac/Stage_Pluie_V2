@@ -1,5 +1,6 @@
 using System;
 using System.Collections;
+using Unity.VisualScripting;
 using UnityEngine;
 
 public class Hodograph : MonoBehaviour
@@ -30,6 +31,9 @@ public class Hodograph : MonoBehaviour
 
         for (int i = 0; i < transform.childCount; i++)
             _hodoPos[i] = ComputeChildPos(i);
+
+        Debug.Log($"Rain Transform {_rainTransform.position}");
+        Debug.Log($"Box Collider size {_boxCollider.size} et {_boxCollider.center}");
 
         UpdateCurve(_hodoPos);
     }
@@ -62,14 +66,15 @@ public class Hodograph : MonoBehaviour
     {
         float spacing = 1f / (Constants.HODOGRAPH_POINTS - 1f);
 
-        Vector3 start = new Vector3(p_curvePoints[0].x, 0f, p_curvePoints[0].z  + 17.5f);
-        Vector3 end   = new Vector3(p_curvePoints[3].x, 35f, p_curvePoints[3].z + 17.5f);
+        Vector3 rainPos = _rainTransform.position;
+        Vector3 start = new Vector3(p_curvePoints[0].x, rainPos.y, p_curvePoints[0].z  + rainPos.z);
+        Vector3 end   = new Vector3(p_curvePoints[3].x, rainPos.y + _boxCollider.size.y, p_curvePoints[3].z + rainPos.z);
 
         _bezierCurve.SetPoint(0, start);
         _bezierCurve.SetPoint(3, end);
 
-        Vector3 c1 = _bezierCurve.GetPoint(spacing);
-        Vector3 c2 = _bezierCurve.GetPoint(2f * spacing);
+        Vector3 c1 = Vector3.Lerp(start, end, spacing);
+        Vector3 c2 = Vector3.Lerp(start, end, 2f * spacing);
 
         _bezierCurve.SetPoint(1, c1);
         _bezierCurve.SetPoint(2, c2);

@@ -14,12 +14,6 @@ public class RainManager : MonoBehaviour
     [SerializeField] private Vector3 _globalWind;
     [SerializeField] private float _localWindForce, _globalWindForce, _deltaTime;
 
-    // Energy Cascade parameters
-    // x : energy moyenne, y : ecart type de l'énergie
-    [SerializeField] private Vector2 _turbEnergyStats = new Vector2(0.35f, 0.25f);
-    // x : intervalle haut, y : intervalle milieu, z : intervalle bas (avant destruction)
-    [SerializeField] private Vector3 _turbSizeRanges  = new Vector3(0.2f, 0.1f, 0.01f);
-
     // Rain parameters
     private RainRenderer _renderer;
     private RainGenerator _rainGenerator;
@@ -48,7 +42,7 @@ public class RainManager : MonoBehaviour
         // Init splash shader
         material = _splashPlane.GetComponent<Renderer>().material;
         Bounds splashBounds = new Bounds(_bounds.center, new Vector3(_bounds.size.x, 0f, _bounds.size.z));
-        _splashRenderer = new SplashRenderer(material, splashBounds, transform, _nbParticles);
+        _splashRenderer = new SplashRenderer(material, splashBounds, _nbParticles);
         GraphicsBuffer splashPosBuffer = _splashRenderer.GetPositions();
         ComputeBuffer  splashTime = _splashRenderer.GetTimeSplash();
 
@@ -64,16 +58,18 @@ public class RainManager : MonoBehaviour
 
     void Update()
     {
+        // Permet de réinitialiser les gouttes à des positions aléatoires
         if (Input.GetKeyDown(KeyCode.Space))
             ResetParticles();
 
+        // Permet d'afficher l'énergie des turbulences pour vérifier leur évolution
         if (Input.GetKeyDown(KeyCode.C))
             _windGenerator.CheckEnergy();
 
         _windGenerator.SetDeltaTime(_deltaTime * Time.deltaTime);
         _rainGenerator.SetDeltaTime(_deltaTime * Time.deltaTime);
-        _rainGenerator.SetHodograph(_hodograph.GetPoints());
         
+        // Envoie l'hodographe au générateur de vent pour calculer le cisaillement du vent dans la grille
         _windGenerator.SetHodograph(_hodograph.GetPoints());
         _windGenerator.Update();
 
@@ -120,7 +116,7 @@ public class RainManager : MonoBehaviour
         Debug.Log("Particules réinitialisées !");
     }
 
-    private void OnDrawGizmos()
+    private void OnDrawGizmos() // Debugger la grille du vent (permet de voir les perturbations)
     {
         if (!_showGizmos || _windGenerator == null) return;
 

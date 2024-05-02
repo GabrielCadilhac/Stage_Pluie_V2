@@ -7,7 +7,6 @@
 RWStructuredBuffer<float3> Velocities;
 RWStructuredBuffer<float3> Positions;
 RWStructuredBuffer<float3> Winds;
-RWStructuredBuffer<float3> HodoPoints;
 
 // ====== Settings ======
 const uint _NumParticles;
@@ -50,17 +49,6 @@ void CSMain (uint3 id : SV_DispatchThreadID)
         int i = min(_NbCells.y - 1, floor((pos.y - _Min.y) * _NbCells.y / _WindGridSize.y));
         int k = min(_NbCells.z - 1, floor((pos.z - _Min.z) * _NbCells.z / _WindGridSize.z));
         int idxPos = (k * _NbCells.y + j) * _NbCells.x + i;
-        
-        float t = pos.y / _WindGridSize.y; // Interpolation sur la hauteur
-        
-        //int hodoId = 0;
-        //uint nbPoints, stride;
-        //HodoPoints.GetDimensions(nbPoints, stride);
-        
-        //t = ComputeLerp(t, nbPoints, hodoId); // Calculer l interpolation entre plusieurs points
-        
-        //float3 globalWindPert = t * HodoPoints[hodoId + 1] + (1. - t) * HodoPoints[hodoId]; // En deduire le vent global entre deux points
-        //globalWindPert = -globalWindPert * float3(1., 0., 1.) * _GlobalWindStrength;
         
         // Vent total = vent global + vent local + cisaillement du vent
         float3 totalWind = _GlobalWind * length(_GlobalWind) + Winds[idxPos] * length(Winds[idxPos]); //+globalWindPert * length(globalWindPert);

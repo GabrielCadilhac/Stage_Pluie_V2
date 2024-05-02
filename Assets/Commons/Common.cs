@@ -30,6 +30,10 @@ public static class Constants
     public static float MIN_SIZE_TALL    = 0.2f;    // Taille minimale d'une grande primitive
     public static float MIN_SIZE_MEDIUM  = 0.1f;    // Taille minimale d'une primitive moyenne
     public static float MIN_SIZE_SMALL   = 0.01f;   // Taille minimale d'une petite primitive (avant destruction)
+
+    // Debug
+    public static bool RENDER_SPHERE = false;  // Afficher les sphères de debug pour voir les déplacements des primitives
+    public static float SPHERE_SIZE  = 20f;   // 100 correspond à la vraie taille des primitives
 }
 
 public static class Common

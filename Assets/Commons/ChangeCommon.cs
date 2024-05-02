@@ -10,7 +10,15 @@ public class ChangeCommon : MonoBehaviour
 
     [SerializeField] private float _meanEnergy, _stdEnergyPrim, _minSizeTall, _minSizeMedium, _minSizeSmall;
 
-    public void ChangeConstants()
+    [SerializeField] private float _sphereSize;
+    [SerializeField] private bool _renderSphere;
+
+    private void Start()
+    {
+        ChangeConstants(_renderSphere);
+    }
+
+    public void ChangeConstants(bool p_renderSphere)
     {
         Constants.ENERGY_STRENGTH = _energyStrength;
         Constants.ENERGY_SPEED = _energySpeed;
@@ -24,5 +32,8 @@ public class ChangeCommon : MonoBehaviour
         Constants.MIN_SIZE_TALL = _minSizeTall;
         Constants.MIN_SIZE_MEDIUM = _minSizeMedium;
         Constants.MIN_SIZE_SMALL = _minSizeSmall;
+
+        Constants.RENDER_SPHERE = p_renderSphere;
+        Constants.SPHERE_SIZE   = _sphereSize;
     }
 }

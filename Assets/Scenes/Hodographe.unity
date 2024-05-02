@@ -313,11 +313,9 @@ MonoBehaviour:
   _showGizmos: 1
   _hodograph: {fileID: 367300051}
   _globalWind: {x: -1.5, y: 0, z: 0.8}
-  _localWindForce: 1.2
+  _localWindForce: 1.4
   _globalWindForce: 0.05
   _deltaTime: 5
-  _turbEnergyStats: {x: 0.35, y: 0.25}
-  _turbSizeRanges: {x: 0.2, y: 0.1, z: 0.01}
   _nbParticles: 30000
   _updateShader: {fileID: 7200000, guid: bc70226b2d209074e98b76c1548e73f6, type: 3}
   _collisionShader: {fileID: 7200000, guid: 205411dfba100874f9c822f3aa0e75ff, type: 3}
@@ -2075,7 +2073,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f14f0ac9679ed0049bf36db53acb08f3, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _energyStrength: 3
+  _energyStrength: 4
   _energySpeed: 0.25
   _coeffDissip: 0.01
   _coeffTransfert: 0.2
@@ -2084,6 +2082,8 @@ MonoBehaviour:
   _minSizeTall: 0.2
   _minSizeMedium: 0.1
   _minSizeSmall: 0.01
+  _sphereSize: 100
+  _renderSphere: 0
 --- !u!4 &1683655816
 Transform:
   m_ObjectHideFlags: 0

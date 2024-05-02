@@ -76,8 +76,8 @@ void CSMain (uint3 id : SV_DispatchThreadID)
     while (id.x < _NumParticles)
     {
         // Splash
-        SplashTime[id.x] -= 0.015;
-        SplashTime[id.x] = SplashTime[id.x] < 0. ? 0. : SplashTime[id.x];
+        //SplashTime[id.x] -= 0.;
+        //SplashTime[id.x] = SplashTime[id.x] < 0. ? 0. : SplashTime[id.x];
         
         // Verifier les collisions avec les bords de la boite
         if (Positions[id.x].y < _Min.y) // Collision avec le sol de la boite

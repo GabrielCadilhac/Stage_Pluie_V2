@@ -5,11 +5,12 @@ using UnityEngine.Rendering;
 
 public class SplashRenderer
 {
-    private Material _material;
-    private Mesh _mesh;
     private GraphicsBuffer _posBuffer;
     private ComputeBuffer _timeBuffer;
-    public SplashRenderer(Material p_material, Bounds p_bounds, Transform p_transform, int p_nbMaxParticles = 1000)
+    private Material _material;
+    private Mesh _mesh;
+
+    public SplashRenderer(Material p_material, Bounds p_bounds, int p_nbMaxParticles = 1000)
     {
         Vector3[] positions = new Vector3[p_nbMaxParticles];
         float[] times = new float[p_nbMaxParticles];

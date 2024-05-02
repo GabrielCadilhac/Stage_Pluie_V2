@@ -9,7 +9,7 @@ public class WindGenerator
 
     private Grid _windsGrid;
     private Bounds _box;
-    private Vector3 _min, _cellSize;
+    private Vector3 _min, _max, _cellSize;
 
     private float   _deltaTime;
     private float _localWindStrength, _globalWindStrength;
@@ -27,6 +27,7 @@ public class WindGenerator
         // Init Parameters
         _box = p_box;
         _min = _box.center - _box.size / 2f;
+        _max = _box.center + _box.size / 2f;
         _cellSize = Common.Divide(Common.NB_CELLS, _box.size);
 
         _localWindStrength = p_localWindStrength;
@@ -36,7 +37,8 @@ public class WindGenerator
 
         _windsGrid = new Grid(Common.NB_CELLS, p_box);
 
-        _energyCascade = new EnergyCascade(p_bezierCurve);
+        float distMax = Vector3.Distance(_min, _max);
+        _energyCascade = new EnergyCascade(p_bezierCurve, distMax);
     }
 
     private (float, int) ComputeLerp(float p_t, int p_nbPoints)

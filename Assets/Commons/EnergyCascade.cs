@@ -11,12 +11,13 @@ public class EnergyCascade
     float[] _energiesTransfert;
     float _energyDissip;
 
-    int _turbID = 0;
+    int _turbID = 0; // Global ID pour toutes les turbulences
+    float _lengthMax = 0f; // Longueur maximum de la courbe
 
     // Autres
     BezierCurve _curve;
 
-    public EnergyCascade(BezierCurve p_curve)
+    public EnergyCascade(BezierCurve p_curve, float p_lengthMax)
     {
         Random.InitState(0);
 
@@ -25,6 +26,7 @@ public class EnergyCascade
         _energyDissip      = 0f;
 
         _curve = p_curve;
+        _lengthMax = p_lengthMax;
 
         for (int i = 0; i < _nbPrimitives; i++)
         {
@@ -32,7 +34,7 @@ public class EnergyCascade
 
             float randLerp = Random.Range(0f, 1f);
             float energy = Constants.MEAN_ENERGY_PRIM + Random.Range(-Constants.MEAN_ENERGY_PRIM * Constants.STD_ENERGY_PRIM, Constants.MEAN_ENERGY_PRIM * Constants.STD_ENERGY_PRIM);
-            _primitives.Add(new SuperPrimitive(p_curve, primComp, energy, randLerp, _turbID));
+            _primitives.Add(new SuperPrimitive(p_curve, primComp, energy, _curve.GetLength() / p_lengthMax, randLerp, _turbID));
 
             _turbID++;
         }
@@ -121,7 +123,7 @@ public class EnergyCascade
 
             WindPrimitive[] primComp = GenerateWindComp();
             float randLerp = Random.Range(0f, 1f);
-            _primitives.Add(new SuperPrimitive(_curve, primComp, energy, randLerp, _turbID));
+            _primitives.Add(new SuperPrimitive(_curve, primComp, energy, _curve.GetLength() / _lengthMax, randLerp, _turbID));
             _turbID++;
             
             _energyDissip -= energy;
@@ -140,8 +142,6 @@ public class EnergyCascade
         // Mettre à jour la cascade à énergie
         CollectEnergies(p_deltaTime);
         DiffuseEnergies();
-
-        Debug.Log($"Longueur courbe {_curve.GetLength()}");
     }
 
     // Utilitaire
@@ -149,7 +149,6 @@ public class EnergyCascade
     {
         WindPrimitiveType[] newPrimitives = new WindPrimitiveType[3] { WindPrimitiveType.Uniform, WindPrimitiveType.Sink, WindPrimitiveType.Source };
         int newPrimId = Random.Range(0, newPrimitives.Length);
-        //return new WindPrimitive[1] { new WindPrimitive(newPrimitives[newPrimId], 2f) };
         return new WindPrimitive[2] { new WindPrimitive(WindPrimitiveType.Vortex, 10f),
                                       new WindPrimitive(newPrimitives[newPrimId], 1f)
                                     };
