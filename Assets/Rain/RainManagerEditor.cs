@@ -20,6 +20,9 @@ public class RainManagerEditor : Editor
     private SerializedProperty _splashPlaneProp;
 
     private RainManager _rainManager;
+
+    // Test
+    private SerializedProperty _test;
     
     void OnEnable()
     {
@@ -35,6 +38,8 @@ public class RainManagerEditor : Editor
         _collisionShaderProp = serializedObject.FindProperty("_collisionShader");
         _showGizmosProp      = serializedObject.FindProperty("_showGizmos");
         _splashPlaneProp     = serializedObject.FindProperty("_splashPlane");
+
+        _test = serializedObject.FindProperty("_test");
 
         _rainManager = target as RainManager;
     }
@@ -73,6 +78,8 @@ public class RainManagerEditor : Editor
 
         EditorGUILayout.LabelField("Splash properties", EditorStyles.boldLabel);
         EditorGUILayout.PropertyField(_splashPlaneProp);
+
+        EditorGUILayout.PropertyField(_test);
 
         serializedObject.ApplyModifiedProperties();
     }

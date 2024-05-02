@@ -26,6 +26,9 @@ public class RainManager : MonoBehaviour
     [SerializeField] private GameObject _splashPlane;
     private SplashRenderer _splashRenderer;
 
+    // Test
+    [SerializeField] private Test _test;
+
     void Start()
     {
         // Init wind grid
@@ -65,7 +68,7 @@ public class RainManager : MonoBehaviour
         // Permet d'afficher l'énergie des turbulences pour vérifier leur évolution
         if (Input.GetKeyDown(KeyCode.C))
             _windGenerator.CheckEnergy();
-
+        
         _windGenerator.SetDeltaTime(_deltaTime * Time.deltaTime);
         _rainGenerator.SetDeltaTime(_deltaTime * Time.deltaTime);
         
@@ -77,6 +80,8 @@ public class RainManager : MonoBehaviour
         _rainGenerator.Dispatch();
 
         _renderer.SetWindRotation(_forceRotation);
+        
+        _test.AddSplashs(_splashRenderer.GetPositions());
     }
 
     public void LocalWindForceChanged()

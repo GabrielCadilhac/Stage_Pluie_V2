@@ -32,9 +32,6 @@ public class Hodograph : MonoBehaviour
         for (int i = 0; i < transform.childCount; i++)
             _hodoPos[i] = ComputeChildPos(i);
 
-        Debug.Log($"Rain Transform {_rainTransform.position}");
-        Debug.Log($"Box Collider size {_boxCollider.size} et {_boxCollider.center}");
-
         UpdateCurve(_hodoPos);
     }
 
