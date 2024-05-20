@@ -61,6 +61,11 @@ public class RainRenderer
         _material.SetBuffer("Velocities", p_velBuffer);
     }
 
+    public void SetSizeBuffer(ComputeBuffer p_sizeBuffer)
+    {
+        _material.SetBuffer("Sizes", p_sizeBuffer);
+    }
+
     public GraphicsBuffer GetPositionsBuffer()
     {
         return _posBuffer;

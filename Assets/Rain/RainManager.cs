@@ -57,6 +57,7 @@ public class RainManager : MonoBehaviour
         _rainGenerator.SetGlobalWind(_globalWind, _globalWindForce);
 
         _renderer.SetVelBuffer(_rainGenerator.GetVelBuffer());
+        _renderer.SetSizeBuffer(_rainGenerator.GetSizeBuffer());
     }
 
     void Update()
@@ -81,7 +82,7 @@ public class RainManager : MonoBehaviour
 
         _renderer.SetWindRotation(_forceRotation);
         
-        _test.AddSplashs(_splashRenderer.GetPositions());
+        //_test.AddSplashs(_splashRenderer.GetPositions());
     }
 
     public void LocalWindForceChanged()

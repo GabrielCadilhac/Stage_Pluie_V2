@@ -5,7 +5,7 @@ using UnityEngine;
 
 public class RainGenerator
 {
-    private ComputeBuffer _velBuffer, _windBuffer;
+    private ComputeBuffer _velBuffer, _windBuffer, _sizeBuffer;
     private GraphicsBuffer _posBuffer;
 
     private float _deltaTime;
@@ -28,6 +28,7 @@ public class RainGenerator
         _posBuffer = p_posBuffer;
         _velBuffer  = new ComputeBuffer(p_nbMaxParticles, 3 * sizeof(float));
         _windBuffer = new ComputeBuffer(Common.NB_CELLS.x * Common.NB_CELLS.y * Common.NB_CELLS.z, 3 * sizeof(float));
+        _sizeBuffer = new ComputeBuffer(p_nbMaxParticles, sizeof(float));
 
         _deltaTime = p_deltaTime;
         _nbBlocks  = Mathf.Clamp(Mathf.FloorToInt((float) p_nbMaxParticles / (float) Constants.BLOCK_SIZE + 0.5f), 1, Constants.MAX_BLOCKS_NUMBER);
@@ -39,9 +40,14 @@ public class RainGenerator
 
         // Generate velocities
         Vector3[] tempVel = new Vector3[p_nbMaxParticles];
+        float[] tempSize = new float[p_nbMaxParticles];
         for (int i = 0; i < p_nbMaxParticles; i++)
+        {
             tempVel[i] = new Vector3(0.0f, Random.Range(_initVel.y, _initVel.y+1f), 0f);
+            tempSize[i] = Random.Range(0.6f, 0.9f);
+        }
         _velBuffer.SetData(tempVel);
+        _sizeBuffer.SetData(tempSize);
 
         // Init update Compute Shader
         _updateShader = p_updateShader;
@@ -49,6 +55,7 @@ public class RainGenerator
         _updateShader.SetBuffer(0, "Positions", p_posBuffer);
         _updateShader.SetBuffer(0, "Velocities", _velBuffer);
         _updateShader.SetBuffer(0, "Winds", _windBuffer);
+        _updateShader.SetBuffer(0, "Sizes", _sizeBuffer);
 
         _updateShader.SetInt("_NumParticles", p_nbMaxParticles);
         _updateShader.SetInt("_Resolution", _nbBlocks);
@@ -83,6 +90,11 @@ public class RainGenerator
     public ComputeBuffer GetVelBuffer()
     {
         return _velBuffer;
+    }
+
+    public ComputeBuffer GetSizeBuffer()
+    {
+        return _sizeBuffer;
     }
 
     public void SetWinds(Vector3[] p_winds)

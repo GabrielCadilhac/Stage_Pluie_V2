@@ -32,6 +32,7 @@ Shader "Unlit/RainShader"
             #include "UnityCG.cginc"
 
             uniform StructuredBuffer<float3> Velocities;
+            uniform StructuredBuffer<float> Sizes;
 
             struct appdata
             {
@@ -134,7 +135,7 @@ Shader "Unlit/RainShader"
             {
                 float3 pos = vertIn[0].vertex.xyz;
                 float3 up = normalize(vertIn[0].rotation) * _Size.x + range11(vertIn[0].vertexId.x, -0.01, 0.01);
-                float3 right = float3(1.0, 0.0, 0.0) * _Size.y + range11(vertIn[0].vertexId.x, -0.01, 0.01);
+                float3 right = float3(1.0, 0.0, 0.0) * Sizes[vertIn[0].vertexId.x] * _Size.y + range11(vertIn[0].vertexId.x, -0.01, 0.01);
 
                 // ===== Verifier si la particule est derriere la camera =====
                 // Calculer la position en world space de la particule

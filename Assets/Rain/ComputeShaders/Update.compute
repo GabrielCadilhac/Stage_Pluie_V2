@@ -7,6 +7,7 @@
 RWStructuredBuffer<float3> Velocities;
 RWStructuredBuffer<float3> Positions;
 RWStructuredBuffer<float3> Winds;
+RWStructuredBuffer<float>  Sizes;
 
 // ====== Settings ======
 const uint _NumParticles;
@@ -54,7 +55,7 @@ void CSMain (uint3 id : SV_DispatchThreadID)
         float3 totalWind = _GlobalWind * length(_GlobalWind) + Winds[idxPos] * length(Winds[idxPos]); //+globalWindPert * length(globalWindPert);
         
         //float3 friction = Velocities[id.x] * length(Velocities[id.x]);
-        float3 acceleration = _Gravity + (0.9195 * _DropsCX / _DropDiam) * totalWind;
+        float3 acceleration = _Gravity + (0.9195 * _DropsCX / (Sizes[id.x])) * totalWind;
         
         Velocities[id.x]   += acceleration * _DeltaTime;
         Positions[id.x]    += Velocities[id.x] * _DeltaTime;
