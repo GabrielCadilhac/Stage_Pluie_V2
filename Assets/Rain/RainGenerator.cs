@@ -38,13 +38,17 @@ public class RainGenerator
 
         Debug.Log($"Min {min} et max {max}");
 
+        // Rain size mean and std
+        float rainSizeMean = 0f;
+        float rainSizeStd  = 3.2f;
+
         // Generate velocities
         Vector3[] tempVel = new Vector3[p_nbMaxParticles];
         float[] tempSize = new float[p_nbMaxParticles];
         for (int i = 0; i < p_nbMaxParticles; i++)
         {
             tempVel[i] = new Vector3(0.0f, Random.Range(_initVel.y, _initVel.y+1f), 0f);
-            tempSize[i] = Random.Range(0.6f, 0.9f);
+            tempSize[i] = Common.NormalDistrib(rainSizeMean, rainSizeStd, 10f, 0.2f);
         }
         _velBuffer.SetData(tempVel);
         _sizeBuffer.SetData(tempSize);
@@ -60,7 +64,7 @@ public class RainGenerator
         _updateShader.SetInt("_NumParticles", p_nbMaxParticles);
         _updateShader.SetInt("_Resolution", _nbBlocks);
         _updateShader.SetFloat("_DeltaTime", _deltaTime * Time.deltaTime);
-        _updateShader.SetFloat("_DropsCX", 0.42f);
+        _updateShader.SetFloat("_DropsCX", 0.25f);
         _updateShader.SetFloat("_DropDiam", 0.78f);
         _updateShader.SetVector("_Min", p_transform.InverseTransformPoint(min));
         _updateShader.SetVector("_NbCells", (Vector3) Common.NB_CELLS);
@@ -139,5 +143,8 @@ public class RainGenerator
 
         _windBuffer.Release();
         _windBuffer = null;
+
+        _sizeBuffer.Release();
+        _sizeBuffer = null;
     }
 }

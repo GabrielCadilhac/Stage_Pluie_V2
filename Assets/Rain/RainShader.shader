@@ -31,8 +31,16 @@ Shader "Unlit/RainShader"
         
             #include "UnityCG.cginc"
 
+            struct StrLight
+            {
+                float3 position;
+                fixed4 color;
+                float intensity;
+            };
+
             uniform StructuredBuffer<float3> Velocities;
             uniform StructuredBuffer<float> Sizes;
+            uniform StructuredBuffer<StrLight> Lights;
 
             struct appdata
             {
@@ -63,6 +71,7 @@ Shader "Unlit/RainShader"
             float _Depth;
 
             uint   _ParticlesNumber;
+            uint   _LightNumber;
             float  _ForceRotation; 
 
             // Return a random between 0 and 1
@@ -90,8 +99,15 @@ Shader "Unlit/RainShader"
                 o.normal = v.normal;
                 o.vertexId.x = v.vertexId;
 
+                fixed4 incomLight = fixed4(0., 0., 0., 0.);
+
+                for (int i = 0; i < _LightNumber; i++)
+                {
+                    incomLight +=  (1.0/length(UnityObjectToClipPos(o.vertex) - Lights[i].position)) * Lights[i].color * Lights[i].intensity;
+                }
+
                 float colorVariation = range11(v.vertexId, -0.2, 0.2);
-                o.color = _Color + colorVariation;
+                o.color = (_Color + colorVariation) * incomLight;
 
                 o.rotation = -Velocities[v.vertexId] * float3(_ForceRotation, 1., _ForceRotation);
 
@@ -135,7 +151,10 @@ Shader "Unlit/RainShader"
             {
                 float3 pos = vertIn[0].vertex.xyz;
                 float3 up = normalize(vertIn[0].rotation) * _Size.x + range11(vertIn[0].vertexId.x, -0.01, 0.01);
-                float3 right = float3(1.0, 0.0, 0.0) * Sizes[vertIn[0].vertexId.x] * _Size.y + range11(vertIn[0].vertexId.x, -0.01, 0.01);
+                float3 right = float3(1.0, 0.0, 0.0) * _Size.y + range11(vertIn[0].vertexId.x, -0.01, 0.01);
+
+                up *=  Sizes[vertIn[0].vertexId.x];
+                right *=  Sizes[vertIn[0].vertexId.x];
 
                 // ===== Verifier si la particule est derriere la camera =====
                 // Calculer la position en world space de la particule

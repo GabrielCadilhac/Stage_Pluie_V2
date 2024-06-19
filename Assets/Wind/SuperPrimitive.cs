@@ -43,7 +43,7 @@ public class SuperPrimitive
     public SuperPrimitive(BezierCurve p_bezierCurve, WindPrimitive[] p_windComp, float p_energy, float p_coeffShear = 1f, float p_lerp = 0f, int p_id = 0)
     {
         _bezierCurve = p_bezierCurve;
-        _position = Vector3.zero;
+        _position = new Vector3(3.37f, 6.5f, 3.37f);
 
         _size     = p_energy;
         _speed    = p_energy * Constants.ENERGY_SPEED;
@@ -115,7 +115,7 @@ public class SuperPrimitive
     public void Update(float p_deltaTime, Vector3 p_min, Vector3 p_cellSize)
     {
         Vector3 point = _bezierCurve.GetPoint(_currentLerp, true);
-        point += new Vector3(_randomOffset.x, _randomOffset.y, 0f);
+        //point += new Vector3(_randomOffset.x, _randomOffset.y, 0f);
 
         float j = (point.x - p_min.x) * p_cellSize.x;
         float i = (point.y - p_min.y) * p_cellSize.y;

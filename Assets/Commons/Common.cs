@@ -97,4 +97,18 @@ public static class Common
     {
         return new Vector2(p_coord.x * Mathf.Cos(p_coord.y), p_coord.x * Mathf.Sin(p_coord.y));
     }
+
+    public static float NormalDistrib(float p_mean, float p_std, float p_coeff = 1f, float p_min = -Mathf.Infinity)
+    {
+        float r = 0f;
+        do
+        {
+            float rand1 = Random.Range(0f, 1f);
+            float rand2 = Random.Range(0f, 1f);
+            r = Mathf.Sqrt(-2f * Mathf.Log(rand1)) * Mathf.Cos((2f * Mathf.PI) * rand2);
+            r = (r * p_std + p_mean) / p_coeff;
+        } while (r < p_min);
+
+        return r;
+    }
 }

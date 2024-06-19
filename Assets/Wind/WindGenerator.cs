@@ -62,15 +62,16 @@ public class WindGenerator
             for (int i = 0; i < Common.NB_CELLS.y; i++)
                 for (int k = 0; k < Common.NB_CELLS.z; k++)
                 {
-                    float t = (float) j / (float) (Common.NB_CELLS.x-1);
-                    int hodoId;
+                    //float t = (float) j / (float) (Common.NB_CELLS.x-1);
+                    //int hodoId;
 
-                    (t, hodoId) = ComputeLerp(t, Constants.HODOGRAPH_POINTS - 1);
+                    //(t, hodoId) = ComputeLerp(t, Constants.HODOGRAPH_POINTS - 1);
 
-                    Vector3 newWind = t * _hodographPoints[hodoId + 1] + (1f - t) * _hodographPoints[hodoId];
-                    newWind = Common.Multiply(newWind, new Vector3(1f, 0f, 1f));
+                    //Vector3 newWind = t * _hodographPoints[hodoId + 1] + (1f - t) * _hodographPoints[hodoId];
+                    //newWind = Common.Multiply(newWind, new Vector3(1f, 0f, 1f));
 
-                    _windsGrid.Set(i, j, k, newWind * _globalWindStrength);
+                    //_windsGrid.Set(i, j, k, newWind * _globalWindStrength);
+                    _windsGrid.Set(i, j, k, Vector3.zero);
                 }
     }
 
@@ -95,7 +96,7 @@ public class WindGenerator
                     foreach (SuperPrimitive prim in primitives)
                         direction += prim.GetValue(x, y, z);
 
-                    _windsGrid.Add(i, j, k, direction * _localWindStrength);
+                    _windsGrid.Set(i, j, k, direction * _localWindStrength);
                 }
     }
 

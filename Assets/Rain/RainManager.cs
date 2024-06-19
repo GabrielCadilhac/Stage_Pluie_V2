@@ -1,4 +1,5 @@
 using System.Collections;
+using NUnit.Framework;
 using UnityEngine;
 
 public class RainManager : MonoBehaviour
@@ -28,6 +29,7 @@ public class RainManager : MonoBehaviour
 
     // Test
     [SerializeField] private Test _test;
+    [SerializeField] private GameObject _lights;
 
     void Start()
     {
@@ -81,7 +83,9 @@ public class RainManager : MonoBehaviour
         _rainGenerator.Dispatch();
 
         _renderer.SetWindRotation(_forceRotation);
-        
+
+        _renderer.UpdateLights();
+
         //_test.AddSplashs(_splashRenderer.GetPositions());
     }
 
