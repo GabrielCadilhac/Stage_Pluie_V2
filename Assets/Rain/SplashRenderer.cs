@@ -2,7 +2,6 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Rendering;
-using UnityEngine.UIElements;
 
 public class SplashRenderer
 {
@@ -12,11 +11,15 @@ public class SplashRenderer
 
     // Buffers
     private GraphicsBuffer _posBuffer;
-    private ComputeBuffer _timeBuffer;
+    private ComputeBuffer _timeBuffer, _lightsBuffer;
     
     // Render
     private Material _material;
     private Mesh _mesh;
+
+    // Lights
+    private List<StrLight> _lights;
+    private Transform _lightTransform;
 
     public SplashRenderer(Material p_material, Transform p_transform, Bounds p_bounds, int p_nbMaxParticles = 1000)
     {
@@ -55,6 +58,61 @@ public class SplashRenderer
         _mesh.hideFlags = HideFlags.HideAndDontSave;
         _mesh.vertexBufferTarget |= GraphicsBuffer.Target.Raw;
         _posBuffer = _mesh.GetVertexBuffer(0);
+
+        _lights = new List<StrLight>();
+        _lightTransform = GameObject.Find("Lights").transform;
+        for (int i = 0; i < _lightTransform.transform.childCount; i++)
+        {
+            Transform currentLight = _lightTransform.transform.GetChild(i);
+            StrLight strLight = new StrLight();
+            strLight.position = currentLight.position;
+            strLight.color = currentLight.GetComponent<Light>().color;
+            strLight.intensity = currentLight.GetComponent<Light>().intensity;
+
+            _lights.Add(strLight);
+        }
+
+        // Vector3 + Color + Float
+        _lightsBuffer = new ComputeBuffer(_lightTransform.transform.childCount, sizeof(float) * 3 + sizeof(float) * 4 + sizeof(float));
+        _material.SetInteger("_NbLights", _lights.Count);
+
+        _lightsBuffer.SetData(_lights);
+        _material.SetBuffer("Lights", _lightsBuffer);
+    }
+
+    private bool LightChanged(Transform p_lightTransform, StrLight p_strLight)
+    {
+        return !((p_lightTransform.position == p_strLight.position) &&
+               (p_lightTransform.GetComponent<Light>().color == p_strLight.color) &&
+               (p_lightTransform.GetComponent<Light>().intensity == p_strLight.intensity));
+    }
+
+    public void UpdateLights()
+    {
+        bool lightChanged = false;
+        for (int i = 0; i < _lightTransform.transform.childCount; i++)
+        {
+            Transform lightTransform = _lightTransform.transform.GetChild(i);
+            StrLight strLight = _lights[i];
+
+            if (LightChanged(lightTransform, strLight))
+            {
+                lightChanged = true;
+
+                Light lightComp = lightTransform.GetComponent<Light>();
+                strLight.position = lightTransform.position;
+                strLight.color = lightComp.color;
+                strLight.intensity = lightComp.intensity;
+
+                _lights[i] = strLight;
+            }
+        }
+
+        if (lightChanged)
+        {
+            _lightsBuffer.SetData(_lights);
+            _material.SetBuffer("Lights", _lightsBuffer);
+        }
     }
 
     public void Draw()
@@ -89,5 +147,8 @@ public class SplashRenderer
 
         _timeBuffer.Release();
         _timeBuffer = null;
+
+        _lightsBuffer.Release();
+        _lightsBuffer = null;
     }
 }

@@ -71,7 +71,7 @@ Shader "Unlit/RainShader"
             float _Depth;
 
             uint   _ParticlesNumber;
-            uint   _LightNumber;
+            uint   _NbLights;
             float  _ForceRotation; 
 
             // Return a random between 0 and 1
@@ -101,7 +101,7 @@ Shader "Unlit/RainShader"
 
                 fixed4 incomLight = fixed4(0., 0., 0., 0.);
 
-                for (int i = 0; i < _LightNumber; i++)
+                for (int i = 0; i < _NbLights; i++)
                 {
                     incomLight +=  (1.0/length(UnityObjectToClipPos(o.vertex) - Lights[i].position)) * Lights[i].color * Lights[i].intensity;
                 }

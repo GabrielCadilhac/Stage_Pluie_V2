@@ -1,17 +1,9 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Rendering;
-using UnityEngine.UIElements;
 
 public class RainRenderer
 {
-    struct StrLight
-    {
-        public Vector3 position;
-        public Color color;
-        public float intensity;
-    }
-
     private Transform _transform;
     private Bounds _bounds;
 
@@ -25,13 +17,13 @@ public class RainRenderer
     private List<StrLight> _lights;
     private Transform _lightTransform;
 
-
     public RainRenderer(Material p_material, Bounds p_bounds, Vector3 p_min, Vector3 p_max, Transform p_transform, int p_nbMaxParticles = 1000)
     {
         _material = p_material;
 		_material.enableInstancing = true;
         _lightTransform = GameObject.Find("Lights").transform;
         _lights = new List<StrLight>();
+
         _transform = p_transform;
         _bounds = p_bounds;
         
@@ -48,7 +40,7 @@ public class RainRenderer
 
         // Vector3 + Color + Float
         _lightsBuffer = new ComputeBuffer(_lightTransform.transform.childCount, sizeof(float) * 3 + sizeof(float) * 4 + sizeof(float));
-        _material.SetInteger("_LightNumber", _lights.Count); 
+        _material.SetInteger("_NbLights", _lights.Count); 
         
         _lightsBuffer.SetData(_lights);
         _material.SetBuffer("Lights", _lightsBuffer);

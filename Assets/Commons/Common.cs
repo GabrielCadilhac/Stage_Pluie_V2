@@ -36,6 +36,13 @@ public static class Constants
     public static float SPHERE_SIZE  = 20f;   // 100 correspond à la vraie taille des primitives
 }
 
+public struct StrLight
+{
+    public Vector3 position;
+    public Color color;
+    public float intensity;
+}
+
 public static class Common
 {
     public static Vector3Int NB_CELLS = new Vector3Int(9, 9, 9);

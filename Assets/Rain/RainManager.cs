@@ -85,6 +85,8 @@ public class RainManager : MonoBehaviour
 
         _renderer.UpdateLights();
         _renderer.Draw();
+
+        _splashRenderer.UpdateLights();
         _splashRenderer.Draw();
 
         //_test.AddSplashs(_splashRenderer.GetPositions());
