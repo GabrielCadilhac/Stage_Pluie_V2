@@ -2,16 +2,27 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Rendering;
+using UnityEngine.UIElements;
 
 public class SplashRenderer
 {
+    // Transform
+    private Transform _transform;
+    private Bounds _bounds;
+
+    // Buffers
     private GraphicsBuffer _posBuffer;
     private ComputeBuffer _timeBuffer;
+    
+    // Render
     private Material _material;
     private Mesh _mesh;
 
-    public SplashRenderer(Material p_material, Bounds p_bounds, int p_nbMaxParticles = 1000)
+    public SplashRenderer(Material p_material, Transform p_transform, Bounds p_bounds, int p_nbMaxParticles = 1000)
     {
+        _transform = p_transform;
+        _bounds = p_bounds;
+
         Vector3[] positions = new Vector3[p_nbMaxParticles];
         float[] times = new float[p_nbMaxParticles];
         int[] indices = new int[p_nbMaxParticles];
@@ -44,6 +55,16 @@ public class SplashRenderer
         _mesh.hideFlags = HideFlags.HideAndDontSave;
         _mesh.vertexBufferTarget |= GraphicsBuffer.Target.Raw;
         _posBuffer = _mesh.GetVertexBuffer(0);
+    }
+
+    public void Draw()
+    {
+        RenderParams rp = new RenderParams(_material);
+        rp.worldBounds = new Bounds(_transform.position, _bounds.center); ;
+        rp.matProps = new MaterialPropertyBlock();
+        rp.matProps.SetMatrix("_ObjectToWorld", Matrix4x4.Translate(Vector3.zero));
+        rp.matProps.SetFloat("_NumInstances", 1f);
+        Graphics.RenderMeshPrimitives(rp, _mesh, 0, 1);
     }
 
     public Mesh GetMesh()

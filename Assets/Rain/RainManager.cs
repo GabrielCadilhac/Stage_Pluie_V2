@@ -40,18 +40,17 @@ public class RainManager : MonoBehaviour
 
         // Init rain shader
         Material material = GetComponent<Renderer>().material;
-        _renderer = new RainRenderer(material, _bounds, transform, _nbParticles);
-
-        GetComponent<MeshFilter>().sharedMesh = _renderer.GetMesh();
+        Vector3 min = transform.localPosition - _bounds.size / 2f;
+        Vector3 max = transform.localPosition + _bounds.size / 2f;
+        _renderer = new RainRenderer(material, _bounds, min, max, transform, _nbParticles);
 
         // Init splash shader
         material = _splashPlane.GetComponent<Renderer>().material;
         Bounds splashBounds = new Bounds(_bounds.center, new Vector3(_bounds.size.x, 0f, _bounds.size.z));
-        _splashRenderer = new SplashRenderer(material, splashBounds, _nbParticles);
+
+        _splashRenderer = new SplashRenderer(material, transform, splashBounds, _nbParticles);
         GraphicsBuffer splashPosBuffer = _splashRenderer.GetPositions();
         ComputeBuffer  splashTime = _splashRenderer.GetTimeSplash();
-
-        _splashPlane.GetComponent<MeshFilter>().sharedMesh = _splashRenderer.GetMesh();
 
         // Init rain generator (compute buffer)
         GraphicsBuffer posBuffer = _renderer.GetPositionsBuffer();
@@ -85,6 +84,8 @@ public class RainManager : MonoBehaviour
         _renderer.SetWindRotation(_forceRotation);
 
         _renderer.UpdateLights();
+        _renderer.Draw();
+        _splashRenderer.Draw();
 
         //_test.AddSplashs(_splashRenderer.GetPositions());
     }
@@ -131,7 +132,8 @@ public class RainManager : MonoBehaviour
         if (!_showGizmos || _windGenerator == null) return;
 
         Grid grid = _windGenerator.GetGrid();
-        Vector3 offset = Common.Divide(_bounds.center - _bounds.size / 2f, _bounds.size);
+        Vector3 globalMin = transform.TransformPoint(_bounds.min) - transform.localPosition;
+        Vector3 cellSize = grid.GetCellSize();
 
         for (int j = 0; j < Common.NB_CELLS.x; j++)
         {
@@ -139,11 +141,9 @@ public class RainManager : MonoBehaviour
             {
                 for (int k = 0; k < Common.NB_CELLS.z; k++)
                 {
-                    float x = j + Common.NB_CELLS.x * offset.x;
-                    float y = i + Common.NB_CELLS.y * offset.y;
-                    float z = k + Common.NB_CELLS.z * offset.z;
+                    Vector3 newPos = new Vector3(j * cellSize.x, i * cellSize.y, k * cellSize.z) + globalMin;
 
-                    Vector3 cellCenter = grid.GetCellCenter(new Vector3(x, y, z));
+                    Vector3 cellCenter = grid.GetCellCenter(newPos);
                     Vector3 wind = grid.Get(j, i, k);
                     
                     //Vector3 globWind = _globalWind * _globalWind.magnitude;

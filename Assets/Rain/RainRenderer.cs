@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Rendering;
+using UnityEngine.UIElements;
 
 public class RainRenderer
 {
@@ -10,6 +11,9 @@ public class RainRenderer
         public Color color;
         public float intensity;
     }
+
+    private Transform _transform;
+    private Bounds _bounds;
 
     // Renderer elements
     private GraphicsBuffer _posBuffer;
@@ -22,12 +26,14 @@ public class RainRenderer
     private Transform _lightTransform;
 
 
-    public RainRenderer(Material p_material, Bounds p_minMax, Transform p_transform, int p_nbMaxParticles = 1000)
+    public RainRenderer(Material p_material, Bounds p_bounds, Vector3 p_min, Vector3 p_max, Transform p_transform, int p_nbMaxParticles = 1000)
     {
         _material = p_material;
 		_material.enableInstancing = true;
         _lightTransform = GameObject.Find("Lights").transform;
         _lights = new List<StrLight>();
+        _transform = p_transform;
+        _bounds = p_bounds;
         
         for (int i = 0; i < _lightTransform.transform.childCount; i++)
         {
@@ -49,17 +55,14 @@ public class RainRenderer
 
         _mesh = new Mesh() { name = "RainMesh" };
 
-        Vector3 min = p_minMax.center - p_minMax.size / 2f;
-        Vector3 max = p_minMax.center + p_minMax.size / 2f;
-
         // Generate positions
         Vector3[] positions = new Vector3[p_nbMaxParticles];
         for (int i = 0; i < p_nbMaxParticles; i++)
         {
             positions[i] = p_transform.InverseTransformPoint( new Vector3(
-                Random.Range(min.x, max.x),
-                Random.Range(min.y, max.y),
-                Random.Range(min.z, max.z)) );
+                Random.Range(p_min.x, p_max.x),
+                Random.Range(p_min.y, p_max.y),
+                Random.Range(p_min.z, p_max.z)) );
         }
 
         // Mesh initialization
@@ -75,7 +78,7 @@ public class RainRenderer
         _mesh.SetVertices(positions);
         _mesh.SetIndices(indices, MeshTopology.Points, 0);
         _mesh.SetVertexBufferParams(p_nbMaxParticles, layout);
-        _mesh.bounds = p_minMax;
+        _mesh.bounds = p_bounds;
         _mesh.hideFlags = HideFlags.HideAndDontSave;
         _mesh.vertexBufferTarget |= GraphicsBuffer.Target.Raw;
         _posBuffer = _mesh.GetVertexBuffer(0);
@@ -88,6 +91,16 @@ public class RainRenderer
         return !((p_lightTransform.position == p_strLight.position) &&
                (p_lightTransform.GetComponent<Light>().color == p_strLight.color) &&
                (p_lightTransform.GetComponent<Light>().intensity == p_strLight.intensity));
+    }
+
+    public void Draw()
+    {
+        RenderParams rp = new RenderParams(_material);
+        rp.worldBounds = new Bounds(_transform.position, _bounds.center); ;
+        rp.matProps = new MaterialPropertyBlock();
+        rp.matProps.SetMatrix("_ObjectToWorld", Matrix4x4.Translate(Vector3.zero));
+        rp.matProps.SetFloat("_NumInstances", 1f);
+        Graphics.RenderMeshPrimitives(rp, _mesh, 0, 1);
     }
 
     public void UpdateLights()
