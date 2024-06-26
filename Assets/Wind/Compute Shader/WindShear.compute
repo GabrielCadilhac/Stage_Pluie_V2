@@ -1,0 +1,37 @@
+// Each #kernel tells which function to compile; you can have many kernels
+#pragma kernel CSMain
+#define SIZE 8
+
+// ====== Buffers ======
+RWStructuredBuffer<float3> _HodoPoints;
+RWStructuredBuffer<float3> _WindShear;
+
+// ====== Settings ======
+const float3 _Resolution;
+const float _WindShearStrength;
+const uint _NumHodoPoints;
+
+[numthreads(SIZE, SIZE, SIZE)]
+void CSMain (uint3 id : SV_DispatchThreadID)
+{
+    if (id.x >= (uint) _Resolution.x || id.y >= (uint) _Resolution.y || id.z >= (uint) _Resolution.z)
+        return;
+    
+    float t = (float) id.x / (float) (_Resolution.x - 1);
+    float range = 1. / (float) (_NumHodoPoints - 1);
+    float tempT = range;
+    int hodoId = 0;
+    
+    while (tempT < t)
+    {
+        tempT += range;
+        hodoId++;
+    }
+    t = (t - (float) hodoId * range) / range;
+    
+    float3 newWind = t * _HodoPoints[hodoId + 1] + (1. - t) * _HodoPoints[hodoId];
+    newWind *= float3(1., 0., 1.);
+    
+    uint idxPos = (id.z * (uint) _Resolution.y + id.x) * (uint) _Resolution.x + id.y;
+    _WindShear[idxPos] = newWind * _WindShearStrength;
+}

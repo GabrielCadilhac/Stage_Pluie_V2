@@ -34,7 +34,7 @@ Shader "Unlit/SplashShader"
             {
                 float3 position;
                 fixed4 color;
-                float intensity;
+                float  intensity;
             };
 
             uniform StructuredBuffer<float> TimeBuffer;
@@ -42,22 +42,22 @@ Shader "Unlit/SplashShader"
 
             struct appdata
             {
-                float4 vertex : POSITION;
-                uint vertexId : SV_VertexID;
+                float4 position : POSITION;
+                uint   id : SV_VertexID;
                 float3 normal : NORMAL;
             };
 
             struct v2g
             {
-                float4 vertex : SV_POSITION;
-                float2 vertexId : TEXCOORD0;
+                float4 position : SV_POSITION;
+                float2 id : TEXCOORD0;
                 float3 normal : NORMAL;
                 fixed4 color : COLOR;
             };
 
             struct g2f
             {
-                float4 vertex : SV_POSITION;
+                float4 position : SV_POSITION;
                 float2 uv : TEXCOORD0;
                 fixed4 color : COLOR;
 
@@ -74,18 +74,18 @@ Shader "Unlit/SplashShader"
             {
                 v2g o;
 
-                o.vertex     = v.vertex;
+                o.position     = v.position;
                 o.normal     = v.normal;
-                o.vertexId.x = v.vertexId;
+                o.id.x = v.id;
 
                 // Discard splash si la position est nulle
-                if (TimeBuffer[v.vertexId] <= 0.0)
-                    o.vertex = 0.0 / 0.0;
+                if (TimeBuffer[v.id] <= 0.0)
+                    o.position = 0.0 / 0.0;
 
                 fixed4 incomLight = fixed4(0., 0., 0., 0.);
                 for (int i = 0; i < _NbLights; i++)
                 {
-                    incomLight +=  (1.0/length(UnityObjectToClipPos(o.vertex) - Lights[i].position)) * Lights[i].color * Lights[i].intensity;
+                    incomLight +=  (Lights[i].color * Lights[i].intensity) / length(UnityObjectToClipPos(o.position) - Lights[i].position);
                 }
                 o.color = incomLight;
 
@@ -98,11 +98,11 @@ Shader "Unlit/SplashShader"
 
                 UNITY_INITIALIZE_OUTPUT(g2f, outVertex);
 
-                outVertex.vertex = UnityObjectToClipPos(vertPos);
+                outVertex.position = UnityObjectToClipPos(vertPos);
                 outVertex.uv = uv;
                 outVertex.color = color;
                  
-                UNITY_TRANSFER_FOG(outVertex, outVertex.vertex);
+                UNITY_TRANSFER_FOG(outVertex, outVertex.position);
 
                 triStream.Append(outVertex);
             }
@@ -123,14 +123,15 @@ Shader "Unlit/SplashShader"
                 float3 right = float3(1., 0., 0.) * _Size.y * 0.5;
 
                 // Creer un Quad autour de la particule
-                CreateQuad(vertIn[0].vertex, vertIn[0].color, up, right, triStream);
+                CreateQuad(vertIn[0].position, vertIn[0].color, up, right, triStream);
             }
 
             fixed4 frag(g2f i) : SV_Target
             {
                 fixed4 col = tex2D(_MainTex, i.uv.xy);
                 col.a = col.x;
-                col *= i.color;
+                // Ajouter la couleur de la lumière aux splatchs
+                // col *= i.color;
 
                 col = min(col, fixed4(1., 1., 1., 1.));
 

@@ -10,7 +10,8 @@ public class RainManagerEditor : Editor
     private SerializedProperty _hodographProp;
 
     // Wind parameters
-    private SerializedProperty _localWindForceProp, _globalWindForceProp, _deltaTimeProp, _globalWindProp;
+    private SerializedProperty _localWindForceProp, _windShearStrengthProp, _deltaTimeProp, _globalWindProp;
+    private SerializedProperty _windShearShaderProp;
 
     // Rain parameters
     private SerializedProperty _forceRotationProp;
@@ -22,7 +23,7 @@ public class RainManagerEditor : Editor
     private RainManager _rainManager;
 
     // Test
-    private SerializedProperty _test;
+    private SerializedProperty _test, _globalMinProp;
     
     void OnEnable()
     {
@@ -30,7 +31,7 @@ public class RainManagerEditor : Editor
         _hodographProp       = serializedObject.FindProperty("_hodograph");
         _nbParticlesProp     = serializedObject.FindProperty("_nbParticles");
         _localWindForceProp  = serializedObject.FindProperty("_localWindForce");
-        _globalWindForceProp = serializedObject.FindProperty("_globalWindForce");
+        _windShearStrengthProp = serializedObject.FindProperty("_windShearStrength");
         _globalWindProp      = serializedObject.FindProperty("_globalWind");
         _deltaTimeProp       = serializedObject.FindProperty("_deltaTime");
         _forceRotationProp   = serializedObject.FindProperty("_forceRotation");
@@ -38,6 +39,8 @@ public class RainManagerEditor : Editor
         _collisionShaderProp = serializedObject.FindProperty("_collisionShader");
         _showGizmosProp      = serializedObject.FindProperty("_showGizmos");
         _splashPlaneProp     = serializedObject.FindProperty("_splashPlane");
+        _windShearShaderProp = serializedObject.FindProperty("_windShearShader");
+        _globalMinProp = serializedObject.FindProperty("_globalMin");
 
         _test = serializedObject.FindProperty("_test");
 
@@ -62,12 +65,14 @@ public class RainManagerEditor : Editor
             _rainManager.LocalWindForceChanged();
 
         EditorGUI.BeginChangeCheck();
-        EditorGUILayout.PropertyField(_globalWindForceProp);
+        EditorGUILayout.PropertyField(_windShearStrengthProp);
         EditorGUILayout.PropertyField(_globalWindProp);
         if (EditorGUI.EndChangeCheck())
             _rainManager.GlobalWindForceChanged();
 
+        EditorGUILayout.PropertyField(_windShearShaderProp);
         EditorGUILayout.PropertyField(_deltaTimeProp);
+        EditorGUILayout.PropertyField(_globalMinProp);
         EditorGUILayout.Space();
 
         EditorGUILayout.LabelField("Rain properties", EditorStyles.boldLabel);

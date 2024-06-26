@@ -44,15 +44,15 @@ Shader "Unlit/RainShader"
 
             struct appdata
             {
-                float4 vertex : POSITION;
-                uint vertexId : SV_VertexID;
+                float4 position : POSITION;
+                uint id : SV_VertexID;
                 float3 normal : NORMAL;
             };
 
             struct v2g
             {
-                float4 vertex : SV_POSITION;
-                float2 vertexId : TEXCOORD0;
+                float4 position : SV_POSITION;
+                float2 id : TEXCOORD0;
                 float3 normal : NORMAL;
                 float3 rotation : TEXCOORD1;
                 fixed4 color : COLOR;
@@ -60,7 +60,7 @@ Shader "Unlit/RainShader"
 
             struct g2f
             {
-                float4 vertex : SV_POSITION;
+                float4 position : SV_POSITION;
                 fixed4 color : COLOR;
                 float distance : TEXCOORD0;
                 UNITY_FOG_COORDS(1)
@@ -93,23 +93,23 @@ Shader "Unlit/RainShader"
             v2g vert(appdata v)
             {
                 v2g o;
-                if (v.vertexId >= _ParticlesNumber) return o;
+                if (v.id >= _ParticlesNumber) return o;
 
-                o.vertex = v.vertex;
+                o.position = v.position;
                 o.normal = v.normal;
-                o.vertexId.x = v.vertexId;
+                o.id.x = v.id;
 
                 fixed4 incomLight = fixed4(0., 0., 0., 0.);
 
                 for (int i = 0; i < _NbLights; i++)
                 {
-                    incomLight +=  (1.0/length(UnityObjectToClipPos(o.vertex) - Lights[i].position)) * Lights[i].color * Lights[i].intensity;
+                    incomLight +=  (Lights[i].color * Lights[i].intensity) / length(UnityObjectToClipPos(o.position) - Lights[i].position);
                 }
 
-                float colorVariation = range11(v.vertexId, -0.2, 0.2);
+                float colorVariation = range11(v.id, -0.2, 0.2);
                 o.color = (_Color + colorVariation) * incomLight;
 
-                o.rotation = -Velocities[v.vertexId] * float3(_ForceRotation, 1., _ForceRotation);
+                o.rotation = -Velocities[v.id] * float3(_ForceRotation, 1., _ForceRotation);
 
                 return o;
             }
@@ -120,9 +120,9 @@ Shader "Unlit/RainShader"
 
                 UNITY_INITIALIZE_OUTPUT(g2f, outVertex);
 
-                outVertex.vertex = UnityObjectToClipPos(vertPos);
+                outVertex.position = UnityObjectToClipPos(vertPos);
                 outVertex.color = color;
-                UNITY_TRANSFER_FOG(outVertex, outVertex.vertex);
+                UNITY_TRANSFER_FOG(outVertex, outVertex.position);
 
                 float3 worldPos = vertPos + float3(
                                 unity_ObjectToWorld[0].w,
@@ -149,12 +149,12 @@ Shader "Unlit/RainShader"
             [maxvertexcount(4)] // retourne 4 vertex pour creer un quad
             void geom(point v2g vertIn[1], inout TriangleStream<g2f> triStream)
             {
-                float3 pos = vertIn[0].vertex.xyz;
-                float3 up = normalize(vertIn[0].rotation) * _Size.x + range11(vertIn[0].vertexId.x, -0.01, 0.01);
-                float3 right = float3(1.0, 0.0, 0.0) * _Size.y + range11(vertIn[0].vertexId.x, -0.01, 0.01);
+                float3 pos   = vertIn[0].position.xyz;
+                float3 up    = normalize(vertIn[0].rotation) * _Size.x + range11(vertIn[0].id.x, -0.01, 0.01);
+                float3 right = float3(1.0, 0.0, 0.0) * _Size.y + range11(vertIn[0].id.x, -0.01, 0.01);
 
-                up *=  Sizes[vertIn[0].vertexId.x];
-                right *=  Sizes[vertIn[0].vertexId.x];
+                up    *=  Sizes[vertIn[0].id.x];
+                right *=  Sizes[vertIn[0].id.x];
 
                 // ===== Verifier si la particule est derriere la camera =====
                 // Calculer la position en world space de la particule
@@ -177,7 +177,7 @@ Shader "Unlit/RainShader"
                 // ===========================================================
 
                 // Creer un Quad autour de la particule
-                CreateQuad(vertIn[0].vertex, vertIn[0].color, up, right, triStream);
+                CreateQuad(vertIn[0].position, vertIn[0].color, up, right, triStream);
             }
 
             fixed4 frag(g2f i) : SV_Target

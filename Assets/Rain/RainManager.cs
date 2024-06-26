@@ -1,5 +1,3 @@
-using System.Collections;
-using NUnit.Framework;
 using UnityEngine;
 
 public class RainManager : MonoBehaviour
@@ -13,7 +11,9 @@ public class RainManager : MonoBehaviour
     // Wind parameters
     private WindGenerator _windGenerator;
     [SerializeField] private Vector3 _globalWind;
-    [SerializeField] private float _localWindForce, _globalWindForce, _deltaTime;
+    [SerializeField] private float _localWindForce, _windShearStrength, _deltaTime;
+
+    [SerializeField] private ComputeShader _windShearShader;
 
     // Rain parameters
     private RainRenderer _renderer;
@@ -30,12 +30,13 @@ public class RainManager : MonoBehaviour
     // Test
     [SerializeField] private Test _test;
     [SerializeField] private GameObject _lights;
+    [SerializeField] private Vector3 _globalMin;
 
     void Start()
     {
         // Init wind grid
         _bounds = GetComponent<BoxCollider>().bounds;
-        _windGenerator = new WindGenerator(_bounds, _bezierCurve, _globalWindForce, _localWindForce, _deltaTime * Time.deltaTime);
+        _windGenerator = new WindGenerator(_bounds, _windShearShader, _bezierCurve, _windShearStrength, _localWindForce, _deltaTime * Time.deltaTime);
         _windGenerator.SetHodograph(_hodograph.GetPoints());
 
         // Init rain shader
@@ -54,8 +55,8 @@ public class RainManager : MonoBehaviour
 
         // Init rain generator (compute buffer)
         GraphicsBuffer posBuffer = _renderer.GetPositionsBuffer();
-        _rainGenerator = new RainGenerator(_updateShader, _collisionShader, posBuffer, splashPosBuffer, splashTime, _bounds, transform, _deltaTime, _nbParticles);
-        _rainGenerator.SetGlobalWind(_globalWind, _globalWindForce);
+        _rainGenerator = new RainGenerator(_updateShader, _collisionShader, posBuffer, splashPosBuffer, splashTime, _windGenerator.GetShearBuffer(), _bounds, transform, _deltaTime, _nbParticles);
+        _rainGenerator.SetGlobalWind(_globalWind, _windShearStrength);
 
         _renderer.SetVelBuffer(_rainGenerator.GetVelBuffer());
         _renderer.SetSizeBuffer(_rainGenerator.GetSizeBuffer());
@@ -99,8 +100,8 @@ public class RainManager : MonoBehaviour
 
     public void GlobalWindForceChanged()
     {
-        _rainGenerator?.SetGlobalWind(_globalWind, _globalWindForce);
-        _windGenerator?.SetGlobalWindStrength(_globalWindForce);
+        _rainGenerator?.SetGlobalWind(_globalWind, _windShearStrength);
+        _windGenerator?.SetWindShearStrength(_windShearStrength);
     }
 
     public void OnDisable()
@@ -108,6 +109,7 @@ public class RainManager : MonoBehaviour
         _rainGenerator.Disable();
         _splashRenderer.Disable();
         _renderer.Disable();
+        _windGenerator.Disable();
     }
 
     private void ResetParticles()
@@ -134,20 +136,26 @@ public class RainManager : MonoBehaviour
         if (!_showGizmos || _windGenerator == null) return;
 
         Grid grid = _windGenerator.GetGrid();
-        Vector3 globalMin = transform.TransformPoint(_bounds.min) - transform.localPosition;
+        Vector3 globalMin = transform.TransformPoint(_bounds.min);// - transform.localPosition;
+        globalMin = _globalMin;
         Vector3 cellSize = grid.GetCellSize();
 
-        for (int j = 0; j < Common.NB_CELLS.x; j++)
+        Vector3[] shearArray = new Vector3[Common.NB_CELLS.x * Common.NB_CELLS.y * Common.NB_CELLS.z];
+        _windGenerator.GetShearBuffer().GetData(shearArray);
+
+        for (int k = 0; k < Common.NB_CELLS.z; k++)
         {
             for (int i = 0; i < Common.NB_CELLS.y; i++)
             {
-                for (int k = 0; k < Common.NB_CELLS.z; k++)
+                for (int j = 0; j < Common.NB_CELLS.x; j++)
                 {
-                    Vector3 newPos = new Vector3(j * cellSize.x, i * cellSize.y, k * cellSize.z) + globalMin;
+                    Vector3 newPos = new Vector3(j, i, k) + globalMin;
 
                     Vector3 cellCenter = grid.GetCellCenter(newPos);
-                    Vector3 wind = grid.Get(j, i, k);
-                    
+                    //Vector3 wind = grid.Get(j, i, k);
+                    int idxPos = (Common.NB_CELLS.y * k + i) * Common.NB_CELLS.x + j;
+                    Vector3 wind = shearArray[idxPos];
+
                     //Vector3 globWind = _globalWind * _globalWind.magnitude;
                     if (Mathf.Abs((wind.normalized - Vector3.zero).magnitude) <= 0.1f) continue;
 
@@ -156,7 +164,7 @@ public class RainManager : MonoBehaviour
 
                     Gizmos.color = c;
                     Common.DrawArrow(cellCenter, wind, c, 0.5f, 5f);
-                    Gizmos.DrawWireCube(cellCenter, grid.GetCellSize() - Vector3.one * 0.1f);
+                    Gizmos.DrawWireCube(cellCenter, cellSize - Vector3.one * 0.1f);
                 }
             }
         }

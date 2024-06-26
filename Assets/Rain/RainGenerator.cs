@@ -16,14 +16,15 @@ public class RainGenerator
     [SerializeField] private ComputeShader _updateShader, _collisionShader;
 
     public RainGenerator(ComputeShader p_updateShader,
-                        ComputeShader p_collisionShader,
-                        GraphicsBuffer p_posBuffer,
-                        GraphicsBuffer p_splashPosBuffer,
-                        ComputeBuffer p_timeSplash,
-                        Bounds p_windGrid,
-                        Transform p_transform,
-                        float p_deltaTime = 1f,
-                        int p_nbMaxParticles = 1000)
+                         ComputeShader p_collisionShader,
+                         GraphicsBuffer p_posBuffer,
+                         GraphicsBuffer p_splashPosBuffer,
+                         ComputeBuffer p_timeSplash,
+                         ComputeBuffer p_windShearBuffer,
+                         Bounds p_windGrid,
+                         Transform p_transform,
+                         float p_deltaTime = 1f,
+                         int p_nbMaxParticles = 1000)
     {
         _posBuffer = p_posBuffer;
         _velBuffer  = new ComputeBuffer(p_nbMaxParticles, 3 * sizeof(float));
@@ -60,6 +61,7 @@ public class RainGenerator
         _updateShader.SetBuffer(0, "Velocities", _velBuffer);
         _updateShader.SetBuffer(0, "Winds", _windBuffer);
         _updateShader.SetBuffer(0, "Sizes", _sizeBuffer);
+        _updateShader.SetBuffer(0, "WindShearArray", p_windShearBuffer);
 
         _updateShader.SetInt("_NumParticles", p_nbMaxParticles);
         _updateShader.SetInt("_Resolution", _nbBlocks);

@@ -7,16 +7,18 @@ public class WindGenerator
 {
     private EnergyCascade _energyCascade;
 
+    private ComputeShader _windShearShader;
+    private ComputeBuffer _windShearBuffer, _hodoPointsBuffer;
+
     private Grid _windsGrid;
     private Bounds _box;
     private Vector3 _min, _max, _cellSize;
 
     private float   _deltaTime;
-    private float _localWindStrength, _globalWindStrength;
-
-    private Vector3[] _hodographPoints;
+    private float _localWindStrength;
 
     public WindGenerator(Bounds p_box,
+                         ComputeShader p_windShearShader,
                          BezierCurve p_bezierCurve,
                          float p_globalWindStrength = 1f,
                          float p_localWindStrength  = 1f,
@@ -32,52 +34,28 @@ public class WindGenerator
 
         _localWindStrength = p_localWindStrength;
 
-        _globalWindStrength = p_globalWindStrength;
         _deltaTime = p_deltaTime;
 
         _windsGrid = new Grid(Common.NB_CELLS, p_box);
+
+        _windShearBuffer  = new ComputeBuffer(Common.NB_CELLS.x * Common.NB_CELLS.y * Common.NB_CELLS.z, 3 * sizeof(float));
+        _hodoPointsBuffer = new ComputeBuffer(Constants.HODOGRAPH_POINTS, 3 * sizeof(float));
+        
+        _windShearShader = p_windShearShader;
+        _windShearShader.SetBuffer(0, "_WindShear", _windShearBuffer);
+        _windShearShader.SetBuffer(0, "_HodoPoints", _hodoPointsBuffer);
+
+        Vector3 nbCells = new Vector3(Common.NB_CELLS.x, Common.NB_CELLS.y, Common.NB_CELLS.z);
+        _windShearShader.SetVector("_Resolution", nbCells);
+        _windShearShader.SetFloat("_WindShearStrength", p_globalWindStrength);
 
         float distMax = Vector3.Distance(_min, _max);
         _energyCascade = new EnergyCascade(p_bezierCurve, distMax);
     }
 
-    private (float, int) ComputeLerp(float p_t, int p_nbPoints)
-    {
-        float range = 1f / (float) p_nbPoints;
-        float tempT = range;
-        int id = 0;
-        while (tempT < p_t)
-        {
-            tempT += range;
-            id++;
-        }
-
-        return ((p_t - (float) id * range) / range, id);
-    }
-
-    // Calcul de la grille de vent global
-    private void ComputeGlobalWind()
-    {
-        for (int j = 0; j < Common.NB_CELLS.x; j++)
-            for (int i = 0; i < Common.NB_CELLS.y; i++)
-                for (int k = 0; k < Common.NB_CELLS.z; k++)
-                {
-                    //float t = (float) j / (float) (Common.NB_CELLS.x-1);
-                    //int hodoId;
-
-                    //(t, hodoId) = ComputeLerp(t, Constants.HODOGRAPH_POINTS - 1);
-
-                    //Vector3 newWind = t * _hodographPoints[hodoId + 1] + (1f - t) * _hodographPoints[hodoId];
-                    //newWind = Common.Multiply(newWind, new Vector3(1f, 0f, 1f));
-
-                    //_windsGrid.Set(i, j, k, newWind * _globalWindStrength);
-                    _windsGrid.Set(i, j, k, Vector3.zero);
-                }
-    }
-
     public void Update()
     {
-        ComputeGlobalWind();
+        _windShearShader.Dispatch(0, 2, 2, 2); // TODO calculer automatiquement
 
         _energyCascade.Update(_deltaTime, _min, _cellSize);
         
@@ -109,9 +87,9 @@ public class WindGenerator
     {
         _localWindStrength = p_localWindForce;
     }
-    public void SetGlobalWindStrength(float p_windStrength)
+    public void SetWindShearStrength(float p_windStrength)
     {
-        _globalWindStrength = p_windStrength;
+        _windShearShader.SetFloat("_WindShearStrength", p_windStrength);
     }
 
     public void SetDeltaTime(float p_deltaTime)
@@ -121,7 +99,9 @@ public class WindGenerator
 
     public void SetHodograph(Vector3[] p_hodographPoints)
     {
-        _hodographPoints = p_hodographPoints;
+        //_hodographPoints = p_hodographPoints;
+        _hodoPointsBuffer.SetData(p_hodographPoints);
+        _windShearShader.SetInt("_NumHodoPoints", p_hodographPoints.Length);
     }
 
     public Vector3[] GetWinds()
@@ -132,5 +112,19 @@ public class WindGenerator
     public Grid GetGrid()
     {
         return _windsGrid;
+    }
+
+    public ComputeBuffer GetShearBuffer()
+    {
+        return _windShearBuffer;
+    }
+
+    public void Disable()
+    {
+        _windShearBuffer.Release();
+        _windShearBuffer = null;
+
+        _hodoPointsBuffer.Release();
+        _hodoPointsBuffer = null;
     }
 }
