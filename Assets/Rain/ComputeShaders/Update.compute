@@ -6,9 +6,9 @@
 // ====== Buffers ======
 RWStructuredBuffer<float3> Velocities;
 RWStructuredBuffer<float3> Positions;
-RWStructuredBuffer<float3> Winds;
+RWStructuredBuffer<float3> LocalWind;
+RWStructuredBuffer<float3> WindShear;
 RWStructuredBuffer<float>  Sizes;
-RWStructuredBuffer<float>  WindShearArray;
 
 // ====== Settings ======
 const uint _NumParticles;
@@ -54,7 +54,7 @@ void CSMain (uint3 id : SV_DispatchThreadID)
         
         // Vent total = vent global + vent local + cisaillement du vent
         //float3 totalWind = _GlobalWind * length(_GlobalWind) + Winds[idxPos] * length(Winds[idxPos]); //+globalWindPert * length(globalWindPert);
-        float3 totalWind = WindShearArray[idxPos] * length(WindShearArray[idxPos]);
+        float3 totalWind = LocalWind[idxPos] * length(LocalWind[idxPos]);
         
         //float3 friction = Velocities[id.x] * length(Velocities[id.x]);
         float3 acceleration = _Gravity + (0.9195 * _DropsCX / (Sizes[id.x])) * totalWind;

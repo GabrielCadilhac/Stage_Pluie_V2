@@ -1,0 +1,73 @@
+// Each #kernel tells which function to compile; you can have many kernels
+#pragma kernel CSMain
+#define SIZE 8
+#define PI 3.1415
+
+struct Turbulence
+{
+    float3 position;
+    float size;
+    float param;
+    float strength;
+    uint type; // Source : 0, Puits : 1, Vortex : 2, Uniforme : 3
+};
+
+struct SuperTurbulence
+{
+    int turbulences[2];
+};
+
+// ====== Buffers ======
+RWStructuredBuffer<Turbulence> _Turbulences;
+RWStructuredBuffer<float3> _LocalWind;
+
+// ====== Settings ======
+const float3 _Resolution;
+const uint _NbTurbulences;
+
+float3 Cart2Cyl(float3 coords)
+{
+    float r = sqrt(coords.x * coords.x + coords.y * coords.y);
+    float theta = 0.;
+    if (coords.x != 0.)
+        theta = atan(coords.y / coords.x);
+    else if (coords.y > 0.)
+        theta = PI / 2.;
+    else
+        theta = -PI / 2.;
+    
+    if (coords.x < 0f)
+        theta += PI;
+    
+    return float3(r, theta, coords.z);
+}
+
+[numthreads(SIZE, SIZE, SIZE)]
+void CSMain (uint3 id : SV_DispatchThreadID)
+{
+    if (id.x >= (uint) _Resolution.x || id.y >= (uint) _Resolution.y || id.z >= (uint) _Resolution.z)
+        return;
+    
+    for (int i = 0; i < _NbTurbulences; i++)
+    {
+        Turbulence turb = _Turbulences[i];
+        float3 center = turb.position / _Resolution;
+        float3 OP = (float3) id - center;
+        
+        if (length(OP) > turb.size)
+        {
+            float3 cylCoord = Cart2Cyl(OP);
+            
+            // ======= A modifier en fonction du type de turbulence
+            cylCoord.x = turb.param / (2. * PI * turb.size);
+            // =======
+            
+            float sign = sign(turb.param);
+            float3 cartCoord = float3(cylCoord.x * cos(cylCoord.y), cylCoord.x * sin(cylCoord.y), sign * cylCoord.z);
+            
+            uint idxPos = (id.z * (uint) _Resolution.y + id.x) * (uint) _Resolution.x + id.y;
+            _LocalWind[idxPos] = normalize(cartCoord) * turb.strength;
+        }
+    }
+
+}

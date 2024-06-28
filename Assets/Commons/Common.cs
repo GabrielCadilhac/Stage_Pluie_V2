@@ -43,6 +43,20 @@ public struct StrLight
     public float intensity;
 }
 
+public struct Turbulence
+{
+    public Vector3 position;
+    public float size;
+    public float param;
+    public float strength;
+    public uint type; // Source : 0, Puits : 1, Uniforme : 2, Vortex : 3
+};
+
+public struct SuperTurbulence
+{
+    public Turbulence[] turbulences;
+};
+
 public static class Common
 {
     public static Vector3Int NB_CELLS = new Vector3Int(9, 9, 9);

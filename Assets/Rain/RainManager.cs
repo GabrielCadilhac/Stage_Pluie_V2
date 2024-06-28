@@ -13,7 +13,7 @@ public class RainManager : MonoBehaviour
     [SerializeField] private Vector3 _globalWind;
     [SerializeField] private float _localWindForce, _windShearStrength, _deltaTime;
 
-    [SerializeField] private ComputeShader _windShearShader;
+    [SerializeField] private ComputeShader _windShearShader, _localWindShader;
 
     // Rain parameters
     private RainRenderer _renderer;
@@ -36,7 +36,7 @@ public class RainManager : MonoBehaviour
     {
         // Init wind grid
         _bounds = GetComponent<BoxCollider>().bounds;
-        _windGenerator = new WindGenerator(_bounds, _windShearShader, _bezierCurve, _windShearStrength, _localWindForce, _deltaTime * Time.deltaTime);
+        _windGenerator = new WindGenerator(_bounds, _windShearShader, _localWindShader, _bezierCurve, _windShearStrength, _localWindForce, _deltaTime * Time.deltaTime);
         _windGenerator.SetHodograph(_hodograph.GetPoints());
 
         // Init rain shader
@@ -55,7 +55,7 @@ public class RainManager : MonoBehaviour
 
         // Init rain generator (compute buffer)
         GraphicsBuffer posBuffer = _renderer.GetPositionsBuffer();
-        _rainGenerator = new RainGenerator(_updateShader, _collisionShader, posBuffer, splashPosBuffer, splashTime, _windGenerator.GetShearBuffer(), _bounds, transform, _deltaTime, _nbParticles);
+        _rainGenerator = new RainGenerator(_updateShader, _collisionShader, posBuffer, splashPosBuffer, splashTime, _windGenerator.GetShearBuffer(), _windGenerator.GetLocalWindBuffer(), _bounds, transform, _deltaTime, _nbParticles);
         _rainGenerator.SetGlobalWind(_globalWind, _windShearStrength);
 
         _renderer.SetVelBuffer(_rainGenerator.GetVelBuffer());
@@ -79,7 +79,6 @@ public class RainManager : MonoBehaviour
         _windGenerator.SetHodograph(_hodograph.GetPoints());
         _windGenerator.Update();
 
-        _rainGenerator.SetWinds(_windGenerator.GetWinds());
         _rainGenerator.Dispatch();
 
         _renderer.SetWindRotation(_forceRotation);

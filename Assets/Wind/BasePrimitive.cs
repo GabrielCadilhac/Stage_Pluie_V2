@@ -24,5 +24,11 @@ public abstract class BasePrimitive
         _speed = p_newSpeed;
     }
 
+    public float GetParam()
+    {
+        return _param;
+    }
+
     public abstract Vector3 GetValue(float p_j, float p_i, float p_k);
+    public abstract uint GetPrimType();
 }

@@ -305,7 +305,7 @@ MonoBehaviour:
   _hodograph: {fileID: 367300051}
   _globalWind: {x: -1.5, y: 0, z: 1}
   _localWindForce: 1.9
-  _globalWindForce: 0.48
+  _windShearStrength: 0.05
   _deltaTime: 5
   _windShearShader: {fileID: 7200000, guid: 399a155992487dc4aaa339675aa5df5e, type: 3}
   _nbParticles: 30000

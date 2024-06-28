@@ -176,9 +176,19 @@ public class SuperPrimitive
         return (_speed / Constants.ENERGY_SPEED) * _size * Constants.COEFF_TRANSFERT;
     }
 
+    public Vector3 GetPosition()
+    {
+        return _position;
+    }
+
     public float GetSpeed()
     {
         return _speed;
+    }
+
+    public float GetStrength()
+    {
+        return _strength;
     }
 
     public float GetSize()
@@ -189,6 +199,11 @@ public class SuperPrimitive
     public float GetLerp()
     {
         return _currentLerp;
+    }
+
+    public List<BasePrimitive> GetBasePrimitives()
+    {
+        return _basePrimitives;
     }
 
     public BezierCurve GetCurve()

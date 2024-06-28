@@ -11,7 +11,7 @@ public class RainManagerEditor : Editor
 
     // Wind parameters
     private SerializedProperty _localWindForceProp, _windShearStrengthProp, _deltaTimeProp, _globalWindProp;
-    private SerializedProperty _windShearShaderProp;
+    private SerializedProperty _windShearShaderProp, _localWindShaderProp;
 
     // Rain parameters
     private SerializedProperty _forceRotationProp;
@@ -40,6 +40,7 @@ public class RainManagerEditor : Editor
         _showGizmosProp      = serializedObject.FindProperty("_showGizmos");
         _splashPlaneProp     = serializedObject.FindProperty("_splashPlane");
         _windShearShaderProp = serializedObject.FindProperty("_windShearShader");
+        _localWindShaderProp = serializedObject.FindProperty("_localWindShader");
         _globalMinProp = serializedObject.FindProperty("_globalMin");
 
         _test = serializedObject.FindProperty("_test");
@@ -71,6 +72,8 @@ public class RainManagerEditor : Editor
             _rainManager.GlobalWindForceChanged();
 
         EditorGUILayout.PropertyField(_windShearShaderProp);
+        EditorGUILayout.PropertyField(_localWindShaderProp);
+
         EditorGUILayout.PropertyField(_deltaTimeProp);
         EditorGUILayout.PropertyField(_globalMinProp);
         EditorGUILayout.Space();

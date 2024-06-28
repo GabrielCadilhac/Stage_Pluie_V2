@@ -20,4 +20,9 @@ public class UniformPrimitive : BasePrimitive
         Vector3 temp = Common.Multiply(Vector3.one - OP, direction.normalized);
         return temp.normalized * _strength;
     }
+
+    public override uint GetPrimType()
+    {
+        return 3;
+    }
 }

@@ -5,7 +5,7 @@ using UnityEngine;
 
 public class RainGenerator
 {
-    private ComputeBuffer _velBuffer, _windBuffer, _sizeBuffer;
+    private ComputeBuffer _velBuffer, _sizeBuffer;
     private GraphicsBuffer _posBuffer;
 
     private float _deltaTime;
@@ -21,6 +21,7 @@ public class RainGenerator
                          GraphicsBuffer p_splashPosBuffer,
                          ComputeBuffer p_timeSplash,
                          ComputeBuffer p_windShearBuffer,
+                         ComputeBuffer p_localWindBuffer,
                          Bounds p_windGrid,
                          Transform p_transform,
                          float p_deltaTime = 1f,
@@ -28,7 +29,6 @@ public class RainGenerator
     {
         _posBuffer = p_posBuffer;
         _velBuffer  = new ComputeBuffer(p_nbMaxParticles, 3 * sizeof(float));
-        _windBuffer = new ComputeBuffer(Common.NB_CELLS.x * Common.NB_CELLS.y * Common.NB_CELLS.z, 3 * sizeof(float));
         _sizeBuffer = new ComputeBuffer(p_nbMaxParticles, sizeof(float));
 
         _deltaTime = p_deltaTime;
@@ -59,9 +59,9 @@ public class RainGenerator
 
         _updateShader.SetBuffer(0, "Positions", p_posBuffer);
         _updateShader.SetBuffer(0, "Velocities", _velBuffer);
-        _updateShader.SetBuffer(0, "Winds", _windBuffer);
         _updateShader.SetBuffer(0, "Sizes", _sizeBuffer);
-        _updateShader.SetBuffer(0, "WindShearArray", p_windShearBuffer);
+        _updateShader.SetBuffer(0, "WindShear", p_windShearBuffer);
+        _updateShader.SetBuffer(0, "LocalWind", p_localWindBuffer);
 
         _updateShader.SetInt("_NumParticles", p_nbMaxParticles);
         _updateShader.SetInt("_Resolution", _nbBlocks);
@@ -103,15 +103,6 @@ public class RainGenerator
         return _sizeBuffer;
     }
 
-    public void SetWinds(Vector3[] p_winds)
-    {
-        if (p_winds != null)
-        {
-            _windBuffer.SetData(p_winds);
-            _updateShader.SetBuffer(0, "Winds", _windBuffer);
-        }
-    }
-
     public void SetDeltaTime(float p_deltaTime)
     {
         _deltaTime = p_deltaTime;
@@ -142,9 +133,6 @@ public class RainGenerator
 
         _velBuffer.Release();
         _velBuffer  = null;
-
-        _windBuffer.Release();
-        _windBuffer = null;
 
         _sizeBuffer.Release();
         _sizeBuffer = null;

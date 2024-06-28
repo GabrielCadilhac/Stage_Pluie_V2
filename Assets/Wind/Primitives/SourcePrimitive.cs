@@ -24,4 +24,11 @@ public class SourcePrimitive : BasePrimitive
         Vector3 cartCoord = new Vector3(cylCoord.x * Mathf.Cos(cylCoord.y), cylCoord.x * Mathf.Sin(cylCoord.y), sign * cylCoord.z);
         return cartCoord.normalized * _strength;
     }
+
+    public override uint GetPrimType()
+    {
+        if (_param > 0f)
+            return 0; // return source
+        return 1; // return sink
+    }
 }

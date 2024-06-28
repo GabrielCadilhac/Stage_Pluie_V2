@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UIElements;
 
 public class EnergyCascade
 {
@@ -166,5 +167,33 @@ public class EnergyCascade
     public List<SuperPrimitive> GetPrimitives()
     {
         return _primitives;
+    }
+
+    public List<SuperTurbulence> GetTurbulences()
+    {
+        List<SuperTurbulence> turbs = new List<SuperTurbulence>();
+        foreach (SuperPrimitive prim in _primitives)
+        {
+            SuperTurbulence superTurb;
+            List<BasePrimitive> basePrimitives = prim.GetBasePrimitives();
+            superTurb.turbulences = new Turbulence[basePrimitives.Count];
+            for (int i = 0; i < basePrimitives.Count; i++)
+            {
+                BasePrimitive basePrim = basePrimitives[i];
+
+                Turbulence turb;
+                turb.position = prim.GetPosition();
+                turb.size = prim.GetSize();
+                turb.param = basePrim.GetParam();
+                turb.strength = prim.GetStrength();
+                turb.type = basePrim.GetPrimType();
+
+                superTurb.turbulences[i] = turb;
+            }
+
+            turbs.Add(superTurb);
+        }
+
+        return turbs;
     }
 }
