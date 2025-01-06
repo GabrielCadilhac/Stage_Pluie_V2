@@ -3,6 +3,7 @@ public class Test : MonoBehaviour
 {
     [SerializeField] private Transform _particle;
     [SerializeField] private Vector3 _rotation;
+    [SerializeField] private Material _material;
 
     private OBB _bounds;
 
@@ -38,10 +39,10 @@ public class Test : MonoBehaviour
         transform.rotation = rightCoordToUnityCord(quat);
 
         if (TestCollision(_min, _max, _rotMatrix * _particle.position))
-        {
-            Debug.Log("Collision !");
-        }
-
+            _material.color = Color.green;
+        else
+            _material.color = Color.red;
+        
         if (Input.GetKeyDown(KeyCode.E))
         {
             Debug.Log($"min {_min}");
