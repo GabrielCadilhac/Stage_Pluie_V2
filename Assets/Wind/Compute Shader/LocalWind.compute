@@ -14,7 +14,7 @@ struct Turbulence
 
 struct SuperTurbulence
 {
-    int turbulences[2];
+    int turbulences[2]; // TODO modifier la taille
 };
 
 // ====== Buffers ======

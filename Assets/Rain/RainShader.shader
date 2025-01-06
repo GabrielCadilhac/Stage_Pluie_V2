@@ -107,7 +107,8 @@ Shader "Unlit/RainShader"
                 }
 
                 float colorVariation = range11(v.id, -0.2, 0.2);
-                o.color = (_Color + colorVariation) * incomLight;
+                // o.color = (_Color + colorVariation) * incomLight;
+                o.color = (_Color + colorVariation);
 
                 o.rotation = -Velocities[v.id] * float3(_ForceRotation, 1., _ForceRotation);
 

@@ -1,70 +1,119 @@
-using System.Collections;
-using System.Collections.Generic;
-using System.Security.Cryptography;
 using UnityEngine;
-
 public class Test : MonoBehaviour
 {
-    GameObject _plane;
-    Texture2D _planeTexture;
+    [SerializeField] private Transform _particle;
+    [SerializeField] private Vector3 _rotation;
 
-    int[,] _splashsCount;
+    private OBB _bounds;
 
-    Vector2Int _textureSize = new Vector2Int(512, 512);
+    private Vector3 _min, _max;
+
+    private Matrix4x4 _rotMatrix;
+
+    float _pointSize = 0.5f;
+    float _boxSize = 9f;
+
+
+    private struct OBB
+    {
+        public Vector3 center;
+        public Vector3 size;
+        public Vector3 rotation;
+    }
 
     private void Start()
     {
-        _plane = GameObject.CreatePrimitive(PrimitiveType.Plane);
-        _plane.transform.localScale = new Vector3(5.5f, 0f, 5.5f);
-        _plane.transform.position   = new Vector3(0f, 0f, 17.5f);
-
-        _planeTexture = new Texture2D(_textureSize.x, _textureSize.y);
-        _splashsCount = new int[_textureSize.y, _textureSize.x];
-
-        for (int i = 0; i < _textureSize.x; i++)
-        {
-            for (int j = 0; j < _textureSize.y; j++)
-            {
-                Color c = new Color((float)i / (float)_textureSize.x, (float)j / (float)_textureSize.y, 0f);
-                _planeTexture.SetPixel(i, j, c);
-                _splashsCount[j, i] = 0;
-            }
-        }
-        _planeTexture.Apply();
-
-        Renderer renderer = _plane.GetComponent<Renderer>();
-        renderer.material.color = Color.white;
-        renderer.material.mainTexture = _planeTexture;
+        _bounds          = new OBB();
+        _bounds.center   = new Vector3(0f, 0f , 0f);
+        _bounds.size     = new Vector3(9f, 9f, 9f);
+        _bounds.rotation = new Vector3(0f, 0f, 0f);
     }
 
-    public void AddSplashs(GraphicsBuffer p_splashs)
+    private void Update()
     {
-        Vector3[] newSplashs = new Vector3[p_splashs.count];
-        p_splashs.GetData(newSplashs);
+        UpdateRotation();
+        transform.localScale = Vector3.one * _boxSize * 2f;
+        Quaternion quat = new Quaternion();
+        quat.eulerAngles = new Vector3(-_rotation.x, _rotation.y, -_rotation.z) * (180f / Mathf.PI);
+        transform.rotation = rightCoordToUnityCord(quat);
 
-        // Ajouter le nombre de splashs dans un tableau
-        int maxSplashs = 0;
-
-        for (int i = 0; i < p_splashs.count; i++)
+        if (TestCollision(_min, _max, _rotMatrix * _particle.position))
         {
-            int x = (int)(((newSplashs[i].x + 36f) / 72f) * _textureSize.x);
-            int z = (int)(((newSplashs[i].z + 36f) / 72f) * _textureSize.y);
-
-            _splashsCount[z, x]++;
-
-            if (maxSplashs < _splashsCount[z, x])
-                maxSplashs = _splashsCount[z, x];
+            Debug.Log("Collision !");
         }
 
-        for (int i = 0; i < _textureSize.x; i++)
+        if (Input.GetKeyDown(KeyCode.E))
         {
-            for (int j = 0; j < _textureSize.y; j++)
-            {
-                float x = _splashsCount[j, i] / maxSplashs;
-                Color c = new Color(x, x, x);
-                _planeTexture.SetPixel(j, i, c);
-            }
+            Debug.Log($"min {_min}");
+            Debug.Log($"max {_max}");
+            Debug.Log($"particle {_rotMatrix * _particle.position}");
         }
-        _planeTexture.Apply();
+    }
+
+    private Quaternion rightCoordToUnityCord(Quaternion q)
+    {
+        return new Quaternion(q.x, q.y, -q.z, -q.w);
+    }
+
+    private bool TestCollision(Vector3 p_min, Vector3 p_max, Vector3 p_pos)
+    {
+        return p_min.x < p_pos.x && p_pos.x < p_max.x &&
+               p_min.y < p_pos.y && p_pos.y < p_max.y &&
+               p_min.z < p_pos.z && p_pos.z < p_max.z;
+    }
+
+    private void UpdateRotation()
+    {
+        Vector3 c = new Vector3(Mathf.Cos(_rotation.x), Mathf.Cos(_rotation.y), Mathf.Cos(_rotation.z));
+        Vector3 s = new Vector3(Mathf.Sin(_rotation.x), Mathf.Sin(_rotation.y), Mathf.Sin(_rotation.z));
+
+        Matrix4x4 Rx = new Matrix4x4(new Vector4(1f, 0f, 0f, 0f),
+                                     new Vector4(0f, c.x, s.x, 0f),
+                                     new Vector4(0f, -s.x, c.x, 0f),
+                                     new Vector4(0f, 0f, 0f, 1f));
+
+        Matrix4x4 Ry = new Matrix4x4(new Vector4(c.y, 0f, s.y, 0f),
+                                     new Vector4(0f, 1f, 0f, 0f),
+                                     new Vector4(-s.y, 0f, c.y, 0f),
+                                     new Vector4(0f, 0f, 0f, 1f));
+
+        Matrix4x4 Rz = new Matrix4x4(new Vector4(c.z, -s.z, 0f, 0f),
+                                     new Vector4(s.z, c.z, 0f, 0f),
+                                     new Vector4(0f, 0f, 1f, 0f),
+                                     new Vector4(0f, 0f, 0f, 1f));
+
+        _rotMatrix = Rx * Ry * Rz;
+    }
+
+    private void OnDrawGizmos()
+    {
+        // Cube points
+        Vector3 p0 = _rotMatrix * new Vector3(-1f, -1f, -1f);
+        Vector3 p1 = _rotMatrix * new Vector3(-1f,  1f, -1f);
+        Vector3 p2 = _rotMatrix * new Vector3( 1f, -1f, -1f);
+        Vector3 p3 = _rotMatrix * new Vector3( 1f,  1f, -1f);
+        Vector3 p5 = _rotMatrix * new Vector3(-1f, -1f,  1f);
+        Vector3 p6 = _rotMatrix * new Vector3(-1f,  1f,  1f);
+        Vector3 p7 = _rotMatrix * new Vector3( 1f, -1f,  1f);
+        Vector3 p8 = _rotMatrix * new Vector3( 1f,  1f,  1f);
+
+        // Min
+        Gizmos.color = Color.red;
+        Gizmos.DrawSphere(p0 * _boxSize, _pointSize);
+        _min = new Vector3(-1f, -1f, -1f) * _boxSize;
+        Gizmos.color = Color.white;
+        
+        Gizmos.DrawSphere(p1 * _boxSize, _pointSize);
+        Gizmos.DrawSphere(p2 * _boxSize, _pointSize);
+        Gizmos.DrawSphere(p3 * _boxSize, _pointSize);
+        Gizmos.DrawSphere(p5 * _boxSize, _pointSize);
+        Gizmos.DrawSphere(p6 * _boxSize, _pointSize);
+        Gizmos.DrawSphere(p7 * _boxSize, _pointSize);
+
+        // Max
+        Gizmos.color = Color.red;
+        Gizmos.DrawSphere(p8 * _boxSize, _pointSize);
+        _max = new Vector3(1f, 1f, 1f) * _boxSize;
+        Gizmos.color = Color.white;
     }
 }

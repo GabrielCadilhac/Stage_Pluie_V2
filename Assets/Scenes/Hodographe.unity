@@ -308,6 +308,7 @@ MonoBehaviour:
   _windShearStrength: 0.05
   _deltaTime: 5
   _windShearShader: {fileID: 7200000, guid: 399a155992487dc4aaa339675aa5df5e, type: 3}
+  _localWindShader: {fileID: 0}
   _nbParticles: 30000
   _updateShader: {fileID: 7200000, guid: bc70226b2d209074e98b76c1548e73f6, type: 3}
   _collisionShader: {fileID: 7200000, guid: 205411dfba100874f9c822f3aa0e75ff, type: 3}

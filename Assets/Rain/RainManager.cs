@@ -1,3 +1,4 @@
+using UnityEditorInternal;
 using UnityEngine;
 
 public class RainManager : MonoBehaviour
@@ -77,6 +78,7 @@ public class RainManager : MonoBehaviour
         
         // Envoie l'hodographe au générateur de vent pour calculer le cisaillement du vent dans la grille
         _windGenerator.SetHodograph(_hodograph.GetPoints());
+
         _windGenerator.Update();
 
         _rainGenerator.Dispatch();
