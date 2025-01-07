@@ -2,12 +2,11 @@ using UnityEngine;
 public class Test : MonoBehaviour
 {
     [SerializeField] private Transform _particle;
-    [SerializeField] private Vector3 _rotation;
     [SerializeField] private Material _material;
 
-    private OBB _bounds;
+    [SerializeField] private Vector3 _angles;
 
-    float _boxSize = 9f;
+    private OBB _bounds;
 
     private struct OBB
     {
@@ -18,17 +17,13 @@ public class Test : MonoBehaviour
 
     private void Start()
     {
-        _bounds          = new OBB();
-        _bounds.center   = new Vector3(0f, 0f , 0f);
-        _bounds.size     = new Vector3(9f, 9f, 9f);
-        _bounds.rotation = Matrix4x4.identity;
+        _bounds = new OBB();
+        UpdateOBB();
     }
 
     private void Update()
     {
-        UpdateRotation();
-        transform.localScale = Vector3.one * _boxSize * 2f;
-        transform.rotation   = _bounds.rotation.rotation;
+        UpdateOBB();
 
         if (TestCollision(_particle.position, _bounds))
             _material.color = Color.green;
@@ -56,10 +51,12 @@ public class Test : MonoBehaviour
         return Mathf.Abs(px) <= p_obb.size.x && Mathf.Abs(py) <= p_obb.size.y && Mathf.Abs(pz) <= p_obb.size.z;
     }
 
-    private void UpdateRotation()
+    private void UpdateOBB()
     {
-        Vector3 c = new Vector3(Mathf.Cos(_rotation.x), Mathf.Cos(_rotation.y), Mathf.Cos(_rotation.z));
-        Vector3 s = new Vector3(Mathf.Sin(_rotation.x), Mathf.Sin(_rotation.y), Mathf.Sin(_rotation.z));
+        Vector3 angles = _angles * Mathf.Deg2Rad; // In radians
+
+        Vector3 c = new Vector3(Mathf.Cos(angles.x), Mathf.Cos(angles.y), Mathf.Cos(angles.z));
+        Vector3 s = new Vector3(Mathf.Sin(angles.x), Mathf.Sin(angles.y), Mathf.Sin(angles.z));
 
         Matrix4x4 Rx = new Matrix4x4(new Vector4(1f, 0f, 0f, 0f),
                                      new Vector4(0f, c.x, s.x, 0f),
@@ -75,14 +72,23 @@ public class Test : MonoBehaviour
                                      new Vector4(s.z, c.z, 0f, 0f),
                                      new Vector4(0f, 0f, 1f, 0f),
                                      new Vector4(0f, 0f, 0f, 1f));
-
+        // Define the OBB
         _bounds.rotation = Rx * Ry * Rz;
+        _bounds.center = transform.position;
+        _bounds.size = transform.localScale / 2f;
+
+        transform.rotation = _bounds.rotation.rotation;
     }
 
     private void OnDrawGizmos()
     {
-        Gizmos.matrix = _bounds.rotation;
-        Gizmos.DrawCube(Vector3.zero, transform.localScale);
+        Matrix4x4 trans = new Matrix4x4(new Vector4(1f, 0f, 0f, 0f),
+                                        new Vector4(0f, 1f, 0f, 0f),
+                                        new Vector4(0f, 0f, 1f, 0f),
+                                        new Vector4(_bounds.center.x, _bounds.center.y, _bounds.center.z, 1f));
+
+        Gizmos.matrix = trans * _bounds.rotation * trans.inverse;
+        Gizmos.DrawCube(_bounds.center, transform.localScale);
         Gizmos.matrix = Matrix4x4.identity;
     }
 }

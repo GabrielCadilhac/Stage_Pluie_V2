@@ -1,0 +1,78 @@
+// Each #kernel tells which function to compile; you can have many kernels
+#pragma kernel CSMain
+
+#define SIZE 1024
+
+// ====== Buffers ======
+RWStructuredBuffer<float3> Velocities;
+RWStructuredBuffer<float3> Positions;
+RWStructuredBuffer<float3> Winds;
+RWStructuredBuffer<float>  Sizes;
+RWStructuredBuffer<float>  TestSync;
+
+// ====== Settings ======
+const uint _NumParticles;
+const uint _Resolution;
+
+const float _DeltaTime;
+
+const float3 _Gravity = float3(0.0, -9.81, 0.0);
+const float3 _WindGridSize;
+const float3 _NbCells;
+const float3 _Min;
+const float3 _GlobalWind;
+
+float ComputeLerp(float p_t, int p_nbPoints, out int p_id)
+{
+    float range = 1. / (float) p_nbPoints;
+    float tempT = range;
+    
+    while (tempT < p_t)
+    {
+        tempT += range;
+        p_id++;
+    }
+
+    return (p_t - (float) p_id * range) / range;
+}
+
+
+
+[numthreads(SIZE,1,1)]
+void CSMain (uint3 id : SV_DispatchThreadID)
+{
+    while (id.x < _NumParticles)
+    {
+        float3 pos = Positions[id.x];
+        
+        // Offset by _Min, nomalize to [0,1] by _WindGridSize and find cell by * _NbCells
+        int j = min(_NbCells.x - 1, floor((pos.x - _Min.x) * _NbCells.x / _WindGridSize.x));
+        int i = min(_NbCells.y - 1, floor((pos.y - _Min.y) * _NbCells.y / _WindGridSize.y));
+        int k = min(_NbCells.z - 1, floor((pos.z - _Min.z) * _NbCells.z / _WindGridSize.z));
+        int idxPos = (k * _NbCells.y + i) * _NbCells.x + j;
+
+        const float PI = 3.14159265359;
+        const float g  = 9.81;
+        const float Ra = 1.204;
+        const float Rp = 998.2;
+        const float Mu = 0.0000181;
+        
+        // Vent total = vent global + vent local + cisaillement du vent
+        float3 totalWind = Winds[idxPos] + _GlobalWind;
+        
+        float3 Fg = float3(0., g, 0.) * ((Rp - Ra) / Rp);
+        float3 Vrel = totalWind - Velocities[id.x];
+        //float  VrelMag = ;
+        float  Re = (Ra * length(Vrel) * Sizes[id.x] * 0.001) / Mu;
+        float  Cd = 0.25 + (24. / Re) + (6. / (1. + sqrt(Re)));
+        float3 Fd = 0.75 * (Ra / Rp) * (Cd / (Sizes[id.x] * 0.001)) * length(Vrel) * normalize(Vrel);
+        
+        float3 Vmax = float3(_GlobalWind.x, 9.65 - 10.3 * exp(-0.6 * Sizes[id.x]), _GlobalWind.z);
+        
+        //if (length(Velocities[id.x]) < length(Vmax) * 1.05)
+        Velocities[id.x] += (Fd - Fg) * _DeltaTime;
+        Positions[id.x]  += Velocities[id.x] * _DeltaTime;
+        
+        id.x += SIZE * _Resolution;
+    }
+}
