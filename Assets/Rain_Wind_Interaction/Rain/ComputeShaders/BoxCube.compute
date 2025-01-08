@@ -10,6 +10,12 @@ struct OBB
     float4x4 rotation;
 };
 
+struct Collision
+{
+    float3 pos;
+    float3 normal;
+};
+
 // ====== Buffers ======
 RWStructuredBuffer<float3> Velocities;
 RWStructuredBuffer<float3> Positions;
@@ -89,8 +95,28 @@ float3 GetColumn(float4x4 p_matrix, int p_id)
     return float3(p_matrix[0][p_id], p_matrix[1][p_id], p_matrix[2][p_id]);
 }
 
+// Find the largest axis to determine the faces collided and return the point on this face
+float3 CollisionPoint(float3 d, float3 p, float3 ux, float3 uy, float3 uz, OBB obb)
+{
+    if (d.x > d.y && d.x > d.z)
+        return obb.center + sign(p.x) * (obb.size.x + 0.001) * ux + p.y * uy + p.z * uz;
+    else if (d.y > d.z)
+        return obb.center + p.x * ux + sign(p.y) * (obb.size.y + 0.001) * uy + p.z * uz;
+    return obb.center + p.x * ux + p.y * uy + sign(p.z) * (obb.size.z + 0.001) * uz;
+}
+
+// Find largest axis of d and return the vector ui associated
+float3 ComputeNormal(float3 d, float3 p, float3 ux, float3 uy, float3 uz)
+{
+    if (d.x > d.y && d.x > d.z)
+        return ux * sign(p.x);
+    else if (d.y > d.z)
+        return uy * sign(p.y);
+    return uz * sign(p.z);
+}
+
 // Return the index of the OBB collided
-int OBBCollision(float3 p_pos)
+bool OBBCollision(float3 p_pos, out Collision p_col)
 {
     for (uint i = 0; i < _NumObbs; i++)
     {
@@ -101,62 +127,19 @@ int OBBCollision(float3 p_pos)
         float3 uy = normalize(GetColumn(obb.rotation, 1));
         float3 uz = normalize(GetColumn(obb.rotation, 2));
         
-        float px = dot(D, ux);
-        float py = dot(D, uy);
-        float pz = dot(D, uz);
+        float3 p = float3(dot(D, ux), dot(D, uy), dot(D, uz));
         
-        if (abs(px) <= obb.size.x && abs(py) <= obb.size.y && abs(pz) <= obb.size.z)
-            return i;
+        if (abs(p.x) <= obb.size.x && abs(p.y) <= obb.size.y && abs(p.z) <= obb.size.z)
+        {
+            float3 d = float3(abs(p.x) - obb.size.x, abs(p.y) - obb.size.y, abs(p.z) - obb.size.z);
+    
+            p_col.pos = CollisionPoint(d, p, ux, uy, uz, obb);
+            p_col.normal = ComputeNormal(d, p, ux, uy, uz);
+            
+            return true;
+        }
     }
-    return -1;
-}
-
-float3 CollisionPoint(float3 p_pos, int p_boxId)
-{
-    OBB obb = Obbs[p_boxId];
-    
-    float3 D = p_pos - obb.center;
-    float3 ux = normalize(GetColumn(obb.rotation, 0));
-    float3 uy = normalize(GetColumn(obb.rotation, 1));
-    float3 uz = normalize(GetColumn(obb.rotation, 2));
-    
-    float px = dot(D, ux);
-    float py = dot(D, uy);
-    float pz = dot(D, uz);
-        
-    float dx = abs(px) - obb.size.x;
-    float dy = abs(py) - obb.size.y;
-    float dz = abs(pz) - obb.size.z;
-    
-    if (dx > dy && dx > dz)
-        return obb.center + sign(px) * (obb.size.x + 0.001) * ux + py * uy + pz * uz;
-    else if (dy > dz)
-        return obb.center + px * ux + sign(py) * (obb.size.y + 0.001) * uy + pz * uz;
-    return obb.center + px * ux + py * uy + sign(pz) * (obb.size.z + 0.001) * uz;
-}
-
-float3 ComputeNormal(float3 p_pos, int p_boxId)
-{
-    OBB obb = Obbs[p_boxId];
-        
-    float3 D = p_pos - obb.center;
-    float3 ux = normalize(GetColumn(obb.rotation, 0));
-    float3 uy = normalize(GetColumn(obb.rotation, 1));
-    float3 uz = normalize(GetColumn(obb.rotation, 2));
-        
-    float px = dot(D, ux);
-    float py = dot(D, uy);
-    float pz = dot(D, uz);
-    
-    float dx = abs(px) - obb.size.x;
-    float dy = abs(py) - obb.size.y;
-    float dz = abs(pz) - obb.size.z;
-    
-    if (dx > dy && dx > dz)
-        return ux * sign(px);
-    else if (dy > dz)
-        return uy * sign(py);
-    return uz * sign(pz);
+    return false;
 }
 
 [numthreads(SIZE,1,1)]
@@ -164,11 +147,12 @@ void CSMain (uint3 id : SV_DispatchThreadID)
 {
     while (id.x < _NumParticles)
     {   
-        int i = OBBCollision(Positions[id.x]);
-        if (i != -1) // Collision detected
+        Collision col;
+        bool isCollided = OBBCollision(Positions[id.x], col);
+        if (isCollided) // Collision detected
         {
-            SplashPos[id.x] = CollisionPoint(Positions[id.x], i);
-            SplashNormal[id.x] = ComputeNormal(Positions[id.x], i);
+            SplashPos[id.x] = col.pos;
+            SplashNormal[id.x] = col.normal;
             
             changePosVel(id, float3(Positions[id.x].x, _Max.y, Positions[id.x].z));
         }

@@ -962,6 +962,7 @@ GameObject:
   - component: {fileID: 757898992}
   - component: {fileID: 757898991}
   - component: {fileID: 757898990}
+  - component: {fileID: 757898994}
   m_Layer: 0
   m_Name: Test
   m_TagString: Untagged
@@ -1057,6 +1058,19 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &757898994
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 757898989}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d822be2f4531f3f4080fb0dd99e22ae8, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _rotation: {x: 20, y: 30, z: 0}
 --- !u!1 &1122411684
 GameObject:
   m_ObjectHideFlags: 0
@@ -1586,8 +1600,8 @@ MonoBehaviour:
   _rainCollisionShader: {fileID: 7200000, guid: 205411dfba100874f9c822f3aa0e75ff,
     type: 3}
   _windShader: {fileID: 7200000, guid: 562eba1bf4e6581419db6fc386bdac0e, type: 3}
-  _rainMaterial: {fileID: 2100000, guid: f8bb81bd0c92ef5418d3673a83ea0612, type: 2}
-  _splashMaterial: {fileID: 2100000, guid: b52128180b012444083e2324e100a260, type: 2}
+  _rainMaterial: {fileID: 2100000, guid: 74551283315d2354ba2f4693a9d60efc, type: 2}
+  _splashMaterial: {fileID: 2100000, guid: 78c6a94eb0883894a80aad58240a8a6f, type: 2}
   _obbs:
   - {fileID: 757898989}
 --- !u!1 &1643130393
