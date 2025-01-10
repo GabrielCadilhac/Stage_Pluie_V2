@@ -23,11 +23,19 @@ public class RainFlow : MonoBehaviour
         public int axis;
     }
 
+    struct Plane
+    {
+        public Vector3 origin;
+        public Vector3 normal;
+    }
+
     private const int SIZE = 16;
     private const float ALPHA1 = 0.001f;
     private const float ALPHA2 = 0.0001f;
     private const float THETA_C = 85f * math.PI / 180f;
     private const float EPSILON = 0.0001f;
+    private Vector3 EXT_FORCE   = new Vector3(0f, -9.81f, 0f);
+    private const float BETA_S  = 0.004f;
 
     [SerializeField] private float _deltaTime = 1f;
 
@@ -39,6 +47,8 @@ public class RainFlow : MonoBehaviour
     private int[,] _obstacles;
 
     private List<Drop> _drops;
+
+    private Plane _plane;
 
     private Vector3[] _neighbors = new Vector3[8] {
                                             new Vector3(-1f, -1f, 0f),
@@ -80,6 +90,10 @@ public class RainFlow : MonoBehaviour
 
         _drops = new List<Drop>();
 
+        _plane = new Plane();
+        _plane.origin = Vector3.zero;
+        _plane.normal = -transform.forward;
+
         GenerateMesh();
         DrawFlowMap();
     }
@@ -88,7 +102,7 @@ public class RainFlow : MonoBehaviour
     {
         Drop drop = new Drop();
         drop.pos = new Vector3(p_i, p_j, 0f); // initial position
-        drop.vel = new Vector3(1f, -2f, 0f); // initial velocity
+        drop.vel = new Vector3(-1f, -2f, 0f); // initial velocity
         drop.mass = 10f; // initial mass
         drop.freezeTime = 0f; // initial freeze time
 
@@ -308,7 +322,6 @@ public class RainFlow : MonoBehaviour
         Collision c = new Collision();
         c.t = Mathf.Infinity;
         c.axis = 0;
-        string s = "";
         //Loop through the mesh
         for (int i = 0; i < 4; i++)
         {
@@ -325,11 +338,8 @@ public class RainFlow : MonoBehaviour
             {
                 c.axis = currentAxis;
                 c.t = t2;
-            } else
-                s += $"t1 {t1} t2 {t2} c.t {c.t}\n";
+            }
         }
-        if (c.t == Mathf.Infinity)
-            Debug.Log(s);
         return c;
     }
 
@@ -341,6 +351,12 @@ public class RainFlow : MonoBehaviour
     void UpdateParticle(List<Drop> p_drops, int p_idDrop)
     {
         Drop drop = p_drops[p_idDrop];
+        int i = (int)drop.pos.x;
+        int j = (int)drop.pos.y;
+
+        if (!DropletsShouldMove(_plane, EXT_FORCE, i, j))
+            return;
+
         if (drop.freezeTime > 0f)
         {
             drop.freezeTime -= Time.deltaTime * _deltaTime;
@@ -348,19 +364,13 @@ public class RainFlow : MonoBehaviour
             return;
         }
 
-        int i = (int)drop.pos.x;
-        int j = (int)drop.pos.y;
         _dropsContained[i, j] = false;
 
-        Vector3 extForce = new Vector3(0f, -9.81f, 0f);
         Mesh currentMesh = _mesh[i, j];
-        Collision col    = ComputeMinT(drop, currentMesh, extForce);
+        Collision col    = ComputeMinT(drop, currentMesh, EXT_FORCE);
 
-        Vector3 Vp = (extForce / drop.mass) * col.t + drop.vel;
+        Vector3 Vp = (EXT_FORCE / drop.mass) * col.t + drop.vel;
 
-        if (float.IsNaN(Vp.x) || float.IsNaN(Vp.y) || float.IsNaN(Vp.z))
-            Debug.Log($"Vp {Vp.x} {Vp.y} {Vp.z}");
-        
         float[] newtonProbas    = NewtonsLaw(Vp);
         float[] affinityProbas  = Affinity(Vp, i, j);
         float[] wetDryProbas    = WetDryConditions(Vp, i, j);
@@ -415,15 +425,35 @@ public class RainFlow : MonoBehaviour
         Vector3 V0perp = drop.vel - V0p;
         drop.vel = V0p + V0perp;
 
-        drop.freezeTime = ComputeTravelTime(drop, _neighbors[p], extForce / drop.mass);
+        drop.freezeTime = ComputeTravelTime(drop, _neighbors[p], EXT_FORCE / drop.mass);
         p_drops[p_idDrop] = drop;
         
         if (existedDrop)
             _drops.Remove(oldDrop);
     }
 
+    bool DropletsShouldMove(Plane p_plane, Vector3 p_extForce, int p_i, int p_j)
+    {
+        // Create a vector from the external force to the plane origin
+        Vector3 v = p_extForce - p_plane.origin;
+
+        // Compute the distance between the external force and the plane
+        float dist = Vector3.Dot(v, p_plane.normal);
+
+        // Compute the projection of the external force on the plane normal
+        Vector3 proj = p_extForce - dist * p_plane.normal;
+
+        // Compute the critical force
+        float Fcrit = BETA_S * _affinityCoeff[p_i, p_j];
+
+        // Return true if the projection magnitude is greater than the critical force
+        return proj.magnitude >= Fcrit;
+    }
+
     void Update()
     {
+        _plane.normal = -transform.forward;
+
         // Loop through the drops and call UpdateParticle for each
         for (int i = 0; i < _drops.Count; i++)
             UpdateParticle(_drops, i);
