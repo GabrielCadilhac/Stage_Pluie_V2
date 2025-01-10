@@ -25,6 +25,7 @@ public class RainFlow : MonoBehaviour
     private const int SIZE = 16;
     private const float ALPHA1 = 0.001f;
     private const float ALPHA2 = 0.0001f;
+    private float THETA_C = 85f * math.PI / 180f;
 
     private Texture2D _texture;
 
@@ -46,20 +47,18 @@ public class RainFlow : MonoBehaviour
                                             new Vector3( 0f, -1f, 0f),
                                         };
 
-    private float _cosThetaC = 85f * math.PI / 180f;
 
     private Mesh[,] _mesh;
 
-    // Start is called before the first frame update
     void Start()
     {
-        GetComponent<Renderer>().material.mainTexture = _texture;
         _texture = new Texture2D(SIZE, SIZE);
         _texture.filterMode = FilterMode.Point;
+        GetComponent<Renderer>().material.mainTexture = _texture;
 
-        _flowMap = new float[SIZE, SIZE];
+        _flowMap       = new float[SIZE, SIZE];
         _affinityCoeff = new float[SIZE, SIZE];
-        _obstacles = new int[SIZE, SIZE];
+        _obstacles     = new int[SIZE, SIZE];
 
         // Initialize the _affinityCoeff to 0.5f
         for (int i = 0; i < SIZE; i++)
@@ -113,15 +112,20 @@ public class RainFlow : MonoBehaviour
         {
             for (int j = 0; j < SIZE; j++)
             {
-                float r = _flowMap[i, j];
-                _texture.SetPixel(i, j, new Color(r, r, r));
+                if (_obstacles[i, j] == 1)
+                    _texture.SetPixel(i, j, Color.red);
+                else
+                {
+                    float r = _flowMap[i, j];
+                    _texture.SetPixel(i, j, new Color(r,r,r));
+                }
             }
         }
         _texture.Apply();
     }
 
     // Compute the probability based on the Newton's Law
-    float[] NewtonsLaw(Vector3 p_vp, int i, int j)
+    float[] NewtonsLaw(Vector3 p_vp)
     {
         // Compute Dsum
         float dl1 = 0f;
@@ -165,7 +169,7 @@ public class RainFlow : MonoBehaviour
 
     float UStepFunction(Vector3 p_dk, Vector3 p_vp)
     {
-        return math.step(0f, _cosThetaC - Mathf.Acos(Vector3.Dot(p_dk.normalized, p_vp.normalized)));
+        return math.step(0f, THETA_C - Mathf.Acos(Vector3.Dot(p_dk.normalized, p_vp.normalized)));
     }
 
     // Compute the probability based on the surface affinity
@@ -321,7 +325,7 @@ public class RainFlow : MonoBehaviour
 
         Vector3 Vp = (extForce / drop.mass) * col.t + drop.vel;
 
-        float[] newtonProbas    = NewtonsLaw(Vp, i, j);
+        float[] newtonProbas    = NewtonsLaw(Vp);
         float[] affinityProbas  = Affinity(Vp, i, j);
         float[] wetDryProbas    = WetDryConditions(Vp, i, j);
         float[] obstaclesProbas = ObstaclesExistance(i, j);
@@ -361,7 +365,7 @@ public class RainFlow : MonoBehaviour
             DrawFlowMap();
         }
 
-        // Raycasst mouse to get the uv of the plane
+        // Raycasst mouse to get the uv of the plane to add a drop
         if (Input.GetMouseButtonDown(0))
         {
             Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
@@ -373,6 +377,22 @@ public class RainFlow : MonoBehaviour
                 int j = (int)(uv.y * SIZE);
                 
                 AddDrop(i, j);
+                DrawFlowMap();
+            }
+        }
+
+        // Raycasst mouse to get the uv of the plane to add obstacles
+        if (Input.GetMouseButtonDown(1))
+        {
+            Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
+            RaycastHit hit;
+            if (Physics.Raycast(ray, out hit))
+            {
+                Vector2 uv = hit.textureCoord;
+                int i = (int)(uv.x * SIZE);
+                int j = (int)(uv.y * SIZE);
+
+                _obstacles[i, j] = 1;
                 DrawFlowMap();
             }
         }
