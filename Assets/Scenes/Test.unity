@@ -131,13 +131,14 @@ GameObject:
   - component: {fileID: 736200832}
   - component: {fileID: 736200831}
   - component: {fileID: 736200830}
+  - component: {fileID: 736200834}
   m_Layer: 0
   m_Name: Quad
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!64 &736200830
 MeshCollider:
   m_ObjectHideFlags: 0
@@ -182,7 +183,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: 1fd01370ef4108943ba796c26298e926, type: 2}
+  - {fileID: 2100000, guid: 313ec8858a1c33242a320884401fa5e3, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -221,12 +222,25 @@ Transform:
   m_GameObject: {fileID: 736200828}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 2, y: 2, z: 0}
+  m_LocalPosition: {x: 2, y: 7.59, z: 0}
   m_LocalScale: {x: 4, y: 4, z: 4}
   m_ConstrainProportionsScale: 1
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &736200834
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 736200828}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d7c62d264ade0d84984df0b90bf1acc9, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _dripMaterial: {fileID: 2100000, guid: bb525f6ac6b8bb94eb9008881bccbbbb, type: 2}
 --- !u!1 &836192457
 GameObject:
   m_ObjectHideFlags: 0
@@ -246,7 +260,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!65 &836192459
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -290,7 +304,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: d9770ec9b34ffa74982e92301f4f5781, type: 2}
+  - {fileID: 2100000, guid: fb1ad81dcf6c1a84cae04645c2c4c301, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -347,7 +361,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d7c62d264ade0d84984df0b90bf1acc9, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _dripMaterial: {fileID: 2100000, guid: d9770ec9b34ffa74982e92301f4f5781, type: 2}
+  _dripMaterial: {fileID: 0}
 --- !u!1 &904844140
 GameObject:
   m_ObjectHideFlags: 0
@@ -434,8 +448,8 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 904844140}
   serializedVersion: 2
-  m_LocalRotation: {x: 0.2173183, y: -0.38870174, z: 0.09485132, w: 0.8903297}
-  m_LocalPosition: {x: 8.794092, y: 2.3739786, z: -2.3146}
+  m_LocalRotation: {x: 0.034143478, y: 0.14193368, z: -0.0048987297, w: 0.98927504}
+  m_LocalPosition: {x: -0.63806474, y: 5.031216, z: -12.474941}
   m_LocalScale: {x: -11541, y: -11541, z: -11541}
   m_ConstrainProportionsScale: 0
   m_Children: []

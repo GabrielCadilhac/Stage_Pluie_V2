@@ -22,7 +22,7 @@ public class RainManager
 
     // Splash
     private Material _splashMaterial;
-    private GraphicsBuffer _splashPosBuffer, _splashNormalBuffer;
+    private GraphicsBuffer _splashNormalBuffer;// _splashPosBuffer;
     private SplashRenderer2 _splashRenderer;
 
     // Synchro
@@ -78,13 +78,13 @@ public class RainManager
 
         // Init splash shader (object shader)
         _splashRenderer = new SplashRenderer2(_splashMaterial);
-        _splashPosBuffer = _splashRenderer.GetPosBuffer();
+        //_splashPosBuffer = _splashRenderer.GetPosBuffer();
         _splashNormalBuffer = _splashRenderer.GetNormalBuffer();
 
         // Init rain generator (compute buffer)
         GraphicsBuffer posBuffer = _renderer.GetPositionsBuffer();
         ComputeBuffer windBuffer = _windGenerator.GetGPUWind();
-        _rainGenerator = new RainGenerator(_updateShader, _collisionShader, posBuffer, _splashPosBuffer, _splashNormalBuffer, windBuffer, _obbs, _bounds, _globalMin, _globalMax) ;
+        _rainGenerator = new RainGenerator(_updateShader, _collisionShader, posBuffer, _splashRenderer.GetPosBuffer(), _splashNormalBuffer, windBuffer, _obbs, _bounds, _globalMin, _globalMax) ;
         _rainGenerator?.ChangeGlobalWind();
 
         //_rainGenerator.SetWinds(_windGenerator.GetWinds());
@@ -112,7 +112,7 @@ public class RainManager
 
     public void RainCollision(float p_deltaTime)
     {
-        _rainGenerator.DispatchCollision(p_deltaTime);
+        _rainGenerator.DispatchCollision(p_deltaTime, _transform);
         Graphics.WaitOnAsyncGraphicsFence(_fence);
     }
 
@@ -171,8 +171,8 @@ public class RainManager
         _windGenerator.Disable();
         _splashRenderer.Disable();
 
-        _splashPosBuffer.Release();
-        _splashPosBuffer = null;
+        //_splashPosBuffer.Release();
+        //_splashPosBuffer = null;
 
         _splashNormalBuffer.Release();
         _splashNormalBuffer = null;

@@ -24,15 +24,14 @@ public class RainFlow
     }
 
     private const int SIZE = 16;
-    private const float ALPHA1 = 0.001f;
-    private const float ALPHA2 = 0.0001f;
+    private const float ALPHA1  = 0.001f;
+    private const float ALPHA2  = 0.0001f;
     private const float THETA_C = 85f * math.PI / 180f;
     private const float EPSILON = 0.0001f;
-    private Vector3 EXT_FORCE = new Vector3(0f, -9.81f, 0f);
-    private const float BETA_S = 0.004f;
+    private Vector3 EXT_FORCE   = new Vector3(0f, -9.81f, 0f);
+    private const float BETA_S  = 0.004f;
 
     private float _deltaTime = 10f;
-    private Material _dripMaterial;
 
     private Texture2D _texture;
     
@@ -43,8 +42,7 @@ public class RainFlow
 
     private List<Drop> _drops;
     private RainDripping _rainDripping;
-
-    private Vector3 _normal, _position;
+    private Transform _transform;
 
     private Vector3[] _neighbors = new Vector3[8] {
                                             new Vector3(-1f, -1f, 0f),
@@ -61,12 +59,12 @@ public class RainFlow
 
     private Mesh[,] _mesh;
 
-    public RainFlow(Transform p_transform, Vector3 p_position, Vector3 p_normal)
+    public RainFlow(Transform p_transform, Material p_dripMaterial, Vector3 p_position, Vector3 p_normal, Texture2D p_texture)
     {
-        _texture = new Texture2D(SIZE, SIZE);
-        _texture.filterMode = FilterMode.Point;
+        _texture = p_texture;
 
-        _rainDripping = new RainDripping(p_transform, _dripMaterial);
+        _transform = p_transform;
+        _rainDripping = new RainDripping(p_transform, p_dripMaterial);
 
         _flowMap       = new float[SIZE, SIZE];
         _affinityCoeff = new float[SIZE, SIZE];
@@ -78,17 +76,14 @@ public class RainFlow
         {
             for (int j = 0; j < SIZE; j++)
             {
-                _flowMap[i, j] = 0f;
+                _flowMap[i, j]   = 0f;
                 _obstacles[i, j] = 0;
-                _affinityCoeff[i, j] = UnityEngine.Random.Range(0f, 1f);
+                _affinityCoeff[i, j]  = UnityEngine.Random.Range(0f, 1f);
                 _dropsContained[i, j] = false;
             }
         }
 
         _drops = new List<Drop>();
-
-        _normal   = p_normal;
-        _position = p_position;
     }
 
     public void AddDrop(int p_i, int p_j, Vector3 p_initialVel)
@@ -118,7 +113,7 @@ public class RainFlow
         {
             for (int j = 0; j < SIZE; j++)
             {
-                _mesh[i, j].axis = new float[4];
+                _mesh[i, j].axis    = new float[4];
                 _mesh[i, j].axis[0] = i * cellSize;
                 _mesh[i, j].axis[1] = (i + 1) * cellSize;
                 _mesh[i, j].axis[2] = j * cellSize;
@@ -138,10 +133,11 @@ public class RainFlow
                 else
                 {
                     float r = _flowMap[i, j] / 10f;
-                    _texture.SetPixel(i, j, new Color(r,r,r));
+                    _texture.SetPixel(i, j, new Color(r, r, r));
                 }
             }
         }
+
         _texture.Apply();
     }
 
@@ -346,13 +342,13 @@ public class RainFlow
         return math.sqrt(math.pow(p_dp.x, 2) + math.pow(p_dp.y, 2)) / p_acc.magnitude;
     }
 
-    void UpdateParticle(List<Drop> p_drops, int p_idDrop)
+    void UpdateParticle(List<Drop> p_drops, int p_idDrop, Vector3 p_normal)
     {
         Drop drop = p_drops[p_idDrop];
         int i = (int)drop.pos.x;
         int j = (int)drop.pos.y;
 
-        if (!DropletsShouldMove(EXT_FORCE, i, j))
+        if (!DropletsShouldMove(EXT_FORCE, i, j, p_normal))
             return;
 
         if (drop.freezeTime > 0f)
@@ -387,7 +383,7 @@ public class RainFlow
         // if dp is outside the mesh, remove the drop from the list and generat dripping
         if (dp.x < 0 || dp.x >= SIZE || dp.y < 0 || dp.y >= SIZE)
         {
-            _rainDripping.GenerateDripping(drop.pos, SIZE);
+            _rainDripping.GenerateDripping(_transform, drop.pos, SIZE);
             _drops.Remove(drop);
             return;
         }
@@ -431,13 +427,13 @@ public class RainFlow
             _drops.Remove(oldDrop);
     }
 
-    bool DropletsShouldMove(Vector3 p_extForce, int p_i, int p_j)
+    bool DropletsShouldMove(Vector3 p_extForce, int p_i, int p_j, Vector3 p_normal)
     {
         // Compute the distance between the external force and the plane
-        float dist = Vector3.Dot(p_extForce, _normal);
+        float dist = Vector3.Dot(p_extForce, p_normal);
 
         // Compute the projection of the external force on the plane normal
-        Vector3 proj = p_extForce - dist * _normal;
+        Vector3 proj = p_extForce - dist * p_normal;
 
         // Compute the critical force
         float Fcrit = BETA_S * _affinityCoeff[p_i, p_j];
@@ -448,13 +444,11 @@ public class RainFlow
 
     public void Update(Vector3 p_normal)
     {
-        _normal = p_normal;
-
         // Loop through the drops and call UpdateParticle for each
         for (int i = 0; i < _drops.Count; i++)
-            UpdateParticle(_drops, i);
+            UpdateParticle(_drops, i, p_normal);
 
-        //_rainDripping.Draw();
+        _rainDripping.Draw(_transform);
     }
 
     public Texture2D GetTexture()

@@ -5,14 +5,14 @@ public class RainGenerator
     //private ComputeBuffer _localWindBuffer;
     private ComputeBuffer _velBuffer, _sizeBuffer;
     private ComputeBuffer  _windBuffer;
-    private GraphicsBuffer _posBuffer;
+    private GraphicsBuffer _posBuffer, _splashColBuffer;
 
     private int _nbBlocks;
 
     private Vector3 _initVel = new Vector3(0f, -5f, 0f);
 
     private ComputeShader _updateShader, _collisionShader;
-    private ComputeBuffer _obbsBuffer;
+    private ComputeBuffer _obbsBuffer, _obbsCollidedBuffer;
 
     public OBB[] _obbs;
     private GameObject[] _obbsGameObject;
@@ -33,7 +33,15 @@ public class RainGenerator
         //_localWindBuffer = new ComputeBuffer(Common.NB_CELLS.x * Common.NB_CELLS.y * Common.NB_CELLS.z, 3 * sizeof(float));
         _sizeBuffer = new ComputeBuffer(RainManager._nbParticles, sizeof(float));
 
+        _obbsCollidedBuffer = new ComputeBuffer(RainManager._nbParticles, sizeof(int));
+        int[] obbsCollided = new int[RainManager._nbParticles];
+        for (int i = 0; i < RainManager._nbParticles; i++)
+            obbsCollided[i] = -1;
+        _obbsCollidedBuffer.SetData(obbsCollided);
+
         _nbBlocks  = Mathf.Clamp(Mathf.FloorToInt((float)RainManager._nbParticles / (float) Constants.BLOCK_SIZE + 0.5f), 1, Constants.MAX_BLOCKS_NUMBER);
+
+        _splashColBuffer = p_splashPosBuffer;
 
         _obbsGameObject = p_obbsGameObject;
         _obbsBuffer = new ComputeBuffer(_obbsGameObject.Length, 22 * sizeof(float));
@@ -59,7 +67,7 @@ public class RainGenerator
 
         // Init update Compute Shader
         _updateShader = p_updateShader;
-        _windBuffer = p_windBuffer;
+        _windBuffer   = p_windBuffer;
 
         _updateShader.SetBuffer(0, "Positions", p_posBuffer);
         _updateShader.SetBuffer(0, "Velocities", _velBuffer);
@@ -82,6 +90,7 @@ public class RainGenerator
         _collisionShader.SetBuffer(0, "SplashPos",  p_splashPosBuffer);
         _collisionShader.SetBuffer(0, "SplashNormal", p_splashNormalBuffer);
         _collisionShader.SetBuffer(0, "Obbs", _obbsBuffer);
+        _collisionShader.SetBuffer(0, "ObbsCollided", _obbsCollidedBuffer);
 
         _collisionShader.SetInt("_NumParticles", RainManager._nbParticles);
         _collisionShader.SetInt("_NumObbs", _obbsGameObject.Length);
@@ -122,11 +131,38 @@ public class RainGenerator
         _updateShader.Dispatch(0, _nbBlocks, 1, 1);
     }
 
-    public void DispatchCollision(float p_deltaTime)
+    public void DispatchCollision(float p_deltaTime, Transform p_transform)
     {
         _obbsBuffer.SetData(GameObject2OBB(_obbsGameObject));
         _updateShader.SetFloat("_DeltaTime", p_deltaTime);
         _collisionShader.Dispatch(0, _nbBlocks, 1, 1);
+
+        int[] collisions = new int[RainManager._nbParticles];
+        _obbsCollidedBuffer.GetData(collisions);
+
+        Vector4[] splashPos = new Vector4[RainManager._nbParticles];
+        _splashColBuffer.GetData(splashPos);
+        for (int i = 0; i < RainManager._nbParticles; i++)
+        {
+            if (collisions[i] > 0)
+            {
+                OBB obb = _obbs[collisions[i]];
+                Vector4 t1 = obb.rotation.GetColumn(0);
+                Vector4 t2 = obb.rotation.GetColumn(1);
+                Vector3 e1 = new Vector3(t1.x, t1.y, t1.z);
+                Vector3 e2 = new Vector3(t2.x, t2.y, t2.z);
+
+                Vector3 localPoint = p_transform.InverseTransformPoint(splashPos[i]);
+
+                float u = Vector3.Dot(localPoint.normalized, e1.normalized);
+                float v = Vector3.Dot(localPoint.normalized, e2.normalized);
+
+                int k = (int)(Mathf.Abs(u) * 16f);
+                int j = (int)(Mathf.Abs(v) * 16f);
+
+                _obbsGameObject[collisions[i]].GetComponent<RainFlowMaps>().AddDrop(k, j);
+            }
+        }
     }
 
     public ComputeBuffer GetVelBuffer()
@@ -179,5 +215,8 @@ public class RainGenerator
 
         _obbsBuffer.Release();
         _obbsBuffer = null;
+
+        _splashColBuffer.Release();
+        _splashColBuffer = null;
     }
 }

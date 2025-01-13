@@ -13,7 +13,7 @@ public class SplashRenderer2
         for (int i = 0; i  < RainManager._nbParticles; i++)
             positions[i] = Vector3.zero;
 
-        _posBuffer    = new GraphicsBuffer(GraphicsBuffer.Target.Raw, RainManager._nbParticles, 3 * sizeof(float));
+        _posBuffer    = new GraphicsBuffer(GraphicsBuffer.Target.Raw, RainManager._nbParticles, 4 * sizeof(float));
         _normalBuffer = new GraphicsBuffer(GraphicsBuffer.Target.Raw, RainManager._nbParticles, 3 * sizeof(float));
 
         _material = p_material;

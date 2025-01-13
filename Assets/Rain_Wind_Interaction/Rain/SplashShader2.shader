@@ -25,7 +25,7 @@ Shader "Unlit/SplashShader2"
 
             #include "UnityCG.cginc"
 
-            uniform StructuredBuffer<float3> Position;
+            uniform StructuredBuffer<float4> Position;
             uniform StructuredBuffer<float3> Normale;
 
             struct appdata

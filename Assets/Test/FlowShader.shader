@@ -56,19 +56,35 @@ Shader "Unlit/Test"
             fixed4 frag (v2f i) : SV_Target
             {
                 if (i.normal.y < 0.0) // bottom
+                {
 				    i.uv.z = 0;
+                    i.uv.y = 1. - i.uv.y;
+                    i.uv.x = 1. - i.uv.x;
+                }
 				else if (i.normal.y > 0.0) // top
+                {
                     i.uv.z = 1;
+                    i.uv.y = 1. - i.uv.y;
+                    i.uv.x = 1. - i.uv.x;
+                }
                 else if (i.normal.x > 0.0) // right
+                {
 				    i.uv.z = 2;
+                }
 				else if (i.normal.x < 0.0) // left
+                {
                     i.uv.z = 3;
+                }
                 else if (i.normal.z > 0.0) // front
+                {
                     i.uv.z = 4;
+                }
 				else if (i.normal.z < 0.0) // back
+                {
 				    i.uv.z = 5;
-				else
-                    i.uv.z = 6;
+                    i.uv.y = 1. - i.uv.y;
+                    i.uv.x = 1. - i.uv.x;
+                }
 
                 return UNITY_SAMPLE_TEX2DARRAY(_Textures, i.uv);
             }

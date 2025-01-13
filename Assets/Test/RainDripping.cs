@@ -7,7 +7,7 @@ public class RainDripping
 
     private float _dripFallSpeed = 2f;    
 
-    private Transform _transform;
+    private Transform p_transform;
 
     private GraphicsBuffer _dripsBuffer;
     private Bounds _bounds;
@@ -15,42 +15,43 @@ public class RainDripping
 
     private List<Vector3> _dripPos;
 
-    // Start is called before the first frame update
     public RainDripping(Transform p_transform, Material p_material)
     {
-        _transform = p_transform;
+        this.p_transform = p_transform;
 
-        _bounds = new Bounds(p_transform.position, new Vector3(10f, 5f, 10f));
+        _bounds      = new Bounds(p_transform.position, new Vector3(10f, 10f, 10f));
         _dripsBuffer = new GraphicsBuffer(GraphicsBuffer.Target.Raw, NB_DROPS, 3 * sizeof(float));
 
         _material = p_material;
-        //_material.SetBuffer("Positions", _dripsBuffer);
+        _material.SetBuffer("Positions", _dripsBuffer);
         _dripPos = new List<Vector3>();
     }
 
-    public void Draw()
+    public void Draw(Transform p_transform)
     {
         if (_dripPos.Count == 0)
             return;
 
-        //_material.SetInt("_DripsCount", _dripPos.Count);
+        _bounds.center = p_transform.position;
+
+        _material.SetInt("_DripsCount", _dripPos.Count);
 
         RenderParams rp = new RenderParams(_material);
-        rp.worldBounds = new Bounds(_transform.position, _bounds.size);
+        rp.worldBounds = new Bounds(p_transform.position, _bounds.size);
         rp.matProps = new MaterialPropertyBlock();
         Graphics.RenderPrimitives(rp, MeshTopology.Quads, 4, NB_DROPS);
 
         UpdateDrips();
     }
 
-    public void GenerateDripping(Vector3 p_pos, float p_size)
+    public void GenerateDripping(Transform p_transform, Vector3 p_pos, float p_size)
     {
-        Vector3 origin = _transform.position - (_transform.localScale.x / 2f) * (_transform.up + _transform.right);
+        Vector3 origin = p_transform.position - (p_transform.localScale.x / 2f) * (p_transform.up + p_transform.right);
 
-        float cellSize = _transform.localScale.x / p_size;
-        Vector3 halfSize = (_transform.up + _transform.right) * cellSize / 2f;
+        float cellSize = p_transform.localScale.x / p_size;
+        Vector3 halfSize = (p_transform.up + p_transform.right) * cellSize / 2f;
 
-        Vector3 offset = p_pos.x * cellSize * _transform.right + p_pos.y * cellSize * _transform.up;
+        Vector3 offset = p_pos.x * cellSize * p_transform.right + p_pos.y * cellSize * p_transform.up;
 
         _dripPos.Add(origin + halfSize + offset);
         _dripsBuffer.SetData(_dripPos.ToArray());

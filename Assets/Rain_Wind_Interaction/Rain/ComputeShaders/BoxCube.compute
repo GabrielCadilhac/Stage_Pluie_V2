@@ -14,14 +14,16 @@ struct Collision
 {
     float3 pos;
     float3 normal;
+    int id;
 };
 
 // ====== Buffers ======
 RWStructuredBuffer<float3> Velocities;
 RWStructuredBuffer<float3> Positions;
 RWStructuredBuffer<float> Sizes;
-RWStructuredBuffer<float3> SplashPos;
+RWStructuredBuffer<float4> SplashPos;
 RWStructuredBuffer<float3> SplashNormal;
+RWStructuredBuffer<int> ObbsCollided;
 RWStructuredBuffer<OBB> Obbs;
 
 // ====== Settings ======
@@ -135,6 +137,7 @@ bool OBBCollision(float3 p_pos, out Collision p_col)
     
             p_col.pos = CollisionPoint(d, p, ux, uy, uz, obb);
             p_col.normal = ComputeNormal(d, p, ux, uy, uz);
+            p_col.id = i;
             
             return true;
         }
@@ -151,8 +154,9 @@ void CSMain (uint3 id : SV_DispatchThreadID)
         bool isCollided = OBBCollision(Positions[id.x], col);
         if (isCollided) // Collision detected
         {
-            SplashPos[id.x] = col.pos;
+            SplashPos[id.x] = float4(col.pos, 1.);
             SplashNormal[id.x] = col.normal;
+            ObbsCollided[id.x] = col.id;
             
             changePosVel(id, float3(Positions[id.x].x, _Max.y, Positions[id.x].z));
         }
@@ -160,7 +164,7 @@ void CSMain (uint3 id : SV_DispatchThreadID)
         else if (Positions[id.x].y < _Min.y) // Collision with the bottom of the rain box
         {
             // Add splatch on particle collided rain box
-            SplashPos[id.x]  = float3(Positions[id.x].x, _Min.y, Positions[id.x].z);
+            SplashPos[id.x] = float4(Positions[id.x].x, _Min.y, Positions[id.x].z, 1.);
             SplashNormal[id.x] = float3(0., 1., 0.);
             
             float dist = Positions[id.x].y - _Min.y;
