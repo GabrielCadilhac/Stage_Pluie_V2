@@ -2,7 +2,8 @@ Shader "Unlit/Test"
 {
     Properties
     {
-        _MainTex ("Texture", 2D) = "white" {}
+        _SliceRange ("Slices", Range(0,16)) = 6
+        _UVScale ("UVScale", Float) = 1.0
     }
     SubShader
     {
@@ -23,15 +24,20 @@ Shader "Unlit/Test"
             {
                 float4 vertex : POSITION;
                 float2 uv : TEXCOORD0;
+                float3 normal : NORMAL;
             };
 
             struct v2f
             {
-                float2 uv : TEXCOORD0;
+                float3 uv : TEXCOORD0;
                 UNITY_FOG_COORDS(1)
                 float4 vertex : SV_POSITION;
+                float3 normal : NORMAL;
             };
 
+            UNITY_DECLARE_TEX2DARRAY(_Textures);
+            float _SliceRange;
+            float _UVScale;
             sampler2D _MainTex;
             float4 _MainTex_ST;
 
@@ -39,18 +45,32 @@ Shader "Unlit/Test"
             {
                 v2f o;
                 o.vertex = UnityObjectToClipPos(v.vertex);
-                o.uv = TRANSFORM_TEX(v.uv, _MainTex);
+                o.normal = v.normal;
+                o.uv.xy = v.uv;
+                o.uv.z  = 0;
+                
                 UNITY_TRANSFER_FOG(o,o.vertex);
                 return o;
             }
 
             fixed4 frag (v2f i) : SV_Target
             {
-                // sample the texture
-                fixed4 col = tex2D(_MainTex, i.uv);
-                // apply fog
-                UNITY_APPLY_FOG(i.fogCoord, col);
-                return col;
+                if (i.normal.y < 0.0) // bottom
+				    i.uv.z = 0;
+				else if (i.normal.y > 0.0) // top
+                    i.uv.z = 1;
+                else if (i.normal.x > 0.0) // right
+				    i.uv.z = 2;
+				else if (i.normal.x < 0.0) // left
+                    i.uv.z = 3;
+                else if (i.normal.z > 0.0) // front
+                    i.uv.z = 4;
+				else if (i.normal.z < 0.0) // back
+				    i.uv.z = 5;
+				else
+                    i.uv.z = 6;
+
+                return UNITY_SAMPLE_TEX2DARRAY(_Textures, i.uv);
             }
             ENDCG
         }

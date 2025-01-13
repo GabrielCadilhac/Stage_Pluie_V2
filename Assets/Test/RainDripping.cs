@@ -1,5 +1,4 @@
 using System.Collections.Generic;
-using Unity.VisualScripting;
 using UnityEngine;
 
 public class RainDripping
@@ -8,7 +7,6 @@ public class RainDripping
 
     private float _dripFallSpeed = 2f;    
 
-    private GameObject _testCube;
     private Transform _transform;
 
     private GraphicsBuffer _dripsBuffer;
@@ -18,17 +16,15 @@ public class RainDripping
     private List<Vector3> _dripPos;
 
     // Start is called before the first frame update
-    public RainDripping(GameObject p_testCube, Transform p_transform, Material p_material)
+    public RainDripping(Transform p_transform, Material p_material)
     {
-        _testCube = p_testCube;
         _transform = p_transform;
 
-        _bounds = new Bounds(new Vector3(0f, 0f, 0f), new Vector3(100f, 100f, 100f));
+        _bounds = new Bounds(p_transform.position, new Vector3(10f, 5f, 10f));
         _dripsBuffer = new GraphicsBuffer(GraphicsBuffer.Target.Raw, NB_DROPS, 3 * sizeof(float));
 
         _material = p_material;
-        _material.SetBuffer("Positions", _dripsBuffer);
-        
+        //_material.SetBuffer("Positions", _dripsBuffer);
         _dripPos = new List<Vector3>();
     }
 
@@ -37,7 +33,7 @@ public class RainDripping
         if (_dripPos.Count == 0)
             return;
 
-        _material.SetInt("_DripsCount", _dripPos.Count);
+        //_material.SetInt("_DripsCount", _dripPos.Count);
 
         RenderParams rp = new RenderParams(_material);
         rp.worldBounds = new Bounds(_transform.position, _bounds.size);
@@ -55,7 +51,6 @@ public class RainDripping
         Vector3 halfSize = (_transform.up + _transform.right) * cellSize / 2f;
 
         Vector3 offset = p_pos.x * cellSize * _transform.right + p_pos.y * cellSize * _transform.up;
-        //_testCube.transform.position = origin + halfSize + offset;
 
         _dripPos.Add(origin + halfSize + offset);
         _dripsBuffer.SetData(_dripPos.ToArray());
@@ -63,10 +58,19 @@ public class RainDripping
 
     private void UpdateDrips()
     {
+        List<int> dripToDel = new List<int>();
         for (int i = 0; i < _dripPos.Count; i++)
         {
             _dripPos[i] += Vector3.down * _dripFallSpeed * Time.deltaTime;
+
+            if (_dripPos[i].y < _bounds.min.y)
+                dripToDel.Add(i);
         }
+
+        // Compute collision with the ground / bounds
+        for (int i = 0; i < dripToDel.Count; i++)
+            _dripPos.RemoveAt(dripToDel[i]);
+
         _dripsBuffer.SetData(_dripPos.ToArray());
     }
 

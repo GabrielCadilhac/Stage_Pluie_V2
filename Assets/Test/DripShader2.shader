@@ -55,7 +55,7 @@ Shader "Unlit/RainShader2"
                 float y = vertexId / 2;
                 x = y == 1 ? 1-x : x;
 
-                o.uv            = float2(x, y);
+                o.uv = float2(x, y);
 
                 float3 up = float3(0., 1., 0.) * _Size.x;
                 float3 right = float3(1.0, 0.0, 0.0) * _Size.y;

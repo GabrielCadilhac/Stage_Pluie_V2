@@ -2,7 +2,7 @@ using System.Collections.Generic;
 using Unity.Mathematics;
 using UnityEngine;
 
-public class RainFlow : MonoBehaviour
+public class RainFlow
 {
     struct Drop
     {
@@ -23,12 +23,6 @@ public class RainFlow : MonoBehaviour
         public int axis;
     }
 
-    struct Plane
-    {
-        public Vector3 origin;
-        public Vector3 normal;
-    }
-
     private const int SIZE = 16;
     private const float ALPHA1 = 0.001f;
     private const float ALPHA2 = 0.0001f;
@@ -37,12 +31,11 @@ public class RainFlow : MonoBehaviour
     private Vector3 EXT_FORCE = new Vector3(0f, -9.81f, 0f);
     private const float BETA_S = 0.004f;
 
-    [SerializeField] private float _deltaTime = 1f;
-    [SerializeField] private GameObject _testCube;
-    [SerializeField] private Material _dripMaterial;
+    private float _deltaTime = 10f;
+    private Material _dripMaterial;
 
     private Texture2D _texture;
-
+    
     private float[,] _flowMap;
 
     private float[,] _affinityCoeff;
@@ -51,7 +44,7 @@ public class RainFlow : MonoBehaviour
     private List<Drop> _drops;
     private RainDripping _rainDripping;
 
-    private Plane _plane;
+    private Vector3 _normal, _position;
 
     private Vector3[] _neighbors = new Vector3[8] {
                                             new Vector3(-1f, -1f, 0f),
@@ -68,13 +61,12 @@ public class RainFlow : MonoBehaviour
 
     private Mesh[,] _mesh;
 
-    void Start()
+    public RainFlow(Transform p_transform, Vector3 p_position, Vector3 p_normal)
     {
         _texture = new Texture2D(SIZE, SIZE);
         _texture.filterMode = FilterMode.Point;
-        GetComponent<Renderer>().material.mainTexture = _texture;
 
-        _rainDripping = new RainDripping(_testCube, transform, _dripMaterial);
+        _rainDripping = new RainDripping(p_transform, _dripMaterial);
 
         _flowMap       = new float[SIZE, SIZE];
         _affinityCoeff = new float[SIZE, SIZE];
@@ -95,19 +87,15 @@ public class RainFlow : MonoBehaviour
 
         _drops = new List<Drop>();
 
-        _plane = new Plane();
-        _plane.origin = Vector3.zero;
-        _plane.normal = -transform.forward;
-
-        GenerateMesh();
-        DrawFlowMap();
+        _normal   = p_normal;
+        _position = p_position;
     }
 
-    void AddDrop(int p_i, int p_j)
+    public void AddDrop(int p_i, int p_j, Vector3 p_initialVel)
     {
         Drop drop = new Drop();
         drop.pos = new Vector3(p_i, p_j, 0f); // initial position
-        drop.vel = new Vector3(-transform.right.y, -transform.up.y, 0f); // initial velocity
+        drop.vel = p_initialVel; //new Vector3(-transform.right.y, -transform.up.y, 0f); // initial velocity
         drop.mass = 10f; // initial mass
         drop.freezeTime = 0f; // initial freeze time
 
@@ -117,9 +105,14 @@ public class RainFlow : MonoBehaviour
         _drops.Add(drop);
     }
 
-    void GenerateMesh()
+    public void AddObstacle(int p_i, int p_j)
     {
-        float cellSize = transform.localScale.x / SIZE;
+        _obstacles[p_i, p_j] = 1;
+    }
+
+    public void GenerateMesh(float p_localScale)
+    {
+        float cellSize = p_localScale / SIZE;//transform.localScale.x / SIZE;
         _mesh = new Mesh[SIZE, SIZE];
         for (int i = 0; i < SIZE; i++)
         {
@@ -134,7 +127,7 @@ public class RainFlow : MonoBehaviour
         }
     }
 
-    void DrawFlowMap()
+    public void DrawFlowMap()
     {
         for (int i = 0; i < SIZE; i++)
         {
@@ -359,7 +352,7 @@ public class RainFlow : MonoBehaviour
         int i = (int)drop.pos.x;
         int j = (int)drop.pos.y;
 
-        if (!DropletsShouldMove(_plane, EXT_FORCE, i, j))
+        if (!DropletsShouldMove(EXT_FORCE, i, j))
             return;
 
         if (drop.freezeTime > 0f)
@@ -438,16 +431,13 @@ public class RainFlow : MonoBehaviour
             _drops.Remove(oldDrop);
     }
 
-    bool DropletsShouldMove(Plane p_plane, Vector3 p_extForce, int p_i, int p_j)
+    bool DropletsShouldMove(Vector3 p_extForce, int p_i, int p_j)
     {
-        // Create a vector from the external force to the plane origin
-        Vector3 v = p_extForce - p_plane.origin;
-
         // Compute the distance between the external force and the plane
-        float dist = Vector3.Dot(v, p_plane.normal);
+        float dist = Vector3.Dot(p_extForce, _normal);
 
         // Compute the projection of the external force on the plane normal
-        Vector3 proj = p_extForce - dist * p_plane.normal;
+        Vector3 proj = p_extForce - dist * _normal;
 
         // Compute the critical force
         float Fcrit = BETA_S * _affinityCoeff[p_i, p_j];
@@ -456,50 +446,23 @@ public class RainFlow : MonoBehaviour
         return proj.magnitude >= Fcrit;
     }
 
-    void Update()
+    public void Update(Vector3 p_normal)
     {
-        _plane.normal = -transform.forward;
+        _normal = p_normal;
 
         // Loop through the drops and call UpdateParticle for each
         for (int i = 0; i < _drops.Count; i++)
             UpdateParticle(_drops, i);
 
-        DrawFlowMap();
-
-        _rainDripping.Draw();
-
-        // Raycasst mouse to get the uv of the plane to add a drop
-        if (Input.GetMouseButtonDown(0))
-        {
-            Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
-            RaycastHit hit;
-            if (Physics.Raycast(ray, out hit))
-            {
-                Vector2 uv = hit.textureCoord;
-                int i = (int)(uv.x * SIZE);
-                int j = (int)(uv.y * SIZE);
-                
-                AddDrop(i, j);
-            }
-        }
-
-        // Raycasst mouse to get the uv of the plane to add obstacles
-        if (Input.GetMouseButtonDown(1))
-        {
-            Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
-            RaycastHit hit;
-            if (Physics.Raycast(ray, out hit))
-            {
-                Vector2 uv = hit.textureCoord;
-                int i = (int)(uv.x * SIZE);
-                int j = (int)(uv.y * SIZE);
-
-                _obstacles[i, j] = 1;
-            }
-        }
+        //_rainDripping.Draw();
     }
 
-    private void OnDrawGizmos()
+    public Texture2D GetTexture()
+    {
+        return _texture;
+    }
+
+    public void OnDrawGizmos()
     {
         //if (_mesh == null) return;
 
@@ -517,7 +480,7 @@ public class RainFlow : MonoBehaviour
         //}
     }
 
-    private void OnDisable()
+    public void OnDisable()
     {
         _rainDripping.OnDisable();
     }

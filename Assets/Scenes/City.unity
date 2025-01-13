@@ -1053,7 +1053,7 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0.16, y: 17.21, z: 9.78}
-  m_LocalScale: {x: 11, y: 5, z: 7}
+  m_LocalScale: {x: 11, y: 0.2, z: 7}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
@@ -1600,8 +1600,8 @@ MonoBehaviour:
   _rainCollisionShader: {fileID: 7200000, guid: 205411dfba100874f9c822f3aa0e75ff,
     type: 3}
   _windShader: {fileID: 7200000, guid: 562eba1bf4e6581419db6fc386bdac0e, type: 3}
-  _rainMaterial: {fileID: 2100000, guid: 74551283315d2354ba2f4693a9d60efc, type: 2}
-  _splashMaterial: {fileID: 2100000, guid: 78c6a94eb0883894a80aad58240a8a6f, type: 2}
+  _rainMaterial: {fileID: 2100000, guid: f8bb81bd0c92ef5418d3673a83ea0612, type: 2}
+  _splashMaterial: {fileID: 2100000, guid: b52128180b012444083e2324e100a260, type: 2}
   _obbs:
   - {fileID: 757898989}
 --- !u!1 &1643130393
