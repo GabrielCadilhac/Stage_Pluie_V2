@@ -3,11 +3,9 @@ using UnityEngine;
 
 public class RainDripping
 {
-    private const int NB_DROPS = 100;
+    private const int NB_DROPS = 200;
 
-    private float _dripFallSpeed = 2f;    
-
-    private Transform p_transform;
+    private float _dripFallSpeed = 4f;    
 
     private GraphicsBuffer _dripsBuffer;
     private Bounds _bounds;
@@ -17,8 +15,6 @@ public class RainDripping
 
     public RainDripping(Transform p_transform, Material p_material)
     {
-        this.p_transform = p_transform;
-
         _bounds      = new Bounds(p_transform.position, new Vector3(10f, 10f, 10f));
         _dripsBuffer = new GraphicsBuffer(GraphicsBuffer.Target.Raw, NB_DROPS, 3 * sizeof(float));
 
@@ -53,7 +49,8 @@ public class RainDripping
 
         Vector3 offset = p_pos.x * cellSize * p_transform.right + p_pos.y * cellSize * p_transform.up;
 
-        _dripPos.Add(origin + halfSize + offset);
+        if (_dripPos.Count < NB_DROPS)
+            _dripPos.Add(origin + halfSize + offset);
         _dripsBuffer.SetData(_dripPos.ToArray());
     }
 
@@ -69,7 +66,7 @@ public class RainDripping
         }
 
         // Compute collision with the ground / bounds
-        for (int i = 0; i < dripToDel.Count; i++)
+        for (int i = dripToDel.Count-1; i > 0; i--)
             _dripPos.RemoveAt(dripToDel[i]);
 
         _dripsBuffer.SetData(_dripPos.ToArray());

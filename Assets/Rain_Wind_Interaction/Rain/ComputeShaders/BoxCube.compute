@@ -124,10 +124,10 @@ bool OBBCollision(float3 p_pos, out Collision p_col)
     {
         OBB obb = Obbs[i];
         
-        float3 D = p_pos - obb.center;
         float3 ux = normalize(GetColumn(obb.rotation, 0));
         float3 uy = normalize(GetColumn(obb.rotation, 1));
         float3 uz = normalize(GetColumn(obb.rotation, 2));
+        float3 D = p_pos - obb.center;
         
         float3 p = float3(dot(D, ux), dot(D, uy), dot(D, uz));
         
@@ -151,6 +151,7 @@ void CSMain (uint3 id : SV_DispatchThreadID)
     while (id.x < _NumParticles)
     {   
         Collision col;
+        ObbsCollided[id.x] = 0;
         bool isCollided = OBBCollision(Positions[id.x], col);
         if (isCollided) // Collision detected
         {

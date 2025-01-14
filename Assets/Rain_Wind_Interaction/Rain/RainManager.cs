@@ -29,7 +29,7 @@ public class RainManager
     private GraphicsFence _fence;
 
     // Test
-    public static int _nbParticles = 50000;
+    public static int _nbParticles = 10;
     private GameObject[] _obbs;
 
     public RainManager(Transform p_transform, Bounds p_bounds, GameObject[] p_obbs, BezierCurve p_curve, ComputeShader p_windShader, ComputeShader p_rainUpdate, ComputeShader p_rainCollision, Material p_rainMaterial, Material p_splashMaterial)

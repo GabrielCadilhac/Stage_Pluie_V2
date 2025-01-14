@@ -4,7 +4,7 @@ using UnityEngine;
 
 public class RainFlowMaps : MonoBehaviour
 {
-    private const int SIZE = 16;
+    public static int SIZE = 32;
 
     private RainFlow _rainFlows;
 
@@ -19,7 +19,7 @@ public class RainFlowMaps : MonoBehaviour
 
         GetComponent<Renderer>().material.mainTexture = _texture;
 
-        _rainFlows = new RainFlow(transform, _dripMaterial, transform.position, -transform.forward, _texture);
+        _rainFlows = new RainFlow(transform, _dripMaterial, _texture);
         _rainFlows.GenerateMesh(transform.localScale.x);
         _rainFlows.DrawFlowMap();
     }

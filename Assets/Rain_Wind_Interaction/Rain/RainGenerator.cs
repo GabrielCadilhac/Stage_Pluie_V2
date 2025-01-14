@@ -142,25 +142,35 @@ public class RainGenerator
 
         Vector4[] splashPos = new Vector4[RainManager._nbParticles];
         _splashColBuffer.GetData(splashPos);
-        for (int i = 0; i < RainManager._nbParticles; i++)
+        for (int k = 0; k < RainManager._nbParticles; k++)
         {
-            if (collisions[i] > 0)
+            if (collisions[k] > 0)
             {
-                OBB obb = _obbs[collisions[i]];
+                OBB obb = _obbs[collisions[k]];
                 Vector4 t1 = obb.rotation.GetColumn(0);
                 Vector4 t2 = obb.rotation.GetColumn(1);
+                Vector4 t3 = obb.rotation.GetColumn(2);
+
                 Vector3 e1 = new Vector3(t1.x, t1.y, t1.z);
                 Vector3 e2 = new Vector3(t2.x, t2.y, t2.z);
+                Vector3 n  = new Vector3(t3.x, t3.y, t3.z);
 
-                Vector3 localPoint = p_transform.InverseTransformPoint(splashPos[i]);
+                Vector3 point = new Vector3(splashPos[k].x, splashPos[k].y, splashPos[k].z);
+                Vector3 localPoint = point - obb.center;
+                localPoint -= Vector3.Dot(n, localPoint) * n;
 
-                float u = Vector3.Dot(localPoint.normalized, e1.normalized);
-                float v = Vector3.Dot(localPoint.normalized, e2.normalized);
+                float u = Vector3.Dot(localPoint, e1.normalized) / obb.size.x;
+                float v = Vector3.Dot(localPoint, e2.normalized) / obb.size.y;
 
-                int k = (int)(Mathf.Abs(u) * 16f);
-                int j = (int)(Mathf.Abs(v) * 16f);
+                //Debug.DrawLine(obb.center, obb.center + e1, Color.green, 0.1f);
+                //Debug.DrawLine(obb.center, obb.center + e2, Color.green, 0.1f);
+                //Debug.DrawLine(obb.center, obb.center + n, Color.green, 0.1f);
+                //Debug.DrawLine(obb.center, obb.center + localPoint, Color.red, 0.1f);
 
-                _obbsGameObject[collisions[i]].GetComponent<RainFlowMaps>().AddDrop(k, j);
+                float i = Mathf.Clamp01(u * 0.5f + 0.5f) * (float) (RainFlowMaps.SIZE);
+                float j = Mathf.Clamp01(v * 0.5f + 0.5f) * (float) (RainFlowMaps.SIZE);
+
+                _obbsGameObject[collisions[k]].GetComponent<RainFlowMaps>().AddDrop((int) i, (int) j);
             }
         }
     }
@@ -218,5 +228,8 @@ public class RainGenerator
 
         _splashColBuffer.Release();
         _splashColBuffer = null;
+
+        _obbsCollidedBuffer.Release();
+        _obbsCollidedBuffer = null;
     }
 }
