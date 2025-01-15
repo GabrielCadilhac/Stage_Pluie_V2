@@ -1,0 +1,45 @@
+// Each #kernel tells which function to compile; you can have many kernels
+#pragma kernel CSMain
+
+#define SIZE 1024
+
+// Create a RenderTexture with enableRandomWrite flag and set it
+// with cs.SetTexture
+
+// ====== Buffers ======
+RWStructuredBuffer<float3> Positions;
+RWStructuredBuffer<float3> Velocities;
+RWStructuredBuffer<int> CanBeDrawn;
+
+// ====== Settings ======
+const uint _NumParticles;
+const uint _Resolution;
+
+const float _DeltaTime;
+
+const float3 _Min;
+const float3 _Max;
+
+const float3 _Gravity;
+
+[numthreads(SIZE, 1, 1)]
+void CSMain (uint3 id : SV_DispatchThreadID)
+{
+    while (id.x < _NumParticles)
+    {
+        if (CanBeDrawn[id.x] == 1)
+        {
+            Velocities[id.x] += _Gravity * _DeltaTime;
+            Positions[id.x]  += Velocities[id.x] * _DeltaTime;
+        
+            if (Positions[id.x].x < _Min.x || Positions[id.x].y < _Min.y || Positions[id.x].z < _Min.z
+             || Positions[id.x].x > _Max.x || Positions[id.x].y > _Max.y || Positions[id.x].z > _Max.z)
+            {
+                CanBeDrawn[id.x] = 0;
+                Velocities[id.x] = float3(0., 0., 0.);
+
+            }
+        }
+        id.x += _Resolution * SIZE;
+    }
+}

@@ -39,7 +39,7 @@ public class RainGenerator
             obbsCollided[i] = -1;
         _obbsCollidedBuffer.SetData(obbsCollided);
 
-        _nbBlocks  = Mathf.Clamp(Mathf.FloorToInt((float)RainManager._nbParticles / (float) Constants.BLOCK_SIZE + 0.5f), 1, Constants.MAX_BLOCKS_NUMBER);
+        _nbBlocks = Mathf.Clamp(Mathf.FloorToInt((float)RainManager._nbParticles / (float) Constants.BLOCK_SIZE + 0.5f), 1, Constants.MAX_BLOCKS_NUMBER);
 
         _splashColBuffer = p_splashPosBuffer;
 
@@ -144,7 +144,7 @@ public class RainGenerator
         _splashColBuffer.GetData(splashPos);
         for (int k = 0; k < RainManager._nbParticles; k++)
         {
-            if (collisions[k] > 0)
+            if (collisions[k] > -1 && _obbsGameObject[collisions[k]].GetComponent<RainFlowMaps>() != null)
             {
                 OBB obb = _obbs[collisions[k]];
                 Vector4 t1 = obb.rotation.GetColumn(0);
@@ -169,6 +169,9 @@ public class RainGenerator
 
                 float i = Mathf.Clamp01(u * 0.5f + 0.5f) * (float) (RainFlowMaps.SIZE);
                 float j = Mathf.Clamp01(v * 0.5f + 0.5f) * (float) (RainFlowMaps.SIZE);
+
+                i = Mathf.Clamp(i, 0f, (float) RainFlowMaps.SIZE - 1f);
+                j = Mathf.Clamp(j, 0f, (float) RainFlowMaps.SIZE - 1f);
 
                 _obbsGameObject[collisions[k]].GetComponent<RainFlowMaps>().AddDrop((int) i, (int) j);
             }

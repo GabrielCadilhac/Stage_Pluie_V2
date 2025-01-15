@@ -1,4 +1,6 @@
+using System.Collections.Generic;
 using UnityEngine;
+
 public class Test : MonoBehaviour
 {
     [SerializeField] private Transform _particle;

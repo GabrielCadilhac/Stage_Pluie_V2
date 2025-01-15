@@ -241,6 +241,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _dripMaterial: {fileID: 2100000, guid: bb525f6ac6b8bb94eb9008881bccbbbb, type: 2}
+  _dripComputeShader: {fileID: 7200000, guid: eba969247eb469449ab6fc191ffdbf74, type: 3}
 --- !u!1 &836192457
 GameObject:
   m_ObjectHideFlags: 0
@@ -362,6 +363,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _dripMaterial: {fileID: 0}
+  _dripComputeShader: {fileID: 0}
 --- !u!1 &904844140
 GameObject:
   m_ObjectHideFlags: 0
@@ -448,8 +450,9 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 904844140}
   serializedVersion: 2
-  m_LocalRotation: {x: 0.034143478, y: 0.14193368, z: -0.0048987297, w: 0.98927504}
-  m_LocalPosition: {x: -0.63806474, y: 5.031216, z: -12.474941}
+  m_LocalRotation: {x: 0.0000000372529, y: 0.000000119209275, z: -0.0000000032596286,
+    w: 1}
+  m_LocalPosition: {x: 2.1208038, y: 5.1811247, z: -3.9138296}
   m_LocalScale: {x: -11541, y: -11541, z: -11541}
   m_ConstrainProportionsScale: 0
   m_Children: []

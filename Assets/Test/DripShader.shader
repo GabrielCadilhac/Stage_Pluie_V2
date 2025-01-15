@@ -1,9 +1,10 @@
-Shader "Unlit/RainShader2"
+Shader "Unlit/DripShader"
 {
     Properties
     {
-        _UV ("UV", Vector) = (1.0, 1.0, 0., 0.)
+        _UV ("UV", Vector)     = (1.0, 1.0, 0., 0.)
         _Size ("Size", Vector) = (0.5, 0.5, 1., 1.)
+        _Color("Color", Color) = (1.0, 0., 0., 1.0)
     }
     SubShader
     {
@@ -26,6 +27,7 @@ Shader "Unlit/RainShader2"
             #include "UnityCG.cginc"
 
             uniform StructuredBuffer<float3> Positions;
+            uniform StructuredBuffer<int> CanBeDrawn;
 
             struct appdata
             {
@@ -42,13 +44,13 @@ Shader "Unlit/RainShader2"
                 uint instanceID : SV_InstanceID;
             };
 
-            int _DripsCount;
             float2 _Size;
+            fixed4 _Color;
 
             v2f vert (appdata v, uint instanceID : SV_InstanceID, uint vertexId : SV_VertexID)
             {
                 v2f o;
-                if (instanceID >= _DripsCount)
+                if (CanBeDrawn[instanceID] != 1)
 					return o;
 
                 float x = vertexId % 2;
@@ -77,7 +79,7 @@ Shader "Unlit/RainShader2"
 
             fixed4 frag (v2f i) : SV_Target
             {
-                fixed4 col = fixed4(1., 0., 0., 1.);
+                fixed4 col = _Color;
 
                 // apply fog
                 UNITY_APPLY_FOG(i.fogCoord, col);

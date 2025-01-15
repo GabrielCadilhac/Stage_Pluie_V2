@@ -11,6 +11,7 @@ public class RainFlowMaps : MonoBehaviour
     private Texture2D _texture;
 
     [SerializeField] private Material _dripMaterial;
+    [SerializeField] private ComputeShader _dripComputeShader;
 
     void Start()
     {
@@ -19,7 +20,7 @@ public class RainFlowMaps : MonoBehaviour
 
         GetComponent<Renderer>().material.mainTexture = _texture;
 
-        _rainFlows = new RainFlow(transform, _dripMaterial, _texture);
+        _rainFlows = new RainFlow(transform, _dripMaterial, _texture, _dripComputeShader);
         _rainFlows.GenerateMesh(transform.localScale.x);
         _rainFlows.DrawFlowMap();
     }
@@ -56,12 +57,11 @@ public class RainFlowMaps : MonoBehaviour
             RaycastHit hit;
             if (Physics.Raycast(ray, out hit))
             {
-                Vector3 localPoint  = transform.InverseTransformPoint(hit.point);
-                Vector3 localNormal = transform.InverseTransformDirection(hit.normal);
+                Vector2 uv = hit.textureCoord;
+                int i = (int)(uv.x * SIZE);
+                int j = (int)(uv.y * SIZE);
 
-                Vector2Int uv = ComputeCellCoord(localPoint, localNormal);
-
-                _rainFlows.AddObstacle(uv.x, uv.y);
+                _rainFlows.AddObstacle(i, j);
             }
         }
     }

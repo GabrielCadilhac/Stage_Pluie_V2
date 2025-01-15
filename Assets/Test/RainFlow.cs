@@ -60,12 +60,12 @@ public class RainFlow
 
     private Mesh[,] _mesh;
 
-    public RainFlow(Transform p_transform, Material p_dripMaterial, Texture2D p_texture)
+    public RainFlow(Transform p_transform, Material p_dripMaterial, Texture2D p_texture, ComputeShader p_dripComputeShader)
     {
         _texture = p_texture;
 
         _transform = p_transform;
-        _rainDripping = new RainDripping(p_transform, p_dripMaterial);
+        _rainDripping = new RainDripping(p_transform, p_dripMaterial, p_dripComputeShader);
 
         _flowMap        = new float[RainFlowMaps.SIZE, RainFlowMaps.SIZE];
         _affinityCoeff  = new float[RainFlowMaps.SIZE, RainFlowMaps.SIZE];

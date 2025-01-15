@@ -151,7 +151,7 @@ void CSMain (uint3 id : SV_DispatchThreadID)
     while (id.x < _NumParticles)
     {   
         Collision col;
-        ObbsCollided[id.x] = 0;
+        ObbsCollided[id.x] = -1;
         bool isCollided = OBBCollision(Positions[id.x], col);
         if (isCollided) // Collision detected
         {
@@ -165,7 +165,7 @@ void CSMain (uint3 id : SV_DispatchThreadID)
         else if (Positions[id.x].y < _Min.y) // Collision with the bottom of the rain box
         {
             // Add splatch on particle collided rain box
-            SplashPos[id.x] = float4(Positions[id.x].x, _Min.y, Positions[id.x].z, 1.);
+            SplashPos[id.x] = float4(Positions[id.x].x, _Min.y + 0.001, Positions[id.x].z, 1.);
             SplashNormal[id.x] = float3(0., 1., 0.);
             
             float dist = Positions[id.x].y - _Min.y;
