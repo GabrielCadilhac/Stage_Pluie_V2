@@ -4,7 +4,7 @@ using UnityEngine;
 
 public class RainFlowMaps : MonoBehaviour
 {
-    public static int SIZE = 32;
+    public static int SIZE = 256;
 
     private RainFlow _rainFlows;
 
@@ -12,15 +12,17 @@ public class RainFlowMaps : MonoBehaviour
 
     [SerializeField] private Material _dripMaterial;
     [SerializeField] private ComputeShader _dripComputeShader;
+    [SerializeField] private Texture2D _roughnessMap;
+    [SerializeField] private Texture2D _normalMap;
 
-    void Start()
+	void Start()
     {
         _texture = new Texture2D(SIZE, SIZE, TextureFormat.RGBA32, false);
         _texture.filterMode = FilterMode.Point;
 
         GetComponent<Renderer>().material.mainTexture = _texture;
 
-        _rainFlows = new RainFlow(transform, _dripMaterial, _texture, _dripComputeShader);
+        _rainFlows = new RainFlow(transform, _dripMaterial, _texture, _roughnessMap, _normalMap, _dripComputeShader);
         _rainFlows.GenerateMesh(transform.localScale.x);
         _rainFlows.DrawFlowMap();
     }
@@ -46,7 +48,14 @@ public class RainFlowMaps : MonoBehaviour
                 int i = (int)(uv.x * SIZE);
                 int j = (int)(uv.y * SIZE);
 
-                _rainFlows.AddDrop(i, j, new Vector3(-transform.right.y, -transform.up.y, 0f));
+                int dropSize = 5;
+                for (int k = i - dropSize; k < i + dropSize; k++)
+                {
+                    for (int l = j - dropSize; l < j + dropSize; l++)
+                    {
+                        _rainFlows.AddDrop(k, l, new Vector3(-transform.right.y, -transform.up.y, 0f));
+                    }
+                }
             }
         }
 
