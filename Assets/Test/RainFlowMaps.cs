@@ -14,6 +14,10 @@ public class RainFlowMaps : MonoBehaviour
     [SerializeField] private ComputeShader _dripComputeShader;
     [SerializeField] private Texture2D _roughnessMap;
     [SerializeField] private Texture2D _normalMap;
+    [SerializeField] [Range(0f,1f)] private float _dotThreshold1 = 0f;
+    [SerializeField] [Range(0f,1f)] private float _dotThreshold2 = 0f;
+    [SerializeField] [Range(0f,50f)] private float _textureScale = 1f;
+    [SerializeField] private float _normalCoeff = 1f;
 
 	void Start()
     {
@@ -22,9 +26,9 @@ public class RainFlowMaps : MonoBehaviour
 
         GetComponent<Renderer>().material.mainTexture = _texture;
 
-        _rainFlows = new RainFlow(transform, _dripMaterial, _texture, _roughnessMap, _normalMap, _dripComputeShader);
+        _rainFlows = new RainFlow(transform, _dripMaterial, _texture, _roughnessMap, _normalMap, _dripComputeShader, _textureScale);
         _rainFlows.GenerateMesh(transform.localScale.x);
-        _rainFlows.DrawFlowMap();
+        //_rainFlows.DrawFlowMap(_dotThreshold);
     }
 
     public void AddDrop(int p_i, int p_j)
@@ -34,8 +38,11 @@ public class RainFlowMaps : MonoBehaviour
 
     void Update()
     {
+        // Update parameters
+        _rainFlows.normalCoeff = _normalCoeff;
+
         _rainFlows.Update(-transform.forward);
-        _rainFlows.DrawFlowMap();
+        _rainFlows.DrawFlowMap(_dotThreshold1, _dotThreshold2);
 
         // Raycast mouse to get the uv of the plane to add a drop
         if (Input.GetMouseButtonDown(0))

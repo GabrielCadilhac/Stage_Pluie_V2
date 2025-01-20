@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using Unity.Mathematics;
+using Unity.VisualScripting;
 using UnityEngine;
 
 public class RainFlow
@@ -24,7 +25,7 @@ public class RainFlow
     }
 
     private const float ALPHA1  = 0.001f;
-    private const float ALPHA2  = 1f;
+    private const float ALPHA2  = 0.001f;
     private const float THETA_C = 85f * math.PI / 180f;
     private const float EPSILON = 0.0001f;
     private Vector3 EXT_FORCE   = new Vector3(0f, -9.81f, 0f);
@@ -33,6 +34,9 @@ public class RainFlow
     private const float DRIPPING_THRESHOLD = 30f;
 
     private float _deltaTime = 10f;
+    private float _obsTreshold1 = 0f;
+    private float _obsTreshold2 = 1f;
+    public float normalCoeff = 1f;
 
     private Texture2D _texture;
     
@@ -61,7 +65,7 @@ public class RainFlow
 
     private Mesh[,] _mesh;
 
-    public RainFlow(Transform p_transform, Material p_dripMaterial, Texture2D p_texture, Texture2D p_roughnessMap, Texture2D p_normalMap, ComputeShader p_dripComputeShader)
+    public RainFlow(Transform p_transform, Material p_dripMaterial, Texture2D p_texture, Texture2D p_roughnessMap, Texture2D p_normalMap, ComputeShader p_dripComputeShader, float p_textureScale)
     {
         _texture = p_texture;
 
@@ -73,19 +77,21 @@ public class RainFlow
         _obstacles      = new int[RainFlowMaps.SIZE, RainFlowMaps.SIZE];
         _dropsContained = new bool[RainFlowMaps.SIZE, RainFlowMaps.SIZE];
 		_normalMap      = new Vector3[RainFlowMaps.SIZE, RainFlowMaps.SIZE];
+
 		// Initialize the _affinityCoeff to 0.5f
-		float textScale = p_roughnessMap.width / RainFlowMaps.SIZE;
         for (int i = 0; i < RainFlowMaps.SIZE; i++)
         {
             for (int j = 0; j < RainFlowMaps.SIZE; j++)
             {
                 _flowMap[i, j]   = 0f;
                 _obstacles[i, j] = 0;
-                //_affinityCoeff[i, j]  = UnityEngine.Random.Range(0f, 1f);
-                _affinityCoeff[i, j] = 1f - p_roughnessMap.GetPixel((int) (i * textScale),(int) (j * textScale)).r;
-				_dropsContained[i, j] = false;
-                Color c = p_normalMap.GetPixel((int)(i * textScale), (int)(j * textScale));
+                //_affinityCoeff[i, j] = UnityEngine.Random.Range(0f, 1f);
+                //_affinityCoeff[i, j] = 1f - p_roughnessMap.GetPixel((int)(i * p_textureScale), (int)(j * p_textureScale)).r;
+                Color c = p_normalMap.GetPixel((int)(i * p_textureScale), (int)(j * p_textureScale));
 				_normalMap[i, j] = new Vector3(c.r, c.g, c.b);
+
+                _affinityCoeff[i, j] = p_roughnessMap.GetPixel((int)(i * p_textureScale), (int)(j * p_textureScale)).r;
+                _dropsContained[i, j] = false;
 			}
         }
 
@@ -113,7 +119,7 @@ public class RainFlow
 
     public void GenerateMesh(float p_localScale)
     {
-        float cellSize = p_localScale / RainFlowMaps.SIZE;//transform.localScale.x / RainFlowMaps.SIZE;
+        float cellSize = p_localScale / RainFlowMaps.SIZE;
         _mesh = new Mesh[RainFlowMaps.SIZE, RainFlowMaps.SIZE];
         for (int i = 0; i < RainFlowMaps.SIZE; i++)
         {
@@ -128,14 +134,15 @@ public class RainFlow
         }
     }
 
-    public void DrawFlowMap()
+    public void DrawFlowMap(float p_dotThreshold1, float p_dotThreshold2)
     {
+        _obsTreshold1 = p_dotThreshold1;
+        _obsTreshold2 = p_dotThreshold2;
         for (int i = 0; i < RainFlowMaps.SIZE; i++)
         {
             for (int j = 0; j < RainFlowMaps.SIZE; j++)
             {
                 //float aff = _affinityCoeff[i, j];
-
                 //if (_obstacles[i, j] == 1)
                 //    _texture.SetPixel(i, j, Color.red);
                 //else
@@ -143,23 +150,36 @@ public class RainFlow
                 //    float flow = _flowMap[i, j] / DROP_MASS;
                 //    _texture.SetPixel(i, j, new Color(Mathf.Clamp01(aff + flow), aff, aff, 1f));
                 //}
-                Vector3 n = _normalMap[i, j];
-                Color normalColor = new Color(n.x, n.y, n.z, 1f);
-				_texture.SetPixel(i, j, normalColor);
 
-                n.z *= -1f;
+                float d = ComputeObstacles(i,j);
+                float r = _affinityCoeff[i, j] < _obsTreshold1 ? 0f : 1f;
+                float f = _flowMap[i, j];// / DROP_MASS;
 
-                float ration = _transform.localScale.x / (float)RainFlowMaps.SIZE;
+                float v = r;
+                Color col  = new Color(v / (v + f), v, v / (v + f), 1f);
 
-				if (i%2==0 && j%2==0)
-                {
-                    float x = (i + 0.5f) * ration;
-                    float y = (j + 0.5f) * ration;
-					Debug.DrawLine(new Vector3(x, y, 0f), new Vector3(x, y, 0f) + n*0.1f, normalColor, 0.1f);
-                }
+                _texture.SetPixel(i, j, col);
+
+                //Vector3 n = _normalMap[i, j];
+                //Color normalColor = new Color(n.x, n.y, n.z, 1f);
+                //n.z *= -1f;
+                //float ratio = _transform.localScale.x / (float)RainFlowMaps.SIZE;
+                //if (i % 2 == 0 && j % 2 == 0)
+                //{
+                //    float x = (i + 0.5f) * ratio;
+                //    float y = (j + 0.5f) * ratio;
+                //    Debug.DrawLine(new Vector3(x, y, 0f), new Vector3(x, y, 0f) + n * 0.1f, normalColor, 0.1f);
+                //}
             }
         }
         _texture.Apply();
+    }
+
+    private float ComputeObstacles(int p_i, int p_j)
+    {
+        float v1 = Mathf.Clamp01(Mathf.Abs(Vector3.Dot(Vector3.forward, _normalMap[p_i, p_j].normalized)) * normalCoeff);
+        float v2 = Mathf.Clamp01(1f - Mathf.Abs(Vector3.Dot(Vector3.forward, _normalMap[p_i, p_j].normalized)) * normalCoeff);
+        return v2 > _obsTreshold1 || v1 > _obsTreshold2 ? 0f : 1f;
     }
 
     // Compute the probability based on the Newton's Law
@@ -277,10 +297,14 @@ public class RainFlow
         for (int k = 0; k < 8; k++)
         {
             Vector3 dl = _neighbors[k] + new Vector3(p_i, p_j, 0f);
-            if (dl.x >= 0 && dl.x < RainFlowMaps.SIZE && dl.y >= 0 && dl.y < RainFlowMaps.SIZE)
-                probas[k] = _obstacles[(int)dl.x, (int)dl.y] > 0 ? 0f : 1f;
-            else
+            if (ComputeObstacles(p_i, p_j) == 0f)
                 probas[k] = 1f;
+            else if (dl.x >= 0 && dl.x < RainFlowMaps.SIZE && dl.y >= 0 && dl.y < RainFlowMaps.SIZE)
+                probas[k] = ComputeObstacles((int) dl.x, (int) dl.y);
+            //probas[k] = Vector3.Dot(Vector3.up, _normalMap[(int)dl.x,(int)dl.y].normalized) > OBSTACLES_THRESHOLD ? 0f : 1f;
+            //probas[k] = _obstacles[(int)dl.x, (int)dl.y] > 0 ? 0f : 1f;
+            else
+                probas[k] = 0f;
         }
         return probas;
     }
@@ -358,7 +382,7 @@ public class RainFlow
         return c;
     }
 
-    float ComputeTravelTime(Drop p_drop, Vector3 p_dp, Vector3 p_acc)
+    float ComputeTravelTime(Vector3 p_dp, Vector3 p_acc)
     {
         return math.sqrt(math.pow(p_dp.x, 2) + math.pow(p_dp.y, 2)) / p_acc.magnitude;
     }
@@ -413,7 +437,7 @@ public class RainFlow
             return;
         }
 
-        float remainingMass = h(_affinityCoeff[i, j]) * _flowMap[i, j];
+        float remainingMass = h(_affinityCoeff[i, j]) * _flowMap[i, j] * ComputeObstacles(i, j);
 
         drop.mass -= remainingMass;
         _flowMap[i, j] = remainingMass;
@@ -446,7 +470,7 @@ public class RainFlow
         Vector3 V0perp = drop.vel - V0p;
         drop.vel = V0p + V0perp;
 
-        drop.freezeTime = ComputeTravelTime(drop, _neighbors[p], EXT_FORCE / drop.mass);
+        drop.freezeTime = ComputeTravelTime(_neighbors[p], EXT_FORCE / drop.mass);
         p_drops[p_idDrop] = drop;
         
         if (existedDrop)
