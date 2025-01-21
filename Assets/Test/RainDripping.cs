@@ -6,7 +6,7 @@ public class RainDripping
     private const int NB_DROPS = 200;
     private Vector3 GRAVITY = new Vector3(0f, -9.81f, 0f);
 
-    private float _dripFallSpeed = 0.2f;
+    private float _dripFallSpeed = 2f;
 
     private GraphicsBuffer _dripsPosBuffer, _drawTestBuffer;
     private Bounds _bounds;
@@ -107,13 +107,13 @@ public class RainDripping
 
     public void OnDisable()
     {
-        _dripsPosBuffer.Dispose();
+        _dripsPosBuffer.Release();
         _dripsPosBuffer = null;
 
-        _dripVelBuffer.Dispose();
+        _dripVelBuffer.Release();
         _dripVelBuffer = null;
 
-        _drawTestBuffer.Dispose();
+        _drawTestBuffer.Release();
         _drawTestBuffer = null;
     }
 }

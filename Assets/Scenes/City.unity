@@ -255,22 +255,22 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f14f0ac9679ed0049bf36db53acb08f3, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _energyStrength: 0
-  _energySpeed: 0
-  _coeffDissip: 0
-  _coeffTransfert: 0
-  _meanEnergy: 0
-  _stdEnergyPrim: 0
-  _minSizeTall: 0
-  _minSizeMedium: 0
-  _minSizeSmall: 0
-  _sphereSize: 0
+  _energyStrength: 5
+  _energySpeed: 0.242
+  _coeffDissip: 0.322
+  _coeffTransfert: 0.087
+  _meanEnergy: 0.302
+  _stdEnergyPrim: 0.285
+  _minSizeTall: 0.25
+  _minSizeMedium: 0.15
+  _minSizeSmall: 0.07
+  _sphereSize: 1
   _renderSphere: 0
   _renderSplash: 0
   _drawDebugGrid: 0
-  _deltaTime: 1
-  _localWindStrength: 0
-  _globalWind: {x: 0, y: 0, z: 0}
+  _deltaTime: 2.5
+  _localWindStrength: 14
+  _globalWind: {x: 4, y: 0, z: 2}
 --- !u!4 &122697507
 Transform:
   m_ObjectHideFlags: 0
@@ -1478,8 +1478,8 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1509753807}
   serializedVersion: 2
-  m_LocalRotation: {x: 0.06558719, y: 0.23279783, z: -0.01573779, w: 0.97018343}
-  m_LocalPosition: {x: -2.7659907, y: 7.7844067, z: -7.6505613}
+  m_LocalRotation: {x: 0.06719351, y: 0.086692125, z: -0.005860707, w: 0.9939493}
+  m_LocalPosition: {x: -2.6296406, y: 9.32378, z: -12.375982}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -1903,6 +1903,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _dripMaterial: {fileID: 2100000, guid: bb525f6ac6b8bb94eb9008881bccbbbb, type: 2}
   _dripComputeShader: {fileID: 7200000, guid: eba969247eb469449ab6fc191ffdbf74, type: 3}
+  _roughnessMap: {fileID: 2800000, guid: f59778f317f64b44da7d3faa1d597d2e, type: 3}
+  _normalMap: {fileID: 2800000, guid: ff5422071906b994f95b1401504be79c, type: 3}
+  _dotThreshold: 0
+  _textureScale: 1
 --- !u!23 &2045159091
 MeshRenderer:
   m_ObjectHideFlags: 0

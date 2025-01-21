@@ -29,7 +29,7 @@ public class RainManager
     private GraphicsFence _fence;
 
     // Test
-    public static int _nbParticles = 10000;
+    public static int _nbParticles = 100000;
     private GameObject[] _obbs;
 
     public RainManager(Transform p_transform, Bounds p_bounds, GameObject[] p_obbs, BezierCurve p_curve, ComputeShader p_windShader, ComputeShader p_rainUpdate, ComputeShader p_rainCollision, Material p_rainMaterial, Material p_splashMaterial)
@@ -112,7 +112,7 @@ public class RainManager
 
     public void RainCollision(float p_deltaTime)
     {
-        _rainGenerator.DispatchCollision(p_deltaTime, _transform);
+        _rainGenerator.DispatchCollision(p_deltaTime);
         Graphics.WaitOnAsyncGraphicsFence(_fence);
     }
 
@@ -185,31 +185,33 @@ public class RainManager
 
     public void DrawGizmos() // Debugger la grille du vent (permet de voir les perturbations)
     {
-        //if (!Constants.DRAW_DEBUG_GRID || _windGenerator == null) return;
-        /*
+        if (!Constants.DRAW_DEBUG_GRID || _windGenerator == null) return;
+        
         Grid grid = _windGenerator.GetGrid();
         Vector3 cellSize = grid.GetCellSize();
 
         Vector3[] localWinds = _windGenerator.GetData();
 
+        Vector3 newPos, cellCenter, wind, temp;
+        Color c;
         for (int j = 0; j < Common.NB_CELLS.x; j++)
         {
             for (int i = 0; i < Common.NB_CELLS.y; i++)
             {
                 for (int k = 0; k < Common.NB_CELLS.z; k++)
                 {
-                    Vector3 newPos = new Vector3(j * cellSize.x, i * cellSize.y, k * cellSize.z) + _globalMin;
+                    newPos = new Vector3(j * cellSize.x, i * cellSize.y, k * cellSize.z) + _globalMin;
 
-                    Vector3 cellCenter = grid.GetCellCenter(newPos);
+                    cellCenter = grid.GetCellCenter(newPos);
                     int index = (k * Common.NB_CELLS.y + i) * Common.NB_CELLS.x + j;
                     //Vector3 wind = grid.Get(j, i, k);
-                    Vector3 wind = localWinds[index];
+                    wind = localWinds[index];
 
                     //Vector3 globWind = _globalWind * _globalWind.magnitude;
                     if (Mathf.Abs((wind.normalized - Vector3.zero).magnitude) <= 0.1f) continue;
 
-                    Vector3 temp = wind * 0.5f + Vector3.one * 0.5f;
-                    Color c = new Color(temp.x, temp.y, temp.z);
+                    temp = wind * 0.5f + Vector3.one * 0.5f;
+                    c = new Color(temp.x, temp.y, temp.z);
 
                     Gizmos.color = c;
                     Common.DrawArrow(cellCenter, wind, c, 0.5f, 5f);
@@ -217,6 +219,6 @@ public class RainManager
                 }
             }
         }
-        */
+        
     }
 }

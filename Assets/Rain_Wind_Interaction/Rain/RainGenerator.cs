@@ -17,6 +17,9 @@ public class RainGenerator
     public OBB[] _obbs;
     private GameObject[] _obbsGameObject;
 
+    private int[] _collisionsId;
+    private Vector4[] _splashPos;
+
     public RainGenerator(ComputeShader p_updateShader,
                          ComputeShader p_collisionShader,
                          GraphicsBuffer p_posBuffer,
@@ -39,13 +42,19 @@ public class RainGenerator
             obbsCollided[i] = -1;
         _obbsCollidedBuffer.SetData(obbsCollided);
 
+        _collisionsId = new int[RainManager._nbParticles];
+        _splashPos = new Vector4[RainManager._nbParticles];
+
         _nbBlocks = Mathf.Clamp(Mathf.FloorToInt((float)RainManager._nbParticles / (float) Constants.BLOCK_SIZE + 0.5f), 1, Constants.MAX_BLOCKS_NUMBER);
 
         _splashColBuffer = p_splashPosBuffer;
 
         _obbsGameObject = p_obbsGameObject;
         _obbsBuffer = new ComputeBuffer(_obbsGameObject.Length, 22 * sizeof(float));
-        _obbsBuffer.SetData(GameObject2OBB(_obbsGameObject));
+
+        _obbs = new OBB[_obbsGameObject.Length];
+        GameObject2OBB(_obbsGameObject);
+        _obbsBuffer.SetData(_obbs);
 
         // Generate velocities
         Vector3[] tempVel = new Vector3[RainManager._nbParticles];
@@ -100,10 +109,9 @@ public class RainGenerator
         _collisionShader.SetVector("_Max", p_globalMax);
     }
 
-    private OBB[] GameObject2OBB(GameObject[] p_obbsGameObject)
+    private void GameObject2OBB(GameObject[] p_obbsGameObject)
     {
-        OBB[] oBBs = new OBB[p_obbsGameObject.Length];
-        for (int i = 0; i < oBBs.Length; i++)
+        for (int i = 0; i < _obbs.Length; i++)
         {
             GameObject go = p_obbsGameObject[i];
 
@@ -113,11 +121,8 @@ public class RainGenerator
             oBB.center   = go.transform.position;
             oBB.size     = go.transform.localScale / 2f;
 
-            oBBs[i] = oBB;
+            _obbs[i] = oBB;
         }
-        _obbs = oBBs;
-
-        return oBBs;
     }
 
     public void UpdateBoxBounds(Vector3 p_globalMin, Vector3 p_globalMax)
@@ -131,49 +136,46 @@ public class RainGenerator
         _updateShader.Dispatch(0, _nbBlocks, 1, 1);
     }
 
-    public void DispatchCollision(float p_deltaTime, Transform p_transform)
+    public void DispatchCollision(float p_deltaTime)
     {
-        _obbsBuffer.SetData(GameObject2OBB(_obbsGameObject));
+        GameObject2OBB(_obbsGameObject);
+        _obbsBuffer.SetData(_obbs);
         _updateShader.SetFloat("_DeltaTime", p_deltaTime);
         _collisionShader.Dispatch(0, _nbBlocks, 1, 1);
 
-        int[] collisions = new int[RainManager._nbParticles];
-        _obbsCollidedBuffer.GetData(collisions);
-
-        Vector4[] splashPos = new Vector4[RainManager._nbParticles];
-        _splashColBuffer.GetData(splashPos);
+        _obbsCollidedBuffer.GetData(_collisionsId);
+        _splashColBuffer.GetData(_splashPos);
         for (int k = 0; k < RainManager._nbParticles; k++)
         {
-            if (collisions[k] > -1 && _obbsGameObject[collisions[k]].GetComponent<RainFlowMaps>() != null)
+            int col = _collisionsId[k];
+            RainFlowMaps rainFlowMaps = col > -1 ? _obbsGameObject[col].GetComponent<RainFlowMaps>() : null;
+            if (col > -1 && rainFlowMaps != null)
             {
-                OBB obb = _obbs[collisions[k]];
-                Vector4 t1 = obb.rotation.GetColumn(0);
-                Vector4 t2 = obb.rotation.GetColumn(1);
-                Vector4 t3 = obb.rotation.GetColumn(2);
+                OBB obb = _obbs[col];
+                Matrix4x4 rot = obb.rotation;
+                Vector4 t1 = rot.GetColumn(0);
+                Vector4 t2 = rot.GetColumn(1);
+                Vector4 t3 = rot.GetColumn(2);
 
                 Vector3 e1 = new Vector3(t1.x, t1.y, t1.z);
                 Vector3 e2 = new Vector3(t2.x, t2.y, t2.z);
                 Vector3 n  = new Vector3(t3.x, t3.y, t3.z);
 
-                Vector3 point = new Vector3(splashPos[k].x, splashPos[k].y, splashPos[k].z);
+                Vector3 sPos = _splashPos[k];
+                Vector3 point = new Vector3(sPos.x, sPos.y, sPos.z);
                 Vector3 localPoint = point - obb.center;
                 localPoint -= Vector3.Dot(n, localPoint) * n;
 
                 float u = Vector3.Dot(localPoint, e1.normalized) / obb.size.x;
                 float v = Vector3.Dot(localPoint, e2.normalized) / obb.size.y;
 
-                //Debug.DrawLine(obb.center, obb.center + e1, Color.green, 0.1f);
-                //Debug.DrawLine(obb.center, obb.center + e2, Color.green, 0.1f);
-                //Debug.DrawLine(obb.center, obb.center + n, Color.green, 0.1f);
-                //Debug.DrawLine(obb.center, obb.center + localPoint, Color.red, 0.1f);
+                float i = Mathf.Clamp01(u * 0.5f + 0.5f) * (float)(RainFlowMaps.SIZE);
+                float j = Mathf.Clamp01(v * 0.5f + 0.5f) * (float)(RainFlowMaps.SIZE);
 
-                float i = Mathf.Clamp01(u * 0.5f + 0.5f) * (float) (RainFlowMaps.SIZE);
-                float j = Mathf.Clamp01(v * 0.5f + 0.5f) * (float) (RainFlowMaps.SIZE);
+                i = Mathf.Clamp(i, 0f, (float)RainFlowMaps.SIZE - 1f);
+                j = Mathf.Clamp(j, 0f, (float)RainFlowMaps.SIZE - 1f);
 
-                i = Mathf.Clamp(i, 0f, (float) RainFlowMaps.SIZE - 1f);
-                j = Mathf.Clamp(j, 0f, (float) RainFlowMaps.SIZE - 1f);
-
-                _obbsGameObject[collisions[k]].GetComponent<RainFlowMaps>().AddDrop((int) i, (int) j);
+                rainFlowMaps.AddDrop((int)i, (int)j);
             }
         }
     }
@@ -187,15 +189,6 @@ public class RainGenerator
     {
         return _sizeBuffer;
     }
-
-    //public void SetWinds(Vector3[] p_winds)
-    //{
-    //    if (p_winds != null)
-    //    {
-    //        _localWindBuffer.SetData(p_winds);
-    //        _updateShader.SetBuffer(0, "Winds", _localWindBuffer);
-    //    }
-    //}
 
     public void ChangeGlobalWind()
     {

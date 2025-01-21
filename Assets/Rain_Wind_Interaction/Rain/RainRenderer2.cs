@@ -60,7 +60,7 @@ public class RainRenderer2
 
     public void Disable()
     {
-        _posBuffer.Dispose();
+        _posBuffer.Release();
         _posBuffer = null;
     }
 }

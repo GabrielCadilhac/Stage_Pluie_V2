@@ -33,10 +33,8 @@ public class RainFlow
     private const float DROP_MASS = 10f;
     private const float DRIPPING_THRESHOLD = 30f;
 
-    private float _deltaTime = 10f;
-    private float _obsTreshold1 = 0f;
-    private float _obsTreshold2 = 1f;
-    public float normalCoeff = 1f;
+    private float _deltaTime = 20f;
+    private float _obsTreshold = 0f;
 
     private Texture2D _texture;
     
@@ -85,12 +83,13 @@ public class RainFlow
             {
                 _flowMap[i, j]   = 0f;
                 _obstacles[i, j] = 0;
-                //_affinityCoeff[i, j] = UnityEngine.Random.Range(0f, 1f);
-                //_affinityCoeff[i, j] = 1f - p_roughnessMap.GetPixel((int)(i * p_textureScale), (int)(j * p_textureScale)).r;
+
                 Color c = p_normalMap.GetPixel((int)(i * p_textureScale), (int)(j * p_textureScale));
 				_normalMap[i, j] = new Vector3(c.r, c.g, c.b);
 
-                _affinityCoeff[i, j] = p_roughnessMap.GetPixel((int)(i * p_textureScale), (int)(j * p_textureScale)).r;
+                _affinityCoeff[i, j] = UnityEngine.Random.Range(0f, 1f);
+                //_affinityCoeff[i, j] = 1f - p_roughnessMap.GetPixel((int)(i * p_textureScale), (int)(j * p_textureScale)).r;
+                //_affinityCoeff[i, j] = p_roughnessMap.GetPixel((int)(i * p_textureScale), (int)(j * p_textureScale)).r;
                 _dropsContained[i, j] = false;
 			}
         }
@@ -134,31 +133,29 @@ public class RainFlow
         }
     }
 
-    public void DrawFlowMap(float p_dotThreshold1, float p_dotThreshold2)
+    public void DrawFlowMap(float p_dotThreshold1)
     {
-        _obsTreshold1 = p_dotThreshold1;
-        _obsTreshold2 = p_dotThreshold2;
+        _obsTreshold = p_dotThreshold1;
         for (int i = 0; i < RainFlowMaps.SIZE; i++)
         {
             for (int j = 0; j < RainFlowMaps.SIZE; j++)
             {
-                //float aff = _affinityCoeff[i, j];
-                //if (_obstacles[i, j] == 1)
-                //    _texture.SetPixel(i, j, Color.red);
-                //else
-                //{
-                //    float flow = _flowMap[i, j] / DROP_MASS;
-                //    _texture.SetPixel(i, j, new Color(Mathf.Clamp01(aff + flow), aff, aff, 1f));
-                //}
+                if (_obstacles[i, j] == 1)
+                    _texture.SetPixel(i, j, Color.red);
+                else
+                {
+                    float flow = _flowMap[i, j] / DRIPPING_THRESHOLD;
+                    _texture.SetPixel(i, j, new Color(flow,flow,flow, 1f));
+                }
 
-                float d = ComputeObstacles(i,j);
-                float r = _affinityCoeff[i, j] < _obsTreshold1 ? 0f : 1f;
-                float f = _flowMap[i, j];// / DROP_MASS;
+                //float d = ComputeObstacles(i,j);
+                //float r = _affinityCoeff[i, j] < _obsTreshold1 ? 0f : 1f;
+                //float f = _flowMap[i, j];// / DROP_MASS;
 
-                float v = r;
-                Color col  = new Color(v / (v + f), v, v / (v + f), 1f);
+                //float v = r;
+                //Color col  = new Color(v / (v + f), v, v / (v + f), 1f);
 
-                _texture.SetPixel(i, j, col);
+                //_texture.SetPixel(i, j, col);
 
                 //Vector3 n = _normalMap[i, j];
                 //Color normalColor = new Color(n.x, n.y, n.z, 1f);
@@ -177,21 +174,19 @@ public class RainFlow
 
     private float ComputeObstacles(int p_i, int p_j)
     {
-        float v1 = Mathf.Clamp01(Mathf.Abs(Vector3.Dot(Vector3.forward, _normalMap[p_i, p_j].normalized)) * normalCoeff);
-        float v2 = Mathf.Clamp01(1f - Mathf.Abs(Vector3.Dot(Vector3.forward, _normalMap[p_i, p_j].normalized)) * normalCoeff);
-        return v2 > _obsTreshold1 || v1 > _obsTreshold2 ? 0f : 1f;
+        float v1 = Mathf.Clamp01(Mathf.Abs(Vector3.Dot(Vector3.forward, _normalMap[p_i, p_j].normalized)));
+        //float v2 = Mathf.Clamp01(1f - Mathf.Abs(Vector3.Dot(Vector3.forward, _normalMap[p_i, p_j].normalized)));
+        return v1 > _obsTreshold ? 0f : 1f;
     }
 
     // Compute the probability based on the Newton's Law
-    float[] NewtonsLaw(Vector3 p_vp)
+    void NewtonsLaw(Vector3 p_vp, float[] p_probas)
     {
         // Compute Dsum
         float dl1 = 0f;
         float dl2 = 0f;
         Vector3 d1 = Vector3.zero;
         Vector3 d2 = Vector3.zero;
-
-        float[] probas = new float[8];
 
         for (int k = 0; k < 8; k++)
         {
@@ -218,12 +213,10 @@ public class RainFlow
             Vector3 d = _neighbors[k];
             float newDl = Mathf.Max(Vector3.Dot(d.normalized, p_vp.normalized), 0f);
             if (newDl == dl1 || newDl == dl2)
-                probas[k] = 1f / (Dsum * (Vector3.Cross(d, p_vp).magnitude + EPSILON));
+                p_probas[k] = 1f / (Dsum * (Vector3.Cross(d, p_vp).magnitude + EPSILON));
             else
-                probas[k] = 0f;
+                p_probas[k] = 0f;
         }
-
-        return probas;
     }
 
     float UStepFunction(Vector3 p_dk, Vector3 p_vp)
@@ -232,10 +225,9 @@ public class RainFlow
     }
 
     // Compute the probability based on the surface affinity
-    float[] Affinity(Vector3 p_vp, int p_i, int p_j)
+    void Affinity(Vector3 p_vp, int p_i, int p_j, float[] p_probas)
     {
         float Asum = 0f;
-        float[] probas = new float[8] { 0f, 0f, 0f, 0f, 0f, 0f, 0f, 0f };
 
         // Compute Asum
         for (int k = 0; k < 8; k++)
@@ -246,24 +238,22 @@ public class RainFlow
         }
 
         if (Asum == 0f)
-            return probas;
+            return;
 
         // Compute the probability Ak
         for (int k = 0; k < 8; k++)
         {
             Vector3 dl = _neighbors[k] + new Vector3(p_i, p_j, 0f);
             if (dl.x >= 0 && dl.x < RainFlowMaps.SIZE && dl.y >= 0 && dl.y < RainFlowMaps.SIZE)
-                probas[k] = (_affinityCoeff[(int) dl.x, (int) dl.y] / Asum) * UStepFunction(_neighbors[k], p_vp);
+                p_probas[k] = (_affinityCoeff[(int) dl.x, (int) dl.y] / Asum) * UStepFunction(_neighbors[k], p_vp);
         }
-        return probas;
     }
 
     // Compute the probability based on the wet/dry conditions
-    float[] WetDryConditions(Vector3 p_vp, int p_i, int p_j)
+    void WetDryConditions(Vector3 p_vp, int p_i, int p_j, float[] p_probas)
     {
         // Compute Wsum
         float Wsum = 0f;
-        float[] probas = new float[8] {0f,0f,0f,0f,0f,0f,0f,0f};
 
         for (int k = 0; k < 8; k++)
         {
@@ -275,38 +265,37 @@ public class RainFlow
         }
 
         if (Wsum == 0f)
-            return probas;
+            return;
 
         // Compute the probability Wk
         for (int k = 0; k < 8; k++)
         {
             Vector3 dl = _neighbors[k] + new Vector3(p_i, p_j, 0f);
             if (dl.x >= 0 && dl.x < RainFlowMaps.SIZE && dl.y >= 0 && dl.y < RainFlowMaps.SIZE)
-                probas[k] = (_flowMap[(int)(_neighbors[k].x + p_i), (int)(_neighbors[k].y + p_j)] / Wsum) * UStepFunction(_neighbors[k], p_vp);
+                p_probas[k] = (_flowMap[(int)(_neighbors[k].x + p_i), (int)(_neighbors[k].y + p_j)] / Wsum) * UStepFunction(_neighbors[k], p_vp);
             else
-                probas[k] = 0f;
+                p_probas[k] = 0f;
         }
-        return probas;
     }
 
     // Compute the probability based on the obstacles existance
-    float[] ObstaclesExistance(int p_i, int p_j)
+    void ObstaclesExistance(int p_i, int p_j, float[] p_probas)
     {
         float[] probas = new float[8];
         // Compute Ek
         for (int k = 0; k < 8; k++)
         {
             Vector3 dl = _neighbors[k] + new Vector3(p_i, p_j, 0f);
-            if (ComputeObstacles(p_i, p_j) == 0f)
-                probas[k] = 1f;
-            else if (dl.x >= 0 && dl.x < RainFlowMaps.SIZE && dl.y >= 0 && dl.y < RainFlowMaps.SIZE)
-                probas[k] = ComputeObstacles((int) dl.x, (int) dl.y);
-            //probas[k] = Vector3.Dot(Vector3.up, _normalMap[(int)dl.x,(int)dl.y].normalized) > OBSTACLES_THRESHOLD ? 0f : 1f;
-            //probas[k] = _obstacles[(int)dl.x, (int)dl.y] > 0 ? 0f : 1f;
+            //if (ComputeObstacles(p_i, p_j) == 0f)
+            //    probas[k] = 1f;
+            //else
+            if (dl.x >= 0 && dl.x < RainFlowMaps.SIZE && dl.y >= 0 && dl.y < RainFlowMaps.SIZE)
+                p_probas[k] = _obstacles[(int)dl.x, (int)dl.y] > 0 ? 0f : 1f;
+                //probas[k] = ComputeObstacles((int) dl.x, (int) dl.y);
+                //probas[k] = Vector3.Dot(Vector3.up, _normalMap[(int)dl.x,(int)dl.y].normalized) > OBSTACLES_THRESHOLD ? 0f : 1f;
             else
-                probas[k] = 0f;
+                p_probas[k] = 1f;
         }
-        return probas;
     }
 
     // Compute the roulette direction and return the index of the direction
@@ -361,13 +350,14 @@ public class RainFlow
         Collision c = new Collision();
         c.t = Mathf.Infinity;
         c.axis = 0;
+        float[] meshAxis = p_mesh.axis;
         //Loop through the mesh
         for (int i = 0; i < 4; i++)
         {
             int currentAxis = i < 2 ? 0 : 1; // if i equals 0 or 1, the axis is x, otherwise y
             float massForce = extForce[currentAxis] / p_drop.mass;
-            float t1 = (-p_drop.vel[currentAxis] + math.sqrt(p_drop.vel[currentAxis] * p_drop.vel[currentAxis] - 4f * massForce * (p_drop.pos[currentAxis] - p_mesh.axis[i]))) / (2f * massForce + EPSILON);
-            float t2 = (-p_drop.vel[currentAxis] - math.sqrt(p_drop.vel[currentAxis] * p_drop.vel[currentAxis] - 4f * massForce * (p_drop.pos[currentAxis] - p_mesh.axis[i]))) / (2f * massForce + EPSILON);
+            float t1 = (-p_drop.vel[currentAxis] + math.sqrt(p_drop.vel[currentAxis] * p_drop.vel[currentAxis] - 4f * massForce * (p_drop.pos[currentAxis] - meshAxis[i]))) / (2f * massForce + EPSILON);
+            float t2 = (-p_drop.vel[currentAxis] - math.sqrt(p_drop.vel[currentAxis] * p_drop.vel[currentAxis] - 4f * massForce * (p_drop.pos[currentAxis] - meshAxis[i]))) / (2f * massForce + EPSILON);
             if (t1 >= 0f && c.t > t1)
             {
                 c.axis = currentAxis;
@@ -410,10 +400,15 @@ public class RainFlow
 
         Vector3 Vp = (EXT_FORCE / drop.mass) * col.t + drop.vel;
 
-        float[] newtonProbas    = NewtonsLaw(Vp);
-        float[] affinityProbas  = Affinity(Vp, i, j);
-        float[] wetDryProbas    = WetDryConditions(Vp, i, j);
-        float[] obstaclesProbas = ObstaclesExistance(i, j);
+        float[] newtonProbas    = new float[8] { 0f, 0f, 0f, 0f, 0f, 0f, 0f, 0f };
+        float[] affinityProbas  = new float[8] {0f,0f,0f,0f,0f,0f,0f,0f};
+        float[] wetDryProbas    = new float[8] {0f,0f,0f,0f,0f,0f,0f,0f};
+        float[] obstaclesProbas = new float[8] {0f,0f,0f,0f,0f,0f,0f,0f};
+
+        NewtonsLaw(Vp, newtonProbas);
+        Affinity(Vp, i, j, affinityProbas);
+        WetDryConditions(Vp, i, j, wetDryProbas);
+        ObstaclesExistance(i, j, obstaclesProbas);
 
         int p = RouletteDirection(Vp, newtonProbas, affinityProbas, wetDryProbas, obstaclesProbas);
 
@@ -437,7 +432,7 @@ public class RainFlow
             return;
         }
 
-        float remainingMass = h(_affinityCoeff[i, j]) * _flowMap[i, j] * ComputeObstacles(i, j);
+        float remainingMass = h(_affinityCoeff[i, j]) * _flowMap[i, j];// * ComputeObstacles(i, j);
 
         drop.mass -= remainingMass;
         _flowMap[i, j] = remainingMass;

@@ -36,8 +36,6 @@ float ComputeLerp(float p_t, int p_nbPoints, out int p_id)
     return (p_t - (float) p_id * range) / range;
 }
 
-
-
 [numthreads(SIZE,1,1)]
 void CSMain (uint3 id : SV_DispatchThreadID)
 {

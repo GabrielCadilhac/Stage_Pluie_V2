@@ -4,7 +4,7 @@ using UnityEngine;
 
 public class RainFlowMaps : MonoBehaviour
 {
-    public static int SIZE = 256;
+    public static int SIZE = 32;
 
     private RainFlow _rainFlows;
 
@@ -14,10 +14,8 @@ public class RainFlowMaps : MonoBehaviour
     [SerializeField] private ComputeShader _dripComputeShader;
     [SerializeField] private Texture2D _roughnessMap;
     [SerializeField] private Texture2D _normalMap;
-    [SerializeField] [Range(0f,1f)] private float _dotThreshold1 = 0f;
-    [SerializeField] [Range(0f,1f)] private float _dotThreshold2 = 0f;
+    [SerializeField] [Range(0f,1f)] private float _dotThreshold = 0f;
     [SerializeField] [Range(0f,50f)] private float _textureScale = 1f;
-    [SerializeField] private float _normalCoeff = 1f;
 
 	void Start()
     {
@@ -38,11 +36,8 @@ public class RainFlowMaps : MonoBehaviour
 
     void Update()
     {
-        // Update parameters
-        _rainFlows.normalCoeff = _normalCoeff;
-
         _rainFlows.Update(-transform.forward);
-        _rainFlows.DrawFlowMap(_dotThreshold1, _dotThreshold2);
+        _rainFlows.DrawFlowMap(_dotThreshold);
 
         // Raycast mouse to get the uv of the plane to add a drop
         if (Input.GetMouseButtonDown(0))
