@@ -1,3 +1,4 @@
+using Test;
 using UnityEngine;
 
 public class RainGenerator
@@ -61,7 +62,7 @@ public class RainGenerator
         float[] tempSize = new float[RainManager._nbParticles];
         for (int i = 0; i < RainManager._nbParticles; i++)
         {
-            // Calcul des diamètres
+            // Calcul des diamï¿½tres
             float dmin = 0.5f;
             float I = 20f;
             float lamb = 4.1f * Mathf.Pow(I, -0.21f);
