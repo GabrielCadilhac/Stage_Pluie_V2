@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using Rain_Wind_Interaction.Commons;
 using UnityEngine;
 
 namespace Test
@@ -89,9 +88,10 @@ namespace Test
         // Detect and fill pits (or depression)
         private float[,] PriorityFlood()
         {
+            float[,] newHeight = new float[Size + 1, Size + 1];
+            /*
             PriorityQueue<Vector2Int> open = new();
             bool[,] closed = new bool[Size + 1, Size + 1];
-            float[,] newHeight = new float[Size + 1, Size + 1];
             for (int i = 0; i < Size + 1; i++)
             for (int j = 0; j < Size + 1; j++)
                 closed[i, j] = false;
@@ -131,7 +131,7 @@ namespace Test
                     }
                 }
             }
-
+            */
             return newHeight;
         }
 
