@@ -14,6 +14,7 @@ Shader "Unlit/RainImpact"
         Pass
         {
             CGPROGRAM
+            #pragma target 5.0
             #pragma vertex vert
             #pragma fragment frag
             // make fog work
@@ -22,7 +23,8 @@ Shader "Unlit/RainImpact"
             #include "UnityCG.cginc"
 
             uniform StructuredBuffer<float3> Position;
-            uniform StructuredBuffer<float3> Normal;
+            uniform StructuredBuffer<float3> Normales;
+            uniform RWStructuredBuffer<float>  Times : register(u1);
 
             struct appdata
             {
@@ -37,6 +39,7 @@ Shader "Unlit/RainImpact"
                 float3 rayOrigin : TEXCOORD0;
                 float3 rayDir : TEXCOORD1;
                 float3 normal : TEXCOORD2;
+                float  time   : TEXCOORD3;
             };
 
             #define MAX_DIST 100.
@@ -51,8 +54,7 @@ Shader "Unlit/RainImpact"
             float _AnimSpeed;
             float2 _Size;
             float _iTime;
-            float3 _Normal;
-            float animTime;
+            float _DeltaTime;
 
             v2f vert (appdata vert, uint instanceID : SV_InstanceID, uint vertexId : SV_VertexID)
             {
@@ -101,9 +103,13 @@ Shader "Unlit/RainImpact"
 
                 o.rayDir = mul(unity_WorldToObject, float4(worldRayDir, 0.0));
 
-                o.vertex =  UnityWorldToClipPos(worldPos);
+                o.vertex    =  UnityWorldToClipPos(worldPos);
                 o.rayOrigin = _WorldSpaceCameraPos - currentPos;
-                o.normal = Normal[instanceID];
+                o.normal    = Normales[instanceID];
+                o.time      = Times[instanceID];
+
+                // if (o.time < 2.)
+                Times[instanceID] += _DeltaTime;
 
                 UNITY_TRANSFER_FOG(o, o.vertex);
                 return o;
@@ -242,11 +248,10 @@ Shader "Unlit/RainImpact"
             {
                 float3 ro = i.rayOrigin;
                 float3 rd = normalize(i.rayDir);
-    
-                animTime = (animTime + _iTime * _AnimSpeed) % 1.;
+                _iTime = i.time;
 
-                float3 n = normalize(_Normal);
-                float3 u   = normalize(cross(float3(1,0,0), n));
+                float3 n = normalize(i.normal);
+                float3 u = normalize(cross(float3(1,0,0), n));
                 if (length(u) < 0.1) u = normalize(cross(float3(0,1,0), n));
                 float3 v = cross(n, u);
                 float3x3 rotMat = float3x3(u, v, n);

@@ -5,8 +5,8 @@ public class RainGenerator
 {
     //private ComputeBuffer _localWindBuffer;
     private ComputeBuffer _velBuffer, _sizeBuffer;
-    private ComputeBuffer  _windBuffer;
-    private GraphicsBuffer _posBuffer, _splashColBuffer;
+    private ComputeBuffer  _windBuffer, _splashColBuffer;
+    private GraphicsBuffer _posBuffer;
 
     private int _nbBlocks;
 
@@ -19,13 +19,13 @@ public class RainGenerator
     private GameObject[] _obbsGameObject;
 
     private int[] _collisionsId;
-    private Vector4[] _splashPos;
+    private Vector3[] _splashPos;
 
     public RainGenerator(ComputeShader p_updateShader,
                          ComputeShader p_collisionShader,
                          GraphicsBuffer p_posBuffer,
-                         GraphicsBuffer p_splashPosBuffer,
-                         GraphicsBuffer p_splashNormalBuffer,
+                         ComputeBuffer p_splashPosBuffer,
+                         ComputeBuffer p_splashNormalBuffer,
                          ComputeBuffer p_windBuffer,
                          GameObject[] p_obbsGameObject,
                          Bounds p_windGrid,
@@ -44,7 +44,7 @@ public class RainGenerator
         _obbsCollidedBuffer.SetData(obbsCollided);
 
         _collisionsId = new int[RainManager._nbParticles];
-        _splashPos = new Vector4[RainManager._nbParticles];
+        _splashPos = new Vector3[RainManager._nbParticles];
 
         _nbBlocks = Mathf.Clamp(Mathf.FloorToInt((float)RainManager._nbParticles / (float) Constants.BLOCK_SIZE + 0.5f), 1, Constants.MAX_BLOCKS_NUMBER);
 

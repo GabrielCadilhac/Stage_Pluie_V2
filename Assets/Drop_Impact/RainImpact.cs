@@ -4,74 +4,83 @@ using UnityEngine;
 namespace Drop_Impact
 {
 	[ExecuteInEditMode]
-	public class RainImpact : MonoBehaviour
+	public class RainImpact
 	{
-		private static readonly int NormalArray = Shader.PropertyToID("Normal");
-		private static readonly int Position = Shader.PropertyToID("Position");
-		private static readonly int AnimSpeed = Shader.PropertyToID("_AnimSpeed");
-		private static readonly int ITime = Shader.PropertyToID("_iTime");
-		private static readonly int Normal = Shader.PropertyToID("_Normal");
+        // Shader properties
+        private static readonly int PositionArray = Shader.PropertyToID("Position");
+		private static readonly int NormalArray   = Shader.PropertyToID("Normales");
+		private static readonly int TimesArray    = Shader.PropertyToID("Times");
+		private static readonly int AnimSpeed	  = Shader.PropertyToID("_AnimSpeed");
+		private static readonly int DeltaTime     = Shader.PropertyToID("_DeltaTime");
 
-		// Constants
-		private const int NbImpacts = 1;
-
-		private ComputeBuffer _impPos, _impNor;
-		[SerializeField] private Material impMaterial;
-
+		private ComputeBuffer _impPos, _impNor, _impTimes;
+		 
 		// Rendering
 		private RenderParams _rp;
 
-		// Animation
-		[SerializeField] private float animSpeed;
-		private float _oldAnimSpeed;
-		private float _currentTime;
-
-		void OnEnable()
+		public RainImpact(Material pMaterial, Transform pTransform, int pNbParticles)
 		{
-			_rp = new(impMaterial)
-			{
-				matProps = new MaterialPropertyBlock(),
-				worldBounds = new Bounds(transform.position, Vector3.one * 10f)
-			};
+            _rp = new(pMaterial)
+            {
+                matProps = new MaterialPropertyBlock(),
+                worldBounds = new Bounds(pTransform.position, Vector3.one * 10f)
+            };
 
-			_impPos = new ComputeBuffer(NbImpacts, NbImpacts * 3 * sizeof(float));
-			_impNor = new ComputeBuffer(NbImpacts, NbImpacts * 3 * sizeof(float));
-			Vector3[] tempPos = new Vector3[NbImpacts];
-			Vector3[] tempNor = new Vector3[NbImpacts];
-			for (int i = 0; i < NbImpacts; i++)
-			{
-				tempPos[i] = new Vector3(0f, 0f, 0f);
-				tempNor[i] = new Vector3(0f, 1f, 0f);
-			}
-			_impPos.SetData(tempPos);
-			_impNor.SetData(tempNor);
+            _impPos   = new ComputeBuffer(pNbParticles, 3 * sizeof(float));
+            _impNor   = new ComputeBuffer(pNbParticles, 3 * sizeof(float));
+            _impTimes = new ComputeBuffer(pNbParticles, sizeof(float));
+            Graphics.SetRandomWriteTarget(1, _impTimes, true);
 
-			_rp.material.SetBuffer(NormalArray, _impNor);
-			_rp.material.SetBuffer(Position, _impPos);
+            Vector3[] tempPos = new Vector3[pNbParticles];
+            Vector3[] tempNor = new Vector3[pNbParticles];
+            float[] tempTimes = new float[pNbParticles];
+            for (int i = 0; i < pNbParticles; i++)
+            {
+                tempPos[i] = new Vector3(0f, 0f, 0f);
+                tempNor[i] = pTransform.up;
+                tempTimes[i] = 0f;
+            }
+
+            _impPos.SetData(tempPos);
+            _impNor.SetData(tempNor);
+            _impTimes.SetData(tempTimes);
+
+            _rp.material.SetBuffer(TimesArray, _impTimes);
+            _rp.material.SetBuffer(PositionArray, _impPos);
+            _rp.material.SetBuffer(NormalArray, _impNor);
+        }
+
+		public void Update(int pNbParticles, float pAnimSpeed)
+		{
+			_rp.material.SetFloat(DeltaTime, Time.deltaTime * pAnimSpeed);
+
+			Graphics.RenderPrimitives(_rp, MeshTopology.Quads, 4, pNbParticles);
 		}
 
-		void Update()
+		public ComputeBuffer GetPosBuffer()
 		{
-			if (Math.Abs(_oldAnimSpeed - animSpeed) > 0.1f)
-			{
-				_oldAnimSpeed = animSpeed;
-				_rp.material.SetFloat(AnimSpeed, animSpeed);
-			}
-			
-			_currentTime += Time.deltaTime * animSpeed;
-			_rp.material.SetFloat(ITime, _currentTime);
-			_rp.material.SetVector(Normal, transform.up);
-
-			Graphics.RenderPrimitives(_rp, MeshTopology.Quads, 4, NbImpacts);
+			return _impPos;
 		}
 
-		private void OnDisable()
-		{
-			_impPos.Dispose();
-			_impPos = null;
+		public ComputeBuffer GetNormalBuffer()
+        {
+            return _impNor;
+        }
 
-			_impNor.Dispose();
-			_impNor = null;
-		}
-	}
+		public ComputeBuffer GetTimesBuffer()
+        {
+            return _impTimes;
+        }
+        public void Disable()
+        {
+            _impPos.Dispose();
+            _impPos = null;
+
+            _impNor.Dispose();
+            _impNor = null;
+
+            _impTimes.Dispose();
+            _impTimes = null;
+        }
+    }
 }

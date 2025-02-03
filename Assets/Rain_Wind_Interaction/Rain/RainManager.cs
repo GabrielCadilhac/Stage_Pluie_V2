@@ -1,3 +1,4 @@
+using Drop_Impact;
 using UnityEngine;
 using UnityEngine.Rendering;
 
@@ -22,14 +23,14 @@ public class RainManager
 
     // Splash
     private Material _splashMaterial;
-    private GraphicsBuffer _splashNormalBuffer;// _splashPosBuffer;
-    private SplashRenderer2 _splashRenderer;
+    //private SplashRenderer2 _splashRenderer;
+    private RainImpact _rainImpact;
 
     // Synchro
     private GraphicsFence _fence;
 
     // Test
-    public static int _nbParticles = 100000;
+    public static int _nbParticles = 10;
     private GameObject[] _obbs;
 
     public RainManager(Transform p_transform, Bounds p_bounds, GameObject[] p_obbs, BezierCurve p_curve, ComputeShader p_windShader, ComputeShader p_rainUpdate, ComputeShader p_rainCollision, Material p_rainMaterial, Material p_splashMaterial)
@@ -77,14 +78,15 @@ public class RainManager
         _renderer = new RainRenderer2(_material, _bounds, _globalMin, _globalMax, _transform);
 
         // Init splash shader (object shader)
-        _splashRenderer = new SplashRenderer2(_splashMaterial);
-        //_splashPosBuffer = _splashRenderer.GetPosBuffer();
-        _splashNormalBuffer = _splashRenderer.GetNormalBuffer();
+        //_splashRenderer = new SplashRenderer2(_splashMaterial);
+        //_splashNormalBuffer = _splashRenderer.GetNormalBuffer();
+
+        _rainImpact = new RainImpact(_splashMaterial, _transform, _nbParticles);
 
         // Init rain generator (compute buffer)
         GraphicsBuffer posBuffer = _renderer.GetPositionsBuffer();
         ComputeBuffer windBuffer = _windGenerator.GetGPUWind();
-        _rainGenerator = new RainGenerator(_updateShader, _collisionShader, posBuffer, _splashRenderer.GetPosBuffer(), _splashNormalBuffer, windBuffer, _obbs, _bounds, _globalMin, _globalMax) ;
+        _rainGenerator = new RainGenerator(_updateShader, _collisionShader, posBuffer, _rainImpact.GetPosBuffer(), _rainImpact.GetNormalBuffer(), windBuffer, _obbs, _bounds, _globalMin, _globalMax) ;
         _rainGenerator?.ChangeGlobalWind();
 
         //_rainGenerator.SetWinds(_windGenerator.GetWinds());
@@ -124,7 +126,7 @@ public class RainManager
 
     public void RenderSplatch()
     {
-        _splashRenderer.Draw();
+        _rainImpact.Update(_nbParticles, 0.5f);
         Graphics.WaitOnAsyncGraphicsFence(_fence);
     }
 
@@ -169,13 +171,7 @@ public class RainManager
         _rainGenerator.Disable();
         _renderer.Disable();
         _windGenerator.Disable();
-        _splashRenderer.Disable();
-
-        //_splashPosBuffer.Release();
-        //_splashPosBuffer = null;
-
-        _splashNormalBuffer.Release();
-        _splashNormalBuffer = null;
+        _rainImpact.Disable();
     }
 
     public void DestroySphere()
