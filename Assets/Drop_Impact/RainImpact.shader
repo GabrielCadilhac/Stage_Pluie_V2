@@ -32,12 +32,11 @@ Shader "Unlit/RainImpact"
 
             struct v2f
             {
-                float2 uv : TEXCOORD0;
                 UNITY_FOG_COORDS(1)
                 float4 vertex : SV_POSITION;
-                float3 rayOrigin : TEXCOORD1;
-                float3 rayDir : TEXCOORD2;
-                float3 normal : TEXCOORD3;
+                float3 rayOrigin : TEXCOORD0;
+                float3 rayDir : TEXCOORD1;
+                float3 normal : TEXCOORD2;
             };
 
             #define MAX_DIST 100.
@@ -64,9 +63,6 @@ Shader "Unlit/RainImpact"
 
                 x = x * 2. -1.;
                 y = y * 2. -1.;
-
-                o.uv = float2(x, y);
-
                 float3 u = float3(0., 1., 0.);
                 float3 v = float3(1., 0., 0.);
 
@@ -118,11 +114,6 @@ Shader "Unlit/RainImpact"
               return length(p)-s;
             }
 
-            float sdSphere2(float3 p, float3 s, float r)
-            {
-                return length(p-s.xyz)-r;
-            }
-
             float sdRoundedCylinder( float3 p, float ra, float rb, float h )
             {
               float2 d = float2( length(p.xy)-2.0*ra+rb, abs(p.z) - h );
@@ -155,37 +146,33 @@ Shader "Unlit/RainImpact"
                 return lerp(pDistB, pDistA, h) - k*h*(1.0-h);
             }
 
+            float Mod(float x, float y)
+            {
+                return x - y * floor(x/y);
+            }
+
             float coronaSplash(float3 pos, float3x3 rotMat)
             {
-                float3 mainDropPos = mul(rotMat, pos - float3(0.0, -2.0*(clamp(tan(_iTime), -10.0, 10.0)), 0.0));
+                float3 mainDropPos = mul(rotMat, pos - float3(0.0, -2.0*clamp(tan(_iTime), -10.0, 10.0), 0.0));
                 float mainDrop = sdSphere(mainDropPos, 0.25 );
 
-                float splashTorusMod = (-(_iTime-0.03)/TWO_PI) % 2.0 - 1.0;
-                float splashTorusWave =
-                    splashTorusMod * ((1.0 - pow(splashTorusMod, 30.0)) + 1.0); // Smooth sawtooth
-                float splashTorusRad =
-                    (1.0 - pow((-(_iTime-PI-0.03)/TWO_PI) % 2.0, 2.0) + PI) * 0.4; // Exp sawtooth
-                float splashTorusY =
-                    splashTorusMod * max(1.0 - pow(splashTorusMod, 6.0), 0.0) - 0.4; // Smooth sawtooth
-                
-                float3 torePos = mul(rotMat, (pos - float3(0., splashTorusY, 0.)) * float3(1.0, 0.3, 1.0));
-                float toreDist = sdTorus( torePos, float2(splashTorusRad, 0.05 * max(splashTorusWave, 0.1)));
+                float deltaTime = Mod(-2.*_iTime/PI, 2.);
+                float splashTorusMod  = deltaTime - 1.;
+                float splashTorusWave = 2. *  splashTorusMod; // Smooth sawtooth
+                float splashTorusRad  = (1. - deltaTime * deltaTime + PI) * 0.4; // Exp sawtooth
+                float splashTorusY = splashTorusMod * (1.0 - pow(splashTorusMod, 6.0)) * 0.4; // Smooth sawtooth
 
-                //toreDist = splashTorusY < -0.25 ? MAX_DIST : toreDist;
+                float3 torePos = mul(rotMat, (pos - splashTorusY*rotMat._m20_m21_m22)) * float3(1.,1.,.3);
+                float toreDist = sdTorus(torePos, float2(splashTorusRad, 0.05 * max(splashTorusWave, 0.1)));
+
                 float3 dispPos = mul(rotMat, pos);
                 toreDist = opDisplace(toreDist, dispPos, 20., 0.005*max(splashTorusWave, 0.));
+                toreDist = splashTorusRad > 1.2 ? MAX_DIST : toreDist;
 
-                // Subtractive sphere for splash and rebound cavity
-                float3 splashPos = mul(rotMat, pos * float3(1.0, 1.5, 1.0) - float3(0.0, 1.0 + sin(_iTime), 0.0));
-                float distSplashSphere = sdSphere(splashPos, -min(sin(_iTime), 0.0));
-                float3 dispSpherePos = mul(rotMat, pos);
-                distSplashSphere = -opDisplace(distSplashSphere, dispSpherePos, 10., 0.02);
-    
-                float3 cylPos = mul(rotMat, pos);
+                float3 cylPos = mul(rotMat, pos + float3(0.,0.02,0.));
                 float cylDist = sdRoundedCylinder(cylPos, 0.6, 0.01, 0.01);
     
                 cylDist = smin(toreDist, cylDist, 0.2*clamp(splashTorusWave, 0.0, 1.0));
-    
                 return smin(mainDrop,cylDist, 0.2);
             }
 
@@ -253,7 +240,6 @@ Shader "Unlit/RainImpact"
 
             fixed4 frag (v2f i, out float outDepth : SV_Depth) : SV_Target
             {
-                float2 uv = i.uv - 0.5;
                 float3 ro = i.rayOrigin;
                 float3 rd = normalize(i.rayDir);
     

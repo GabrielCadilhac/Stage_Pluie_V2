@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using UnityEngine;
+using Rain_Wind_Interaction.Commons;
 
 namespace Test
 {
@@ -34,7 +35,9 @@ namespace Test
         private float _maxHeight;
         private float[,] _catchment;
         private float _maxCatchment;
-
+        private string[,] _labels;
+        private int _maxLabel;
+        
         private List<Primitive> _primitives;
         
         [SerializeField] [Range(0f, 10f)] private float testMax = 1f;
@@ -43,13 +46,14 @@ namespace Test
         private float _oldWaterLvl, _oldRadius, _oldMaxTest;
 
         [SerializeField] private MeshFilter waterMeshFilter;
+        [SerializeField] private MeshFilter pitMeshFilter;
         [SerializeField] private Texture2D heightMap;
         [SerializeField] private float heightScale;
         [SerializeField] private float meshScale;
 
         private Vector3[] _waterVertices;
         private readonly float _minWaterLvl = 0f;
-        private readonly float _maxWaterLvl = 50f;
+        private readonly float _maxWaterLvl = 20f;
 
         private void Start()
         {
@@ -71,27 +75,29 @@ namespace Test
                     _maxHeight = _heightMap[i,j];
             }
 
-            // for (int i = 0; i < Size + 1; i++)
-            // for (int j = 0; j < Size + 1; j++)
-            //     ComputeCatchment(i, j);
-            // Debug.Log($"MaxCatchment {_maxCatchment}");
+            for (int i = 0; i < Size + 1; i++)
+            for (int j = 0; j < Size + 1; j++)
+                ComputeCatchment(i, j);
             
-
-            float[,] newHeightMap = PriorityFlood();
-
+            float[,] newHeightMap = new float[Size + 1, Size + 1];
+            _labels = new string[Size + 1, Size + 1];
+            PriorityFloodWithLabels(_heightMap, _labels, newHeightMap);
+            
             GetComponent<MeshFilter>().mesh = GenerateMesh(_heightMap);
-            waterMeshFilter.mesh = GenerateMesh(newHeightMap);
+            waterMeshFilter.mesh = GenerateMesh(null);
+            pitMeshFilter.mesh = GenerateMesh(newHeightMap);
+            
             _waterVertices = waterMeshFilter.mesh.vertices;
-            //UpdateWaterMesh();
+            UpdateWaterMesh();
         }
 
         // Detect and fill pits (or depression)
         private float[,] PriorityFlood()
         {
-            float[,] newHeight = new float[Size + 1, Size + 1];
-            /*
             PriorityQueue<Vector2Int> open = new();
+            Queue<Vector2Int> pit = new();
             bool[,] closed = new bool[Size + 1, Size + 1];
+            float[,] newHeight = new float[Size + 1, Size + 1];
             for (int i = 0; i < Size + 1; i++)
             for (int j = 0; j < Size + 1; j++)
                 closed[i, j] = false;
@@ -115,9 +121,9 @@ namespace Test
                 newHeight[Size, i] = _heightMap[Size, i];
             }
 
-            while (open.Count > 0)
+            while (open.Count > 0 || pit.Count > 0)
             {
-                Vector2Int c = open.Dequeue();
+                Vector2Int c = pit.Count > 0 ? pit.Dequeue() : open.Dequeue();
                 for (int k = 0; k < 8; k++)
                 {
                     Vector2Int n = c + _neighbors[k];
@@ -125,34 +131,102 @@ namespace Test
 
                     if (!closed[n.x, n.y])
                     {
-                        newHeight[n.x,n.y] = Mathf.Max(newHeight[c.x,c.y], _heightMap[n.x,n.y])-0.001f;
                         closed[n.x, n.y] = true;
-                        open.Enqueue(n, newHeight[n.x, n.y]);
+                        if (_heightMap[n.x, n.y] <= newHeight[c.x, c.y])
+                        {
+                            newHeight[n.x, n.y] = newHeight[c.x, c.y] - 0.001f;
+                            pit.Enqueue(n);
+                        }
+                        else
+                        {
+                            newHeight[n.x, n.y] = _heightMap[n.x, n.y] - 0.001f;
+                            open.Enqueue(n, newHeight[n.x, n.y]);
+                        }
                     }
                 }
             }
-            */
+
             return newHeight;
+        }
+        
+        // Detect and fill pits (or depression) with labels
+        private void PriorityFloodWithLabels(float[,] pHeightMap, string[,] pLabels, float[,] pNewHeightMap)
+        {
+            PriorityQueue<Vector2Int> open = new();
+            Queue<Vector2Int> pit = new();
+            _maxLabel = 1;
+            for (int i = 0; i < Size + 1; i++)
+            for (int j = 0; j < Size + 1; j++)
+                pLabels[i, j] = "candidate";
+            
+            // Init with terrain edges
+            for (int i = 0; i < Size + 1; i++)
+            {
+                open.Enqueue(new Vector2Int(i, 0),       pHeightMap[i, 0]);
+                open.Enqueue(new Vector2Int(i, Size), pHeightMap[i, Size]);
+                open.Enqueue(new Vector2Int(0, i),       pHeightMap[0, i]);
+                open.Enqueue(new Vector2Int(Size, i), pHeightMap[Size, i]);
+
+                pLabels[i, 0]    = "queued";
+                pLabels[i, Size] = "queued";
+                pLabels[0, i]    = "queued";
+                pLabels[Size, i] = "queued";
+                
+                pNewHeightMap[i, 0]    = pHeightMap[i, 0];
+                pNewHeightMap[i, Size] = pHeightMap[i, Size];
+                pNewHeightMap[0, i]    = pHeightMap[0, i];
+                pNewHeightMap[Size, i] = pHeightMap[Size, i];
+            }
+
+            while (open.Count > 0 || pit.Count > 0)
+            {
+                Vector2Int c = pit.Count > 0 ? pit.Dequeue() : open.Dequeue();
+                if (pLabels[c.x, c.y] == "queued")
+                {
+                    pLabels[c.x, c.y] = _maxLabel.ToString();
+                    _maxLabel++;
+                }
+                for (int k = 0; k < 8; k++)
+                {
+                    Vector2Int n = c + _neighbors[k];
+                    if (n.x < 0 || n.x >= Size+1 || n.y < 0 || n.y >= Size+1) continue;
+
+                    if (pLabels[n.x, n.y] == "candidate")
+                    {
+                        pLabels[n.x, n.y] = pLabels[c.x, c.y];
+                        if (pHeightMap[n.x, n.y] <= pNewHeightMap[c.x, c.y])
+                        {
+                            pNewHeightMap[n.x, n.y] = pNewHeightMap[c.x, c.y] - 0.001f;
+                            pit.Enqueue(n);
+                        }
+                        else
+                        {
+                            pNewHeightMap[n.x, n.y] = pHeightMap[n.x, n.y] - 0.001f;
+                            open.Enqueue(n, pNewHeightMap[n.x, n.y]);
+                        }
+                    }
+                }
+            }
         }
 
         private float WaterHeight(int pI, int pJ, float pWaterLevel)
         {
             float waterLerp = (1f - pWaterLevel) * _minWaterLvl + pWaterLevel * _maxWaterLvl;
             
-            for (int i = 0; i < _primitives.Count; i++)
-            {
-                Primitive prim  = _primitives[i];
-                Vector2 primPos = new Vector2(prim.Pos.x, prim.Pos.z);
-                float dist = Vector2.Distance(primPos, new Vector2(pI, pJ)*meshScale); 
-                if (dist <= prim.Radius)
-                    return _heightMap[pI, pJ] + Mathf.Min(testMax,(_catchment[pI,pJ]/_maxCatchment)*waterLerp - 0.1f);
-
-                // height -= Mathf.Min((primPos - new Vector2(pI, pJ) * meshScale).magnitude - primitiveRadius, 0f);
-            }
+            // for (int i = 0; i < _primitives.Count; i++)
+            // {
+            //     Primitive prim  = _primitives[i];
+            //     Vector2 primPos = new Vector2(prim.Pos.x, prim.Pos.z);
+            //     float dist = Vector2.Distance(primPos, new Vector2(pI, pJ)*meshScale); 
+            //     if (dist <= prim.Radius)
+            //         return _heightMap[pI, pJ] + Mathf.Min(testMax,(_catchment[pI,pJ]/_maxCatchment)*waterLerp - 0.01f);
+            //
+            //     // height -= Mathf.Min((primPos - new Vector2(pI, pJ) * meshScale).magnitude - primitiveRadius, 0f);
+            // }
             // height = Mathf.Clamp(height, 0f, waterLerp);
-            // return Mathf.Min(testMax,height + _heightMap[pI, pJ] - 0.1f);
+            // return Mathf.Min(testMax,height + _heightMap[pI, pJ] - 0.01f);
 
-            return _heightMap[pI, pJ] - 0.1f;
+            return _heightMap[pI, pJ] + Mathf.Min(testMax,(_catchment[pI,pJ]/_maxCatchment)*waterLerp - 0.01f);
         }
 
         private float ComputeCatchment(int pI, int pJ)
@@ -206,10 +280,7 @@ namespace Test
 
         private Mesh GenerateMesh(float[,] pHeightMap)
         {
-            Mesh mesh = new Mesh()
-            {
-                name = "FlowMesh"
-            };
+            Mesh mesh = new Mesh();
 
             Vector3[] vertices = new Vector3[(Size + 1) * (Size + 1)];
             Vector3[] normals = new Vector3[(Size + 1) * (Size + 1)];
@@ -224,12 +295,12 @@ namespace Test
                 vertices[id] = new Vector3(i * meshScale, height, j * meshScale);
                 normals[id] = Vector3.up;
                 if (pHeightMap == null)
-                {
                     colors[id] = Color.blue;
-                }
                 else
                 {
-                    colors[id] = new Color(height/_maxHeight,height/_maxHeight,height/_maxHeight, 1f);
+                    //float label = float.Parse(_labels[i, j]);
+                    float h = _heightMap[i, j] / _maxHeight;
+                    colors[id] = new Color(h,h,h, 1f);
                     // colors[id] = new Color(_catchment[i,j]/_maxCatchment, 0f, 0f, 1f);
                     // if (_catchment[i, j] >= _maxCatchment - 500f)
                     // {
