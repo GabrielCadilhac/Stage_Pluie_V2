@@ -21,8 +21,11 @@ struct Collision
 RWStructuredBuffer<float3> Velocities;
 RWStructuredBuffer<float3> Positions;
 RWStructuredBuffer<float> Sizes;
+
 RWStructuredBuffer<float4> SplashPos;
 RWStructuredBuffer<float3> SplashNormal;
+RWStructuredBuffer<float> SplashTimes;
+
 RWStructuredBuffer<int> ObbsCollided;
 RWStructuredBuffer<OBB> Obbs;
 
@@ -155,8 +158,9 @@ void CSMain (uint3 id : SV_DispatchThreadID)
         bool isCollided = OBBCollision(Positions[id.x], col);
         if (isCollided) // Collision detected
         {
-            SplashPos[id.x] = float4(col.pos, 1.);
+            SplashPos[id.x]    = float4(col.pos, 1.);
             SplashNormal[id.x] = col.normal;
+            SplashTimes[id.x]  = 0.;
             ObbsCollided[id.x] = col.id;
             
             changePosVel(id, float3(Positions[id.x].x, _Max.y, Positions[id.x].z));
@@ -167,6 +171,7 @@ void CSMain (uint3 id : SV_DispatchThreadID)
             // Add splatch on particle collided rain box
             SplashPos[id.x] = float4(Positions[id.x].x, _Min.y + 0.001, Positions[id.x].z, 1.);
             SplashNormal[id.x] = float3(0., 1., 0.);
+            SplashTimes[id.x]  = 0.;
             
             float dist = Positions[id.x].y - _Min.y;
             changePosVel(id, float3(Positions[id.x].x, _Max.y + dist, Positions[id.x].z));

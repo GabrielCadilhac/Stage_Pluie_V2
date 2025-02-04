@@ -269,8 +269,8 @@ MonoBehaviour:
   _renderSplash: 0
   _drawDebugGrid: 0
   _deltaTime: 2.5
-  _localWindStrength: 14
-  _globalWind: {x: 4, y: 0, z: 2}
+  _localWindStrength: 1
+  _globalWind: {x: 0, y: 0, z: 0}
 --- !u!4 &122697507
 Transform:
   m_ObjectHideFlags: 0
@@ -1600,8 +1600,8 @@ MonoBehaviour:
   _rainCollisionShader: {fileID: 7200000, guid: 205411dfba100874f9c822f3aa0e75ff,
     type: 3}
   _windShader: {fileID: 7200000, guid: 562eba1bf4e6581419db6fc386bdac0e, type: 3}
-  _rainMaterial: {fileID: 2100000, guid: f8bb81bd0c92ef5418d3673a83ea0612, type: 2}
-  _splashMaterial: {fileID: 2100000, guid: 83b555dd382613543b8d052ec5bbe1d0, type: 2}
+  _rainMaterial: {fileID: 2100000, guid: 5861d8490f4dfcf4c8e926f6568c614b, type: 2}
+  _splashMaterial: {fileID: 2100000, guid: d403462eb29b904428c87719f1b0c92f, type: 2}
   _obbs:
   - {fileID: 757898989}
   - {fileID: 2045159088}

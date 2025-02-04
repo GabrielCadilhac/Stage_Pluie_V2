@@ -59,7 +59,7 @@ Shader "Unlit/SplashShader2"
                 z = 2.*z-1.;
 
                 float3 n = normalize(Normale[instanceID]);
-                float3 r = (n - float3(0., 0., 1.)==0.) ? float3(1., 0., 0.) : float3(0., 0., 1.);
+                float3 r = (n - float3(0., 0., 1.) == 0.) ? float3(1., 0., 0.) : float3(0., 0., 1.);
                 float3 u = normalize(cross(n, r));
                 float3 v = cross(n, u);
 
@@ -70,7 +70,7 @@ Shader "Unlit/SplashShader2"
                                         0., 1., 0., Position[instanceID].y,
                                         0., 0., 1., Position[instanceID].z,
                                         0., 0., 0., 1.};
-                pos = mul(translation, pos);
+                pos      = mul(translation, pos);
                 o.vertex = mul(UNITY_MATRIX_VP, pos);
 
                 UNITY_TRANSFER_FOG(o, o.vertex);

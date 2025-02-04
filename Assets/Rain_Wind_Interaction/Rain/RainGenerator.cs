@@ -1,3 +1,4 @@
+using Drop_Impact;
 using Test;
 using UnityEngine;
 
@@ -19,13 +20,12 @@ public class RainGenerator
     private GameObject[] _obbsGameObject;
 
     private int[] _collisionsId;
-    private Vector3[] _splashPos;
+    private Vector4[] _splashPos;
 
     public RainGenerator(ComputeShader p_updateShader,
                          ComputeShader p_collisionShader,
                          GraphicsBuffer p_posBuffer,
-                         ComputeBuffer p_splashPosBuffer,
-                         ComputeBuffer p_splashNormalBuffer,
+                         RainImpact pRainImpact,
                          ComputeBuffer p_windBuffer,
                          GameObject[] p_obbsGameObject,
                          Bounds p_windGrid,
@@ -44,11 +44,11 @@ public class RainGenerator
         _obbsCollidedBuffer.SetData(obbsCollided);
 
         _collisionsId = new int[RainManager._nbParticles];
-        _splashPos = new Vector3[RainManager._nbParticles];
+        _splashPos = new Vector4[RainManager._nbParticles];
 
         _nbBlocks = Mathf.Clamp(Mathf.FloorToInt((float)RainManager._nbParticles / (float) Constants.BLOCK_SIZE + 0.5f), 1, Constants.MAX_BLOCKS_NUMBER);
 
-        _splashColBuffer = p_splashPosBuffer;
+        _splashColBuffer = pRainImpact.GetPosBuffer();
 
         _obbsGameObject = p_obbsGameObject;
         _obbsBuffer = new ComputeBuffer(_obbsGameObject.Length, 22 * sizeof(float));
@@ -97,8 +97,11 @@ public class RainGenerator
         _collisionShader.SetBuffer(0, "Positions",  p_posBuffer);
         _collisionShader.SetBuffer(0, "Velocities", _velBuffer);
         _collisionShader.SetBuffer(0, "Sizes", _sizeBuffer);
-        _collisionShader.SetBuffer(0, "SplashPos",  p_splashPosBuffer);
-        _collisionShader.SetBuffer(0, "SplashNormal", p_splashNormalBuffer);
+        
+        _collisionShader.SetBuffer(0, "SplashPos",  _splashColBuffer);
+        _collisionShader.SetBuffer(0, "SplashNormal", pRainImpact.GetNormalBuffer());
+        _collisionShader.SetBuffer(0, "SplashTimes", pRainImpact.GetTimesBuffer());
+        
         _collisionShader.SetBuffer(0, "Obbs", _obbsBuffer);
         _collisionShader.SetBuffer(0, "ObbsCollided", _obbsCollidedBuffer);
 
@@ -162,7 +165,7 @@ public class RainGenerator
                 Vector3 e2 = new Vector3(t2.x, t2.y, t2.z);
                 Vector3 n  = new Vector3(t3.x, t3.y, t3.z);
 
-                Vector3 sPos = _splashPos[k];
+                Vector4 sPos = _splashPos[k];
                 Vector3 point = new Vector3(sPos.x, sPos.y, sPos.z);
                 Vector3 localPoint = point - obb.center;
                 localPoint -= Vector3.Dot(n, localPoint) * n;

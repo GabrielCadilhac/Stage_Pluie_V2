@@ -3,7 +3,6 @@ using UnityEngine;
 
 namespace Drop_Impact
 {
-	[ExecuteInEditMode]
 	public class RainImpact
 	{
         // Shader properties
@@ -16,28 +15,28 @@ namespace Drop_Impact
 		private ComputeBuffer _impPos, _impNor, _impTimes;
 		 
 		// Rendering
-		private RenderParams _rp;
+		private readonly RenderParams _rp;
 
 		public RainImpact(Material pMaterial, Transform pTransform, int pNbParticles)
 		{
             _rp = new(pMaterial)
             {
                 matProps = new MaterialPropertyBlock(),
-                worldBounds = new Bounds(pTransform.position, Vector3.one * 10f)
+                worldBounds = new Bounds(pTransform.position, Vector3.one * 100f)
             };
 
-            _impPos   = new ComputeBuffer(pNbParticles, 3 * sizeof(float));
+            _impPos   = new ComputeBuffer(pNbParticles, 4 * sizeof(float));
             _impNor   = new ComputeBuffer(pNbParticles, 3 * sizeof(float));
             _impTimes = new ComputeBuffer(pNbParticles, sizeof(float));
             Graphics.SetRandomWriteTarget(1, _impTimes, true);
 
-            Vector3[] tempPos = new Vector3[pNbParticles];
+            Vector4[] tempPos = new Vector4[pNbParticles];
             Vector3[] tempNor = new Vector3[pNbParticles];
             float[] tempTimes = new float[pNbParticles];
             for (int i = 0; i < pNbParticles; i++)
             {
-                tempPos[i] = new Vector3(0f, 0f, 0f);
-                tempNor[i] = pTransform.up;
+	            tempPos[i]   = Vector4.zero;
+                tempNor[i]   = pTransform.up;
                 tempTimes[i] = 0f;
             }
 
@@ -53,7 +52,6 @@ namespace Drop_Impact
 		public void Update(int pNbParticles, float pAnimSpeed)
 		{
 			_rp.material.SetFloat(DeltaTime, Time.deltaTime * pAnimSpeed);
-
 			Graphics.RenderPrimitives(_rp, MeshTopology.Quads, 4, pNbParticles);
 		}
 

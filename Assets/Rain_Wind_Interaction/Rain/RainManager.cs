@@ -30,7 +30,8 @@ public class RainManager
     private GraphicsFence _fence;
 
     // Test
-    public static int _nbParticles = 10;
+    public static int _nbParticles = 1000;
+    
     private GameObject[] _obbs;
 
     public RainManager(Transform p_transform, Bounds p_bounds, GameObject[] p_obbs, BezierCurve p_curve, ComputeShader p_windShader, ComputeShader p_rainUpdate, ComputeShader p_rainCollision, Material p_rainMaterial, Material p_splashMaterial)
@@ -86,7 +87,7 @@ public class RainManager
         // Init rain generator (compute buffer)
         GraphicsBuffer posBuffer = _renderer.GetPositionsBuffer();
         ComputeBuffer windBuffer = _windGenerator.GetGPUWind();
-        _rainGenerator = new RainGenerator(_updateShader, _collisionShader, posBuffer, _rainImpact.GetPosBuffer(), _rainImpact.GetNormalBuffer(), windBuffer, _obbs, _bounds, _globalMin, _globalMax) ;
+        _rainGenerator = new RainGenerator(_updateShader, _collisionShader, posBuffer, _rainImpact, windBuffer, _obbs, _bounds, _globalMin, _globalMax) ;
         _rainGenerator?.ChangeGlobalWind();
 
         //_rainGenerator.SetWinds(_windGenerator.GetWinds());
@@ -126,13 +127,13 @@ public class RainManager
 
     public void RenderSplatch()
     {
-        _rainImpact.Update(_nbParticles, 0.5f);
+        _rainImpact.Update(_nbParticles, 2f);
         Graphics.WaitOnAsyncGraphicsFence(_fence);
     }
 
     public void Update(float p_deltaTime)
     {
-        // Rain box dynamique quand la caméra se déplace, les collisions avec les gouttes sont mises à jour
+        // Rain box dynamique quand la camï¿½ra se dï¿½place, les collisions avec les gouttes sont mises ï¿½ jour
         
         //_otherSampler.Begin();
         //_globalMin = _transform.position - _bounds.size / 2f;
@@ -140,7 +141,7 @@ public class RainManager
         //_rainGenerator.UpdateBoxBounds(_globalMin, _globalMax);
         //_otherSampler.End();
         
-        // Envoie l'hodographe au générateur de vent pour calculer le cisaillement du vent dans la grille
+        // Envoie l'hodographe au gÃ©nÃ©rateur de vent pour calculer le cisaillement du vent dans la grille
         //_windGenerator.SetHodograph(_hodograph.GetPoints());
     }
 
@@ -163,7 +164,7 @@ public class RainManager
         _renderer.SetParticles(newPos);
         _rainGenerator.ResetParticles(_nbParticles);
 
-        Debug.Log("Particules réinitialisées !");
+        Debug.Log("Particules rï¿½initialisï¿½es !");
     }
 
     public void Disable()

@@ -54,9 +54,7 @@ namespace Test
                     for (int k = i - dropSize; k < i + dropSize; k++)
                     {
                         for (int l = j - dropSize; l < j + dropSize; l++)
-                        {
                             _rainFlows.AddDrop(k, l, new Vector3(-transform.right.y, -transform.up.y, 0f));
-                        }
                     }
                 }
             }

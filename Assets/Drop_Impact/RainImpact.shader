@@ -7,7 +7,6 @@ Shader "Unlit/RainImpact"
     SubShader
     {
         Tags { "RenderType"="Opaque" }
-        Cull Off
         
         LOD 100
 
@@ -22,7 +21,7 @@ Shader "Unlit/RainImpact"
 
             #include "UnityCG.cginc"
 
-            uniform StructuredBuffer<float3> Position;
+            uniform StructuredBuffer<float4> Position;
             uniform StructuredBuffer<float3> Normales;
             uniform RWStructuredBuffer<float>  Times : register(u1);
 
@@ -59,6 +58,11 @@ Shader "Unlit/RainImpact"
             v2f vert (appdata vert, uint instanceID : SV_InstanceID, uint vertexId : SV_VertexID)
             {
                 v2f o;
+                // if (Times[instanceID] >= 2.)
+                //     return o;
+                
+                Times[instanceID] += _DeltaTime;
+                
                 float x = vertexId % 2;
                 float y = vertexId / 2;
                 x = y == 1 ? 1 - x : x;
@@ -70,7 +74,7 @@ Shader "Unlit/RainImpact"
 
                 float4 worldPos = float4(x * _Size.x * u + y * _Size.y * v, 1.);
 
-                float3 currentPos = Position[instanceID];
+                float3 currentPos = Position[instanceID].xyz;
                 float3 worldSpacePivot = currentPos;
                 // offset between pivot and camera
                 float3 worldSpacePivotToCamera = _WorldSpaceCameraPos.xyz - worldSpacePivot;
@@ -107,9 +111,6 @@ Shader "Unlit/RainImpact"
                 o.rayOrigin = _WorldSpaceCameraPos - currentPos;
                 o.normal    = Normales[instanceID];
                 o.time      = Times[instanceID];
-
-                // if (o.time < 2.)
-                Times[instanceID] += _DeltaTime;
 
                 UNITY_TRANSFER_FOG(o, o.vertex);
                 return o;
@@ -159,14 +160,14 @@ Shader "Unlit/RainImpact"
 
             float coronaSplash(float3 pos, float3x3 rotMat)
             {
-                float3 mainDropPos = mul(rotMat, pos - float3(0.0, -2.0*clamp(tan(_iTime), -10.0, 10.0), 0.0));
-                float mainDrop = sdSphere(mainDropPos, 0.25 );
+                // float3 mainDropPos = mul(rotMat, pos - float3(0., -2.*clamp(tan(_iTime), -10., 1.), 0.));
+                // float mainDrop = sdSphere(mainDropPos, 0.25 );
 
                 float deltaTime = Mod(-2.*_iTime/PI, 2.);
                 float splashTorusMod  = deltaTime - 1.;
                 float splashTorusWave = 2. *  splashTorusMod; // Smooth sawtooth
                 float splashTorusRad  = (1. - deltaTime * deltaTime + PI) * 0.4; // Exp sawtooth
-                float splashTorusY = splashTorusMod * (1.0 - pow(splashTorusMod, 6.0)) * 0.4; // Smooth sawtooth
+                float splashTorusY    = splashTorusMod * (1.0 - pow(splashTorusMod, 6.0)) * 0.4; // Smooth sawtooth
 
                 float3 torePos = mul(rotMat, (pos - splashTorusY*rotMat._m20_m21_m22)) * float3(1.,1.,.3);
                 float toreDist = sdTorus(torePos, float2(splashTorusRad, 0.05 * max(splashTorusWave, 0.1)));
@@ -179,7 +180,8 @@ Shader "Unlit/RainImpact"
                 float cylDist = sdRoundedCylinder(cylPos, 0.6, 0.01, 0.01);
     
                 cylDist = smin(toreDist, cylDist, 0.2*clamp(splashTorusWave, 0.0, 1.0));
-                return smin(mainDrop,cylDist, 0.2);
+                return cylDist;
+                // return smin(mainDrop,cylDist, 0.2);
             }
 
             float deposition(float3 pos, float3x3 rot)
@@ -244,7 +246,7 @@ Shader "Unlit/RainImpact"
                 return distO;
             }
 
-            fixed4 frag (v2f i, out float outDepth : SV_Depth) : SV_Target
+            fixed4 frag (v2f i) : SV_Target
             {
                 float3 ro = i.rayOrigin;
                 float3 rd = normalize(i.rayDir);
@@ -269,9 +271,6 @@ Shader "Unlit/RainImpact"
                 
                 // apply fog
                 UNITY_APPLY_FOG(i.fogCoord, col);
-
-                float4 clipPos = UnityWorldToClipPos(pos);
-                outDepth = clipPos.z / clipPos.w;
                 return col;
             }
             ENDCG

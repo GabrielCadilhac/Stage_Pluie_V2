@@ -64,7 +64,6 @@ Shader "Unlit/RainShader2"
                 float y = vertexId / 2;
                 x = y == 1 ? 1-x : x;
 
-                float4 dropSize = float4(_Size, 1., 1.);
                 o.uv            = float2(x, y);
 
                 float3 rot = -Velocities[instanceID] * float3(_Rotation, 1., _Rotation);
@@ -72,13 +71,6 @@ Shader "Unlit/RainShader2"
                 float3 right = float3(1.0, 0.0, 0.0) * Sizes[instanceID] * _Size.y;
                 
                 float4 pos = float4((2. * o.uv.x - 1.) * right + o.uv.y * up, 1.);
-                /*
-                if (y == 0)
-                {
-                    pos += float4(Velocities[instanceID].x, 0., Velocities[instanceID].z, 0.) * _Rotation;
-                    pos *= dropSize * Sizes[instanceID];
-                }
-                */
 
                 float4x4 translation = {1., 0., 0., Position[instanceID].x,
                                         0., 1., 0., Position[instanceID].y,
@@ -104,15 +96,14 @@ Shader "Unlit/RainShader2"
                 fixed4 col;
                 if (_Textured == 1)
                 {
-                    float3 fi  = float3(1., 0.5, 1.5);
-                    float3 gi  = float3(1., 0., 0.);
+                    float3 fi  = float3(1.,  0.5, 1.5);
+                    float3 gi  = float3(1.,  0.,  0.);
                     float3 amp = float3(0.1, 0.2, 0.1);
 
                     float phi = 1.;
 
                     float c = dot(float3(1., 1., 1.), amp * cos(2.*PI*(fi * i.uv.x + gi * i.uv.y) + phi));
                     col = fixed4(c,c,c,c);
-
                 } else {
                     col = _DropColor;
                 }
