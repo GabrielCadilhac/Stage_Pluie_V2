@@ -3,13 +3,14 @@ Shader "Unlit/RainImpact"
     Properties
     {
         _Size ("Size", Vector) = (1., 1., 1., 1.)
+        _Test ("Test", Float) = 1.
+        _CylPos ("CylPos", Vector) = (0.,0.,0.,0.)
     }
     SubShader
     {
         Tags { "RenderType"="Opaque" }
-        
         LOD 100
-
+        
         Pass
         {
             CGPROGRAM
@@ -23,7 +24,7 @@ Shader "Unlit/RainImpact"
 
             uniform StructuredBuffer<float4> Position;
             uniform StructuredBuffer<float3> Normales;
-            uniform RWStructuredBuffer<float>  Times : register(u1);
+            uniform RWStructuredBuffer<float> Times : register(u1);
 
             struct appdata
             {
@@ -39,6 +40,7 @@ Shader "Unlit/RainImpact"
                 float3 rayDir : TEXCOORD1;
                 float3 normal : TEXCOORD2;
                 float  time   : TEXCOORD3;
+                float dist    : TEXCOORD4;
             };
 
             #define MAX_DIST 100.
@@ -54,7 +56,9 @@ Shader "Unlit/RainImpact"
             float2 _Size;
             float _iTime;
             float _DeltaTime;
-
+            float _Test;
+            float3 _CylPos;
+            
             v2f vert (appdata vert, uint instanceID : SV_InstanceID, uint vertexId : SV_VertexID)
             {
                 v2f o;
@@ -67,8 +71,8 @@ Shader "Unlit/RainImpact"
                 float y = vertexId / 2;
                 x = y == 1 ? 1 - x : x;
 
-                x = x * 2. -1.;
-                y = y * 2. -1.;
+                x = x * 2. - 1.;
+                y = y * 2. - 1.;
                 float3 u = float3(0., 1., 0.);
                 float3 v = float3(1., 0., 0.);
 
@@ -103,15 +107,16 @@ Shader "Unlit/RainImpact"
                 worldPos = float4(mul(float3(worldPos.xy, 0.3), rotMat) + worldSpacePivot, 1.);
 
                 // ray direction
-                float3 worldRayDir = worldPos.xyz - _WorldSpaceCameraPos.xyz;
+                float3 worldRayDir = worldPos - _WorldSpaceCameraPos.xyz;
 
                 o.rayDir = mul(unity_WorldToObject, float4(worldRayDir, 0.0));
 
-                o.vertex    =  UnityWorldToClipPos(worldPos);
+                o.vertex    = UnityWorldToClipPos(worldPos);
                 o.rayOrigin = _WorldSpaceCameraPos - currentPos;
                 o.normal    = Normales[instanceID];
                 o.time      = Times[instanceID];
-
+                o.dist      = length(Position[instanceID].xyz - _WorldSpaceCameraPos);
+                
                 UNITY_TRANSFER_FOG(o, o.vertex);
                 return o;
             }
@@ -176,7 +181,7 @@ Shader "Unlit/RainImpact"
                 toreDist = opDisplace(toreDist, dispPos, 20., 0.005*max(splashTorusWave, 0.));
                 toreDist = splashTorusRad > 1.2 ? MAX_DIST : toreDist;
 
-                float3 cylPos = mul(rotMat, pos + float3(0.,0.02,0.));
+                float3 cylPos = mul(rotMat, pos+_CylPos);
                 float cylDist = sdRoundedCylinder(cylPos, 0.6, 0.01, 0.01);
     
                 cylDist = smin(toreDist, cylDist, 0.2*clamp(splashTorusWave, 0.0, 1.0));
@@ -246,7 +251,7 @@ Shader "Unlit/RainImpact"
                 return distO;
             }
 
-            fixed4 frag (v2f i) : SV_Target
+            fixed4 frag (v2f i, out float outDepth : SV_Depth) : SV_Target
             {
                 float3 ro = i.rayOrigin;
                 float3 rd = normalize(i.rayDir);
@@ -257,7 +262,9 @@ Shader "Unlit/RainImpact"
                 if (length(u) < 0.1) u = normalize(cross(float3(0,1,0), n));
                 float3 v = cross(n, u);
                 float3x3 rotMat = float3x3(u, v, n);
-                
+
+                outDepth = _Test / i.dist;
+
                 float dist = rayMarch(ro, rd, rotMat);
                 if (dist >= MAX_DIST)
                     discard;
@@ -271,6 +278,7 @@ Shader "Unlit/RainImpact"
                 
                 // apply fog
                 UNITY_APPLY_FOG(i.fogCoord, col);
+                //return col;
                 return col;
             }
             ENDCG

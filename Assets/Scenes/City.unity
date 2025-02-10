@@ -270,7 +270,7 @@ MonoBehaviour:
   _drawDebugGrid: 0
   _deltaTime: 2.5
   _localWindStrength: 1
-  _globalWind: {x: 0, y: 0, z: 0}
+  _globalWind: {x: 2, y: 0, z: 2}
 --- !u!4 &122697507
 Transform:
   m_ObjectHideFlags: 0
@@ -1479,7 +1479,7 @@ Transform:
   m_GameObject: {fileID: 1509753807}
   serializedVersion: 2
   m_LocalRotation: {x: 0.06719351, y: 0.086692125, z: -0.005860707, w: 0.9939493}
-  m_LocalPosition: {x: -2.6296406, y: 9.32378, z: -12.375982}
+  m_LocalPosition: {x: -5.1, y: 9.32378, z: -25.09}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -1993,7 +1993,7 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 1, y: 1.0000002, z: 1}
+  m_Size: {x: 1, y: 1.0000002, z: 6.48}
   m_Center: {x: 0, y: 0, z: 0}
 --- !u!114 &2045159095
 MonoBehaviour:
