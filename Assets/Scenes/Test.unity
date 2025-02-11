@@ -183,7 +183,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: 9e0628f6985b88a429049ca2f99c081a, type: 2}
+  - {fileID: 2100000, guid: 33c1411db4812e8448e47a35a7c3cb08, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -241,10 +241,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   resolution: {x: 100, y: 100}
-  size: {x: 1, y: 1}
-  material: {fileID: 2100000, guid: 9e0628f6985b88a429049ca2f99c081a, type: 2}
-  c: 1
-  dampingFactor: 1
+  material: {fileID: 2100000, guid: 33c1411db4812e8448e47a35a7c3cb08, type: 2}
+  dampingFactor: 0.99
 --- !u!1 &353161975
 GameObject:
   m_ObjectHideFlags: 0
