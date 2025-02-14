@@ -102,12 +102,16 @@ namespace RainFlow
                     _flowMap[i, j]   = 0f;
                     _obstacles[i, j] = 0;
 
-                    Color c = pNormalMap.GetPixel((int)(i * pTextureScale), (int)(j * pTextureScale));
-                    _normalMap[i, j] = new Vector3(c.r, c.g, c.b);
+                    Color normalCol = pNormalMap.GetPixel((int)(i * pTextureScale), (int)(j * pTextureScale));
+                    _normalMap[i, j] = new Vector3(normalCol.r, normalCol.g, normalCol.b);
 
-                    _affinityCoeff[i, j] = UnityEngine.Random.Range(0f, 1f);
-                    //_affinityCoeff[i, j] = 1f - p_roughnessMap.GetPixel((int)(i * p_textureScale), (int)(j * p_textureScale)).r;
-                    //_affinityCoeff[i, j] = p_roughnessMap.GetPixel((int)(i * p_textureScale), (int)(j * p_textureScale)).r;
+                    Vector3 n = _normalMap[i, j];
+                    n = n * 2f - Vector3.one;
+
+                    float c = math.abs(Vector3.Dot(_transform.forward, n));
+                    c = (c - 0.5f) * 2f;
+
+                    _affinityCoeff[i, j] = c;//UnityEngine.Random.Range(0f, 1f);
                     _dropsContained[i, j] = false;
                 }
             }
@@ -185,6 +189,7 @@ namespace RainFlow
                 float f = _flowMap[i, j] / DrippingThreshold;
                 
                 Color flowCol  = new Color(1f / (1f + f), 1f / (1f + f), 1f, 1f);
+                // Color flowCol  = new Color(c,c,c, 1f);
                 Color col;
                 if (pShowObstacles)
                     col = c < pDotThreshold1 ? Color.red : flowCol;
@@ -257,7 +262,7 @@ namespace RainFlow
             for (int k = 0; k < 8; k++)
             {
                 Vector3 dl = _neighbors[k] + new Vector3(pI, pJ, 0f);
-                if (dl.x >= 0 && dl.x < RainFlowMaps.Size && dl.y >= 0 && dl.y < RainFlowMaps.Size)
+                if (dl.x is >= 0 and < RainFlowMaps.Size && dl.y is >= 0 and < RainFlowMaps.Size)
                     asum += _affinityCoeff[(int) dl.x, (int) dl.y] * UStepFunction(_neighbors[k], pVp);
             }
 
@@ -302,7 +307,7 @@ namespace RainFlow
             }
         }
 
-        // Compute the probability based on the obstacles existance
+        // Compute the probability based on the obstacles existence
         void ObstaclesExistance(int pI, int pJ, float[] pProbas)
         {
             // Compute Ek
@@ -312,14 +317,14 @@ namespace RainFlow
                 if (dl.x is >= 0 and < RainFlowMaps.Size && dl.y is >= 0 and < RainFlowMaps.Size)
                 {
                     // Obstacles places manually by users
-                    // pProbas[k] = _obstacles[(int)dl.x, (int)dl.y] > 0 ? 0f : 1f;
+                    pProbas[k] = _obstacles[(int)dl.x, (int)dl.y] > 0 ? 0f : 1f;
                     
                     // Compute obstacles from the normal map
-                    Vector3 n = _normalMap[(int)dl.x, (int)dl.y];
-                    n = n * 2f - Vector3.one;
-                    
-                    float cosTheta = math.abs(Vector3.Dot(_transform.forward, n));
-                    pProbas[k] = cosTheta < _obsTreshold ? 0f : 1f;
+                    // Vector3 n = _normalMap[(int)dl.x, (int)dl.y];
+                    // n = n * 2f - Vector3.one;
+                    //
+                    // float cosTheta = math.abs(Vector3.Dot(_transform.forward, n));
+                    // pProbas[k] = cosTheta < _obsTreshold ? 0f : 1f;
                 }
                 else
                     pProbas[k] = 1f;

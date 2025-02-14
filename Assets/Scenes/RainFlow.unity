@@ -248,6 +248,7 @@ GameObject:
   - component: {fileID: 342615512}
   - component: {fileID: 342615511}
   - component: {fileID: 342615510}
+  - component: {fileID: 342615514}
   m_Layer: 0
   m_Name: Quad
   m_TagString: Untagged
@@ -299,7 +300,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: 31321ba15b8f8eb4c954353edc038b1d, type: 2}
+  - {fileID: 2100000, guid: 313ec8858a1c33242a320884401fa5e3, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -338,12 +339,31 @@ Transform:
   m_GameObject: {fileID: 342615509}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalPosition: {x: 0.5, y: 0.5, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &342615514
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 342615509}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d7c62d264ade0d84984df0b90bf1acc9, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  dripMaterial: {fileID: 2100000, guid: bb525f6ac6b8bb94eb9008881bccbbbb, type: 2}
+  dripComputeShader: {fileID: 7200000, guid: eba969247eb469449ab6fc191ffdbf74, type: 3}
+  roughnessMap: {fileID: 2800000, guid: 45d09f746b704c04797ef25bf19e8968, type: 3}
+  normalMap: {fileID: 2800000, guid: b66d79b3921a3234b91eb627268c5bd7, type: 3}
+  dotThreshold: 0.9
+  textureScale: 5
+  showObstacles: 0
 --- !u!1 &1545407046
 GameObject:
   m_ObjectHideFlags: 0
@@ -431,7 +451,7 @@ Transform:
   m_GameObject: {fileID: 1545407046}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: -0.1, z: -1.72}
+  m_LocalPosition: {x: 0.497, y: 0.5, z: -0.908}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
