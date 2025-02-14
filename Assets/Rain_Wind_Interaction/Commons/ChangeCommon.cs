@@ -1,48 +1,58 @@
 using UnityEngine;
+using UnityEngine.Serialization;
 
 [ExecuteInEditMode]
 public class ChangeCommon : MonoBehaviour
 {
-    [SerializeField] private float _energyStrength, _energySpeed, _coeffDissip, _coeffTransfert;
+    [FormerlySerializedAs("_energyStrength")] [SerializeField] private float energyStrength;
+    [FormerlySerializedAs("_energySpeed")] [SerializeField] private float energySpeed;
+    [FormerlySerializedAs("_coeffDissip")] [SerializeField] private float coeffDissip;
+    [FormerlySerializedAs("_coeffTransfert")] [SerializeField] private float coeffTransfert;
 
-    [SerializeField] private float _meanEnergy, _stdEnergyPrim, _minSizeTall, _minSizeMedium, _minSizeSmall;
+    [FormerlySerializedAs("_meanEnergy")] [SerializeField] private float meanEnergy;
+    [FormerlySerializedAs("_stdEnergyPrim")] [SerializeField] private float stdEnergyPrim;
+    [FormerlySerializedAs("_minSizeTall")] [SerializeField] private float minSizeTall;
+    [FormerlySerializedAs("_minSizeMedium")] [SerializeField] private float minSizeMedium;
+    [FormerlySerializedAs("_minSizeSmall")] [SerializeField] private float minSizeSmall;
 
-    [SerializeField] private float _sphereSize;
-    [SerializeField] private bool _renderSphere, _renderSplash, _drawDebugGrid;
+    [FormerlySerializedAs("_sphereSize")] [SerializeField] private float sphereSize;
+    [FormerlySerializedAs("_renderSphere")] [SerializeField] private bool renderSphere;
+    [FormerlySerializedAs("_renderSplash")] [SerializeField] private bool renderSplash;
+    [FormerlySerializedAs("_drawDebugGrid")] [SerializeField] private bool drawDebugGrid;
 
-    [SerializeField] private float _deltaTime;
+    [FormerlySerializedAs("_deltaTime")] [SerializeField] private float deltaTime;
 
-    [SerializeField] private float _localWindStrength;
-    [SerializeField] private Vector3 _globalWind;
+    [FormerlySerializedAs("_localWindStrength")] [SerializeField] private float localWindStrength;
+    [FormerlySerializedAs("_globalWind")] [SerializeField] private Vector3 globalWind;
 
     private void Awake()
     {
-        ChangeConstants(_renderSphere);
+        ChangeConstants(renderSphere);
     }
 
-    public void ChangeConstants(bool p_renderSphere)
+    public void ChangeConstants(bool pRenderSphere)
     {
-        Constants.DELTA_TIME = _deltaTime;
+        Constants.DeltaTime = deltaTime;
 
-        Constants.ENERGY_STRENGTH = _energyStrength;
-        Constants.ENERGY_SPEED    = _energySpeed;
+        Constants.EnergyStrength = energyStrength;
+        Constants.EnergySpeed    = energySpeed;
 
         //Constants.COEFF_DISSIP = _coeffDissip;
-        Constants.COEFF_TRANSFERT = _coeffTransfert;
+        Constants.CoeffTransfert = coeffTransfert;
 
-        Constants.MEAN_ENERGY_PRIM = _meanEnergy;
-        Constants.STD_ENERGY_PRIM  = _stdEnergyPrim;
+        Constants.MeanEnergyPrim = meanEnergy;
+        Constants.StdEnergyPrim  = stdEnergyPrim;
 
-        Constants.MIN_SIZE_TALL   = _minSizeTall;
-        Constants.MIN_SIZE_MEDIUM = _minSizeMedium;
-        Constants.MIN_SIZE_SMALL  = _minSizeSmall;
+        Constants.MinSizeTall   = minSizeTall;
+        Constants.MinSizeMedium = minSizeMedium;
+        Constants.MinSizeSmall  = minSizeSmall;
 
-        Constants.RENDER_SPHERE   = p_renderSphere;
-        Constants.SPHERE_SIZE     = _sphereSize;
-        Constants.DRAW_DEBUG_GRID = _drawDebugGrid;
-        Constants.RENDER_SPLASH   = _renderSplash;
+        Constants.RenderSphere   = pRenderSphere;
+        Constants.SphereSize     = sphereSize;
+        Constants.DrawDebugGrid = drawDebugGrid;
+        Constants.RenderSplash   = renderSplash;
 
-        Constants.LOCAL_WIND_STRENGTH = _localWindStrength;
-        Constants.GLOBAL_WIND = _globalWind;
+        Constants.LocalWindStrength = localWindStrength;
+        Constants.GlobalWind = globalWind;
     }
 }

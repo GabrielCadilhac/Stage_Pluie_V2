@@ -19,7 +19,7 @@ public class EnergyCascade
     // Autres
     BezierCurve _curve;
 
-    public EnergyCascade(BezierCurve p_curve)
+    public EnergyCascade(BezierCurve pCurve)
     {
         Random.InitState(0);
 
@@ -29,11 +29,11 @@ public class EnergyCascade
         _energiesTransfert = new float[2] { 0f, 0f };
         _energyDissip      = 0f;
 
-        _curve = p_curve;
+        _curve = pCurve;
 
         float xi = 1f;
-        float Du = 1f;
-        Constants.COEFF_DISSIP = 1f / (Constants.GLOBAL_WIND.magnitude * xi) * Mathf.Pow(Du / 2f, 1.5f);
+        float du = 1f;
+        Constants.CoeffDissip = 1f / (Constants.GlobalWind.magnitude * xi) * Mathf.Pow(du / 2f, 1.5f);
         //Debug.Log($"Constants.COEFF_DISSIP {Constants.COEFF_DISSIP}");
         
         /*
@@ -53,7 +53,7 @@ public class EnergyCascade
         _nbMaxTurb = _primitives.Count;
         */
 
-        /* Ancienne génération de primitives
+        /* Ancienne gï¿½nï¿½ration de primitives
         for (int i = 0; i < _nbPrimitives; i++)
         {
             WindPrimitive[] primComp = GenerateWindComp();
@@ -67,30 +67,30 @@ public class EnergyCascade
         */
     }
 
-    // Calculer les énergies des primitives en fonction des taille
-    private void CollectEnergies(float p_deltaTime)
+    // Calculer les ï¿½nergies des primitives en fonction des taille
+    private void CollectEnergies(float pDeltaTime)
     {
         foreach (SuperPrimitive primitive in _primitives)
         {
             float energyTransfert = 0f;
             float energyDissip = 0f;
-            if (primitive.GetSize() > Constants.MIN_SIZE_TALL) // Grande
+            if (primitive.GetSize() > Constants.MinSizeTall) // Grande
             {
                 // Uniquement du transfert, pas de dissipation
-                energyTransfert = primitive.GetTransferEnergy() * p_deltaTime;
+                energyTransfert = primitive.GetTransferEnergy() * pDeltaTime;
                 _energiesTransfert[1] += energyTransfert;
-            } else if (primitive.GetSize() > Constants.MIN_SIZE_MEDIUM) // Moyenne
+            } else if (primitive.GetSize() > Constants.MinSizeMedium) // Moyenne
             {
                 // Transfert et dissipation
-                energyDissip = primitive.GetDissipEnergy() * p_deltaTime;
+                energyDissip = primitive.GetDissipEnergy() * pDeltaTime;
                 _energyDissip += energyDissip;
 
-                energyTransfert = primitive.GetTransferEnergy() * p_deltaTime;
+                energyTransfert = primitive.GetTransferEnergy() * pDeltaTime;
                 _energiesTransfert[0] += energyTransfert;
             } else // Petite
             {
                 // Uniquement de la dissipation, pas de transfert
-                energyDissip = primitive.GetDissipEnergy() * p_deltaTime;
+                energyDissip = primitive.GetDissipEnergy() * pDeltaTime;
                 _energyDissip += energyDissip;
             }
 
@@ -98,12 +98,12 @@ public class EnergyCascade
         }
     }
 
-    // Distribution des énergies
+    // Distribution des ï¿½nergies
     private void DiffuseEnergies()
     {
         List<SuperPrimitive> primToRemove = new List<SuperPrimitive>();
-        float transToDissip0 = _energiesTransfert[0] * Constants.COEFF_DISSIP;
-        float transToDissip1 = _energiesTransfert[1] * Constants.COEFF_DISSIP;
+        float transToDissip0 = _energiesTransfert[0] * Constants.CoeffDissip;
+        float transToDissip1 = _energiesTransfert[1] * Constants.CoeffDissip;
 
         _energiesTransfert[0] -= transToDissip0;
         _energiesTransfert[1] -= transToDissip1;
@@ -114,15 +114,15 @@ public class EnergyCascade
 
         foreach (SuperPrimitive primitive in _primitives)
         {
-            // Les grandes ne gagnent pas d'énergie
-            if (Constants.MIN_SIZE_MEDIUM < primitive.GetSize() && primitive.GetSize() < Constants.MIN_SIZE_TALL) // Moyenne
+            // Les grandes ne gagnent pas d'ï¿½nergie
+            if (Constants.MinSizeMedium < primitive.GetSize() && primitive.GetSize() < Constants.MinSizeTall) // Moyenne
             {
                 _energiesTransfert[1] -= energy1ToTransfert;   
                 primitive.AddEnergy(energy1ToTransfert);
             }
             else // Petite
             {
-                if (primitive.GetSize() < Constants.MIN_SIZE_SMALL)
+                if (primitive.GetSize() < Constants.MinSizeSmall)
                     primToRemove.Add(primitive);
                 else
                 {
@@ -132,7 +132,7 @@ public class EnergyCascade
             }
         }
         
-        // Toute l'énergie qui n'est pas transférée est dissipée
+        // Toute l'ï¿½nergie qui n'est pas transfï¿½rï¿½e est dissipï¿½e
         _energyDissip += _energiesTransfert[0] + _energiesTransfert[1];
         _energiesTransfert = new float[2] { 0f, 0f };
 
@@ -143,10 +143,10 @@ public class EnergyCascade
             prim.DestroySphere();
         }
 
-        if (_energyDissip >= Constants.MEAN_ENERGY_PRIM)
+        if (_energyDissip >= Constants.MeanEnergyPrim)
         {
-            // Nouvelle primitives à partir de l'énergie dissipé
-            float energy = Constants.MEAN_ENERGY_PRIM + Random.Range(-Constants.MEAN_ENERGY_PRIM * Constants.STD_ENERGY_PRIM, Constants.MEAN_ENERGY_PRIM * Constants.STD_ENERGY_PRIM); ;
+            // Nouvelle primitives ï¿½ partir de l'ï¿½nergie dissipï¿½
+            float energy = Constants.MeanEnergyPrim + Random.Range(-Constants.MeanEnergyPrim * Constants.StdEnergyPrim, Constants.MeanEnergyPrim * Constants.StdEnergyPrim); ;
 
             WindPrimitive[] primComp = GenerateWindComp();
             float randLerp = Random.Range(0f, 1f);
@@ -157,17 +157,17 @@ public class EnergyCascade
         }
     }
 
-    public void Update(float p_deltaTime, Vector3 p_min, Vector3 p_max)
+    public void Update(float pDeltaTime, Vector3 pMin, Vector3 pMax)
     {
-        // Mettre à jours les primitives
+        // Mettre ï¿½ jours les primitives
         foreach (SuperPrimitive primitive in _primitives)
         {
-            primitive.Update(p_deltaTime, p_min, p_max);
+            primitive.Update(pDeltaTime, pMin, pMax);
             primitive.CheckCollision();
         }
 
-        // Mettre à jour la cascade à énergie
-        CollectEnergies(p_deltaTime);
+        // Mettre ï¿½ jour la cascade ï¿½ ï¿½nergie
+        CollectEnergies(pDeltaTime);
         DiffuseEnergies();
 
         _nbTurbulence.Add(_primitives.Count);
@@ -195,21 +195,21 @@ public class EnergyCascade
         Debug.Log($"Total energy dissip {total / (float) _primitives.Count}");
     }
 
-    public void Reset(BezierCurve p_curve)
+    public void Reset(BezierCurve pCurve)
     {
         DestroySphere();
         _primitives.Clear();
 
-        Vector3 wind = Constants.GLOBAL_WIND;
+        Vector3 wind = Constants.GlobalWind;
         float k = 0.1f * (wind.x * wind.x + wind.y * wind.y + wind.z * wind.z);
         while (k > 0f)
         {
             WindPrimitive[] primComp = GenerateWindComp();
 
             float randLerp = Random.Range(0f, 1f);
-            float diff = Constants.MEAN_ENERGY_PRIM * Constants.STD_ENERGY_PRIM;
-            float energy = Constants.MEAN_ENERGY_PRIM + Random.Range(-diff, diff);
-            _primitives.Add(new SuperPrimitive(p_curve, primComp, energy, randLerp, _turbID));
+            float diff = Constants.MeanEnergyPrim * Constants.StdEnergyPrim;
+            float energy = Constants.MeanEnergyPrim + Random.Range(-diff, diff);
+            _primitives.Add(new SuperPrimitive(pCurve, primComp, energy, randLerp, _turbID));
 
             k -= energy;
             _turbID++;

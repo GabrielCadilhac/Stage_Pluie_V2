@@ -10,18 +10,18 @@ public class Grid
 
     private Vector3[] _grid;
 
-    public Grid(Vector3Int p_nbCells, Vector3 p_size, Vector3? p_defaultValue = null)
+    public Grid(Vector3Int pNbCells, Vector3 pSize, Vector3? pDefaultValue = null)
     {
-        _nbCells = p_nbCells;
-        _gridSize = p_size;
+        _nbCells = pNbCells;
+        _gridSize = pSize;
         _cellSize = Common.Divide(_gridSize, _nbCells);
 
         _grid = new Vector3[_nbCells.x * _nbCells.y * _nbCells.z];
     }
 
-    public void Reset(Vector3? p_defaultValue = null)
+    public void Reset(Vector3? pDefaultValue = null)
     {
-        Vector3 value = p_defaultValue == null ? Vector3.zero : (Vector3) p_defaultValue;
+        Vector3 value = pDefaultValue == null ? Vector3.zero : (Vector3) pDefaultValue;
 
         for (int k = 0; k < _nbCells.z; k++)
             for (int i = 0; i < _nbCells.y; i++)
@@ -31,31 +31,31 @@ public class Grid
                 }
     }
 
-    public Vector3 FloatTo01(Vector3 p_coords)
+    public Vector3 FloatTo01(Vector3 pCoords)
     {
-        return Common.Divide(p_coords, _gridSize);
+        return Common.Divide(pCoords, _gridSize);
     }
 
-    public void Set(int i, int j, int k, Vector3 p_value)
+    public void Set(int i, int j, int k, Vector3 pValue)
     {
         int index = (k * _nbCells.y + i) * _nbCells.x + j;
-        _grid[index] = p_value;
+        _grid[index] = pValue;
     }
 
-    public void Add(int i, int j, int k, Vector3 p_value)
+    public void Add(int i, int j, int k, Vector3 pValue)
     {
         int index = (k * _nbCells.y + i) * _nbCells.x + j;
-        _grid[index] += p_value;
+        _grid[index] += pValue;
     }
 
-    public void Set(int p_index, Vector3 p_value)
+    public void Set(int pIndex, Vector3 pValue)
     {
-        _grid[p_index] = p_value;
+        _grid[pIndex] = pValue;
     }
 
-    public Vector3 Get(int p_i, int p_j, int p_k)
+    public Vector3 Get(int pI, int pJ, int pK)
     {
-        int index = (p_k * _nbCells.y + p_i) * _nbCells.x + p_j;
+        int index = (pK * _nbCells.y + pI) * _nbCells.x + pJ;
         return _grid[index];
     }
 
@@ -69,12 +69,12 @@ public class Grid
         return _grid;
     }
 
-    public Vector3 GetCellCenter(Vector3 p_cell)
+    public Vector3 GetCellCenter(Vector3 pCell)
     {
         return new Vector3(
-                p_cell.x + 0.5f * _cellSize.x,
-                p_cell.y + 0.5f * _cellSize.y,
-                p_cell.z + 0.5f * _cellSize.z
+                pCell.x + 0.5f * _cellSize.x,
+                pCell.y + 0.5f * _cellSize.y,
+                pCell.z + 0.5f * _cellSize.z
             );
     }
 }

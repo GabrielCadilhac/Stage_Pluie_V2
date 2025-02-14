@@ -30,27 +30,27 @@ public class RainManager
     private GraphicsFence _fence;
 
     // Test
-    public const int _nbParticles = 100;
+    public const int NbParticles = 100;
 
     private GameObject[] _obbs;
 
-    public RainManager(Transform p_transform, Bounds p_bounds, GameObject[] p_obbs, BezierCurve p_curve, ComputeShader p_windShader, ComputeShader p_rainUpdate, ComputeShader p_rainCollision, Material p_rainMaterial, Material p_splashMaterial)
+    public RainManager(Transform pTransform, Bounds pBounds, GameObject[] pObbs, BezierCurve pCurve, ComputeShader pWindShader, ComputeShader pRainUpdate, ComputeShader pRainCollision, Material pRainMaterial, Material pSplashMaterial)
     {
         // GameObject parameter
-        _transform = p_transform;
-        _bounds = p_bounds;
-        _bezierCurve = p_curve;
+        _transform = pTransform;
+        _bounds = pBounds;
+        _bezierCurve = pCurve;
 
-        _obbs = p_obbs;
+        _obbs = pObbs;
 
         // Compute shaders
-        _windShader = p_windShader;
-        _updateShader = p_rainUpdate;
-        _collisionShader = p_rainCollision;
+        _windShader = pWindShader;
+        _updateShader = pRainUpdate;
+        _collisionShader = pRainCollision;
 
         // Materials
-        _material = p_rainMaterial;
-        _splashMaterial = p_splashMaterial;
+        _material = pRainMaterial;
+        _splashMaterial = pSplashMaterial;
 
         // Synchronize compute and vertex/fragment shaders
         _fence = Graphics.CreateGraphicsFence(GraphicsFenceType.AsyncQueueSynchronisation, SynchronisationStageFlags.VertexProcessing | SynchronisationStageFlags.ComputeProcessing | SynchronisationStageFlags.PixelProcessing);
@@ -67,7 +67,7 @@ public class RainManager
         _windGenerator.Reset(_bezierCurve);
 
         // Init rain shader
-        if (_nbParticles <= 0)
+        if (NbParticles <= 0)
             return;
 
         // World space min and max rain box
@@ -82,7 +82,7 @@ public class RainManager
         //_splashRenderer = new SplashRenderer2(_splashMaterial);
         //_splashNormalBuffer = _splashRenderer.GetNormalBuffer();
 
-        _rainImpact = new RainImpact(_splashMaterial, _transform, _nbParticles);
+        _rainImpact = new RainImpact(_splashMaterial, _transform, NbParticles);
 
         // Init rain generator (compute buffer)
         GraphicsBuffer posBuffer = _renderer.GetPositionsBuffer();
@@ -96,9 +96,9 @@ public class RainManager
         _renderer.SetSizeBuffer(_rainGenerator.GetSizeBuffer());
     }
 
-    public void UpdateCascade(float p_deltaTime)
+    public void UpdateCascade(float pDeltaTime)
     {
-        _windGenerator.UpdateCascade(_transform.position, p_deltaTime);
+        _windGenerator.UpdateCascade(_transform.position, pDeltaTime);
     }
 
     public void UpdateWind()
@@ -113,9 +113,9 @@ public class RainManager
         Graphics.WaitOnAsyncGraphicsFence(_fence);
     }
 
-    public void RainCollision(float p_deltaTime)
+    public void RainCollision(float pDeltaTime)
     {
-        _rainGenerator.DispatchCollision(p_deltaTime);
+        _rainGenerator.DispatchCollision(pDeltaTime);
         Graphics.WaitOnAsyncGraphicsFence(_fence);
     }
 
@@ -127,11 +127,11 @@ public class RainManager
 
     public void RenderSplatch()
     {
-        _rainImpact.Update(_nbParticles, 2f);
+        _rainImpact.Update(NbParticles, 2f);
         Graphics.WaitOnAsyncGraphicsFence(_fence);
     }
 
-    public void Update(float p_deltaTime)
+    public void Update(float pDeltaTime)
     {
         // Rain box dynamique quand la cam�ra se d�place, les collisions avec les gouttes sont mises � jour
         
@@ -152,9 +152,9 @@ public class RainManager
 
     public void ResetParticles()
     {
-        Vector3[] newPos = new Vector3[_nbParticles];
+        Vector3[] newPos = new Vector3[NbParticles];
 
-        for (int i = 0; i < _nbParticles; i++)
+        for (int i = 0; i < NbParticles; i++)
             newPos[i] = new Vector3(
                 Random.Range(_globalMin.x, _globalMax.x),
                 Random.Range(_globalMin.y, _globalMax.y),
@@ -162,7 +162,7 @@ public class RainManager
             );
 
         _renderer.SetParticles(newPos);
-        _rainGenerator.ResetParticles(_nbParticles);
+        _rainGenerator.ResetParticles(NbParticles);
 
         Debug.Log("Particules r�initialis�es !");
     }
@@ -182,7 +182,7 @@ public class RainManager
 
     public void DrawGizmos() // Debugger la grille du vent (permet de voir les perturbations)
     {
-        if (!Constants.DRAW_DEBUG_GRID || _windGenerator == null) return;
+        if (!Constants.DrawDebugGrid || _windGenerator == null) return;
         
         Grid grid = _windGenerator.GetGrid();
         Vector3 cellSize = grid.GetCellSize();
@@ -191,16 +191,16 @@ public class RainManager
 
         Vector3 newPos, cellCenter, wind, temp;
         Color c;
-        for (int j = 0; j < Common.NB_CELLS.x; j++)
+        for (int j = 0; j < Common.NbCells.x; j++)
         {
-            for (int i = 0; i < Common.NB_CELLS.y; i++)
+            for (int i = 0; i < Common.NbCells.y; i++)
             {
-                for (int k = 0; k < Common.NB_CELLS.z; k++)
+                for (int k = 0; k < Common.NbCells.z; k++)
                 {
                     newPos = new Vector3(j * cellSize.x, i * cellSize.y, k * cellSize.z) + _globalMin;
 
                     cellCenter = grid.GetCellCenter(newPos);
-                    int index = (k * Common.NB_CELLS.y + i) * Common.NB_CELLS.x + j;
+                    int index = (k * Common.NbCells.y + i) * Common.NbCells.x + j;
                     //Vector3 wind = grid.Get(j, i, k);
                     wind = localWinds[index];
 

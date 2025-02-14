@@ -2,39 +2,40 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEditor;
 using UnityEngine;
+using UnityEngine.Serialization;
 
 public class BezierCurve : MonoBehaviour
 {
-    public Vector3[] _points;
+    [FormerlySerializedAs("_points")] public Vector3[] points;
 
     public void Reset()
     {
-        _points = new Vector3[] { new(1f, 0f, 0f),
+        points = new Vector3[] { new(1f, 0f, 0f),
                                   new(2f, 0f, 0f),
                                   new(3f, 0f, 0f),
                                   new(4f, 0f, 0f)};
     }
 
-    public void SetPoint(Vector3[] p_newPoints)
+    public void SetPoint(Vector3[] pNewPoints)
     {
-        _points = p_newPoints;
+        points = pNewPoints;
     }
 
-    public void SetPoint(int p_index, Vector3 p_point)
+    public void SetPoint(int pIndex, Vector3 pPoint)
     {
-        _points[p_index] = p_point;
+        points[pIndex] = pPoint;
     }
     
-    public Vector3 GetPoint(float t, bool p_transformPoint = true)
+    public Vector3 GetPoint(float t, bool pTransformPoint = true)
     {
-        if (p_transformPoint)
-            return transform.TransformPoint(Bezier.GetPoint(_points[0], _points[1], _points[2], _points[3], t));
-        return Bezier.GetPoint(_points[0], _points[1], _points[2], _points[3], t);
+        if (pTransformPoint)
+            return transform.TransformPoint(Bezier.GetPoint(points[0], points[1], points[2], points[3], t));
+        return Bezier.GetPoint(points[0], points[1], points[2], points[3], t);
     }
 
     public Vector3 GetVelocity(float t)
     {
-        return transform.TransformPoint(Bezier.GetFirstDerivatives(_points[0], _points[1], _points[2], _points[3], t)) -
+        return transform.TransformPoint(Bezier.GetFirstDerivatives(points[0], points[1], points[2], points[3], t)) -
             transform.position;
     }
 
@@ -45,8 +46,8 @@ public class BezierCurve : MonoBehaviour
 
     public float GetLength()
     {
-        return Mathf.Round(Vector3.Distance(_points[0], _points[1]) +
-               Vector3.Distance(_points[1], _points[2]) +
-               Vector3.Distance(_points[2], _points[3]));
+        return Mathf.Round(Vector3.Distance(points[0], points[1]) +
+               Vector3.Distance(points[1], points[2]) +
+               Vector3.Distance(points[2], points[3]));
     }
 }

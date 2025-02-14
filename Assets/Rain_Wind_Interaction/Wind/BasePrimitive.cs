@@ -2,32 +2,32 @@ using System.Collections;
 using UnityEngine;
 public abstract class BasePrimitive
 {
-    protected Vector3 _position;
-    protected float _speed, _size, _param, _strength;
+    protected Vector3 Position;
+    protected float Speed, Size, Param, Strength;
 
-    public BasePrimitive(Vector3 position, float p_param, float p_speed, float p_size, float p_strength)
+    public BasePrimitive(Vector3 position, float pParam, float pSpeed, float pSize, float pStrength)
     {
-        _position = position;
-        _speed = p_speed;
-        _size = p_size;
-        _param = p_param;
-        _strength = p_strength;
+        Position = position;
+        Speed = pSpeed;
+        Size = pSize;
+        Param = pParam;
+        Strength = pStrength;
     }
 
-    public void SetPosition(Vector3 p_position)
+    public void SetPosition(Vector3 pPosition)
     {
-        _position = p_position;
+        Position = pPosition;
     }
 
-    public void SetSpeed(float p_newSpeed)
+    public void SetSpeed(float pNewSpeed)
     {
-        _speed = p_newSpeed;
+        Speed = pNewSpeed;
     }
 
     public float GetParam()
     {
-        return _param;
+        return Param;
     }
 
-    public abstract Vector3 GetValue(float p_j, float p_i, float p_k);
+    public abstract Vector3 GetValue(float pJ, float pI, float pK);
 }

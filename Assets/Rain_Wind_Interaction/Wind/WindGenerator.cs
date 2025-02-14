@@ -16,25 +16,25 @@ public class WindGenerator
     private ComputeShader _windShader;
     private ComputeBuffer _gpuWindBuffer, _gpuTurbBuffer;
 
-    public WindGenerator(ComputeShader p_windShader,
-                         Vector3 p_globalPosition,
-                         Vector3 p_boxSize,
-                         BezierCurve p_bezierCurve)
+    public WindGenerator(ComputeShader pWindShader,
+                         Vector3 pGlobalPosition,
+                         Vector3 pBoxSize,
+                         BezierCurve pBezierCurve)
     {
         Random.InitState(0);
 
-        _boxSize = p_boxSize;
+        _boxSize = pBoxSize;
 
         // Init Parameters
-        _min = p_globalPosition - p_boxSize / 2f;
-        _max = p_globalPosition + p_boxSize / 2f;
-        _windsGrid = new Grid(Common.NB_CELLS, p_boxSize);
+        _min = pGlobalPosition - pBoxSize / 2f;
+        _max = pGlobalPosition + pBoxSize / 2f;
+        _windsGrid = new Grid(Common.NbCells, pBoxSize);
 
-        _energyCascade = new EnergyCascade(p_bezierCurve);
+        _energyCascade = new EnergyCascade(pBezierCurve);
 
         // TEST
-        _windShader    = p_windShader;
-        _gpuWindBuffer = new ComputeBuffer(Common.NB_CELLS.x * Common.NB_CELLS.y * Common.NB_CELLS.z, 3 * sizeof(float));
+        _windShader    = pWindShader;
+        _gpuWindBuffer = new ComputeBuffer(Common.NbCells.x * Common.NbCells.y * Common.NbCells.z, 3 * sizeof(float));
         _gpuTurbBuffer = new ComputeBuffer(200, 6 * sizeof(float) + sizeof(int));
 
         // Init GPU data
@@ -47,32 +47,32 @@ public class WindGenerator
         _windShader.SetBuffer(0, "Turbulence", _gpuTurbBuffer);
         _windShader.SetBuffer(0, "Wind", _gpuWindBuffer);
         _windShader.SetInt("NbTurbulence", _energyCascade.GetNbTurbulence());
-        _windShader.SetFloat("LocalWindStrength", Constants.LOCAL_WIND_STRENGTH);
-        _windShader.SetVector("GridSize", (Vector3) Common.NB_CELLS);
+        _windShader.SetFloat("LocalWindStrength", Constants.LocalWindStrength);
+        _windShader.SetVector("GridSize", (Vector3) Common.NbCells);
     }
 
-    private (float, int) ComputeLerp(float p_t, int p_nbPoints)
+    private (float, int) ComputeLerp(float pT, int pNbPoints)
     {
-        float range = 1f / (float) p_nbPoints;
+        float range = 1f / (float) pNbPoints;
         float tempT = range;
         int id = 0;
-        while (tempT < p_t)
+        while (tempT < pT)
         {
             tempT += range;
             id++;
         }
 
-        return ((p_t - (float) id * range) / range, id);
+        return ((pT - (float) id * range) / range, id);
     }
 
-    public void UpdateCascade(Vector3 p_globalPos, float p_deltaTime)
+    public void UpdateCascade(Vector3 pGlobalPos, float pDeltaTime)
     {
         _windsGrid.Reset();
 
-        _min = p_globalPos - _boxSize / 2f;
-        _max = p_globalPos + _boxSize / 2f;
+        _min = pGlobalPos - _boxSize / 2f;
+        _max = pGlobalPos + _boxSize / 2f;
 
-        _energyCascade.Update(p_deltaTime, _min, _max);
+        _energyCascade.Update(pDeltaTime, _min, _max);
 
     }
 
@@ -80,20 +80,20 @@ public class WindGenerator
     {
         List<SuperPrimitive> primitives = _energyCascade.GetPrimitives();
 
-        // Ajouter des perturbations à la grille pour créer des rafales
-        for (int j = 0; j < Common.NB_CELLS.x; j++)
-            for (int i = 0; i < Common.NB_CELLS.y; i++)
-                for (int k = 0; k < Common.NB_CELLS.z; k++)
+        // Ajouter des perturbations ï¿½ la grille pour crï¿½er des rafales
+        for (int j = 0; j < Common.NbCells.x; j++)
+            for (int i = 0; i < Common.NbCells.y; i++)
+                for (int k = 0; k < Common.NbCells.z; k++)
                 {
-                    float x = (float)j / Common.NB_CELLS.x;
-                    float y = (float)i / Common.NB_CELLS.y;
-                    float z = (float)k / Common.NB_CELLS.z;
+                    float x = (float)j / Common.NbCells.x;
+                    float y = (float)i / Common.NbCells.y;
+                    float z = (float)k / Common.NbCells.z;
 
                     Vector3 direction = Vector3.zero;
                     foreach (SuperPrimitive prim in primitives)
                         direction += prim.GetValue(x, y, z);
 
-                    _windsGrid.Add(i, j, k, direction * Constants.LOCAL_WIND_STRENGTH);
+                    _windsGrid.Add(i, j, k, direction * Constants.LocalWindStrength);
                 }
 
     }
@@ -116,9 +116,9 @@ public class WindGenerator
         _energyCascade.CheckEnergy();
     }
 
-    public void Reset(BezierCurve p_curve)
+    public void Reset(BezierCurve pCurve)
     {
-        _energyCascade.Reset(p_curve);
+        _energyCascade.Reset(pCurve);
     }
 
     public Grid GetGrid()
@@ -128,7 +128,7 @@ public class WindGenerator
 
     public Vector3[] GetData()
     {
-        Vector3[] localWinds = new Vector3[Common.NB_CELLS.x * Common.NB_CELLS.y * Common.NB_CELLS.z];
+        Vector3[] localWinds = new Vector3[Common.NbCells.x * Common.NbCells.y * Common.NbCells.z];
         _gpuWindBuffer.GetData(localWinds);
         return localWinds;
     }

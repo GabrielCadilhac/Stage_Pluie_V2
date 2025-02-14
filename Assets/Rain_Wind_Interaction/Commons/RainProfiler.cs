@@ -32,14 +32,14 @@ public class RainProfiler : MonoBehaviour
     private List<CustomSampler> _customSamplers;
     private List<Sampler> _samplers;
 
-    private Config[] configsArray;
+    private Config[] _configsArray;
 
     private int _currentConfigId = 0;
 
     private int _profID = 0;
     private int _currentSample = 0;
-    private int nbSamples = 2000;
-    private int nbWarmup = 200;
+    private int _nbSamples = 2000;
+    private int _nbWarmup = 200;
 
     RainMain _rain;
 
@@ -71,7 +71,7 @@ public class RainProfiler : MonoBehaviour
         }
 
         _currentSample++;
-        if (_currentSample < nbWarmup)
+        if (_currentSample < _nbWarmup)
             return;
 
         foreach (CustomSampler sampler in _customSamplers)
@@ -88,7 +88,7 @@ public class RainProfiler : MonoBehaviour
                 _elapsedTimes[s.name].Add((float)rec.elapsedNanoseconds / 1000000f);
         }
 
-        if (_currentSample >= nbSamples + nbWarmup)
+        if (_currentSample >= _nbSamples + _nbWarmup)
             ResetBench();
     }
 
@@ -107,16 +107,16 @@ public class RainProfiler : MonoBehaviour
             sb.Remove(sb.Length - 1, 1);
         }
 
-        Config c = Constants.CONFIG;
+        Config c = Constants.Config;
         string configName = $"{c.nbParticles} {c.winds} {c.turbAnim} {c.nbMaxTurbulences}-{_currentConfigId}.{_profID}";
         SaveFile(sb.ToString(), configName);
     }
 
-    private void LoadConfig(string p_configName)
+    private void LoadConfig(string pConfigName)
     {
         string folder = Application.persistentDataPath;
-        configsArray = Common.LoadFile(Path.Combine(folder, p_configName));
-        Constants.CONFIG = configsArray[_currentConfigId];
+        _configsArray = Common.LoadFile(Path.Combine(folder, pConfigName));
+        Constants.Config = _configsArray[_currentConfigId];
     }
 
     private void ResetBench()
@@ -139,7 +139,7 @@ public class RainProfiler : MonoBehaviour
             _profID = 0;
             _currentConfigId++;
 
-            if (_currentConfigId == configsArray.Length)
+            if (_currentConfigId == _configsArray.Length)
                 gameObject.SetActive(false); // Disable Rain Profiler
         } else
         {
@@ -149,7 +149,7 @@ public class RainProfiler : MonoBehaviour
             Debug.Log($"Next sample {_profID}");
         }
 
-        Constants.CONFIG = configsArray[_currentConfigId];
+        Constants.Config = _configsArray[_currentConfigId];
     }
 
     private void SaveFile(string content, string fileName)

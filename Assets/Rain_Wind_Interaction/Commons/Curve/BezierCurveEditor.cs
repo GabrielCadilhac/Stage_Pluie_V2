@@ -5,8 +5,8 @@ using UnityEngine;
 [CustomEditor(typeof(BezierCurve))]
 public class BezierCurveEditor : Editor
 {
-    private const int _lineSteps = 10;
-    private const float _directionScale = 0.5f;
+    private const int LineSteps = 10;
+    private const float DirectionScale = 0.5f;
 
     private BezierCurve _curve;
     private Transform _handleTransform;
@@ -35,14 +35,14 @@ public class BezierCurveEditor : Editor
 
     private Vector3 ShowPoint(int index)
     {
-        Vector3 point = _handleTransform.TransformPoint(_curve._points[index]);
+        Vector3 point = _handleTransform.TransformPoint(_curve.points[index]);
         EditorGUI.BeginChangeCheck();
         point = Handles.DoPositionHandle(point, _handleRotation);
         if (EditorGUI.EndChangeCheck())
         {
             Undo.RecordObject(_curve, "Move Point");
             EditorUtility.SetDirty(_curve);
-            _curve._points[index] = _handleTransform.InverseTransformPoint(point);
+            _curve.points[index] = _handleTransform.InverseTransformPoint(point);
         }
         return point;
     }
@@ -51,11 +51,11 @@ public class BezierCurveEditor : Editor
     {
         Handles.color = Color.green;
         Vector3 point = _curve.GetPoint(0);
-        Handles.DrawLine(point, point + _curve.GetDirection(0f) * _directionScale);
-        for (int i = 1; i <= _lineSteps; i++)
+        Handles.DrawLine(point, point + _curve.GetDirection(0f) * DirectionScale);
+        for (int i = 1; i <= LineSteps; i++)
         {
-            point = _curve.GetPoint(i / (float) _lineSteps);
-            Handles.DrawLine(point, point + _curve.GetDirection(i / (float)_lineSteps) * _directionScale);
+            point = _curve.GetPoint(i / (float) LineSteps);
+            Handles.DrawLine(point, point + _curve.GetDirection(i / (float)LineSteps) * DirectionScale);
         }
     }
 

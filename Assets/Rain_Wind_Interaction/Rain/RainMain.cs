@@ -2,14 +2,18 @@ using System;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Profiling;
+using UnityEngine.Serialization;
 using UnityEngine.UIElements;
 
 public class RainMain : MonoBehaviour
 {
-    [SerializeField] BezierCurve _bezierCurve;
-    [SerializeField] ComputeShader _rainUpdateShader, _rainCollisionShader, _windShader;
-    [SerializeField] Material _rainMaterial, _splashMaterial;
-    [SerializeField] GameObject[] _obbs;
+    [FormerlySerializedAs("_bezierCurve")] [SerializeField] BezierCurve bezierCurve;
+    [FormerlySerializedAs("_rainUpdateShader")] [SerializeField] ComputeShader rainUpdateShader;
+    [FormerlySerializedAs("_rainCollisionShader")] [SerializeField] ComputeShader rainCollisionShader;
+    [FormerlySerializedAs("_windShader")] [SerializeField] ComputeShader windShader;
+    [FormerlySerializedAs("_rainMaterial")] [SerializeField] Material rainMaterial;
+    [FormerlySerializedAs("_splashMaterial")] [SerializeField] Material splashMaterial;
+    [FormerlySerializedAs("_obbs")] [SerializeField] GameObject[] obbs;
 
     RainManager _rainManager;
 
@@ -20,7 +24,7 @@ public class RainMain : MonoBehaviour
     {
         Bounds bounds = gameObject.GetComponent<BoxCollider>().bounds;
 
-        _rainManager = new RainManager(transform, bounds, _obbs, _bezierCurve, _windShader, _rainUpdateShader, _rainCollisionShader, _rainMaterial, _splashMaterial);
+        _rainManager = new RainManager(transform, bounds, obbs, bezierCurve, windShader, rainUpdateShader, rainCollisionShader, rainMaterial, splashMaterial);
 
         // custom profilling sampler
         _windSampler = CustomSampler.Create("Wind_Update");
@@ -46,11 +50,11 @@ public class RainMain : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        // Permet de réinitialiser les gouttes à des positions aléatoires
+        // Permet de rï¿½initialiser les gouttes ï¿½ des positions alï¿½atoires
         //if (Input.GetKeyDown(KeyCode.Space))
         //    _rainManager.ResetParticles();
 
-        //// Permet d'afficher l'énergie des turbulences pour vérifier leur évolution
+        //// Permet d'afficher l'ï¿½nergie des turbulences pour vï¿½rifier leur ï¿½volution
         //if (Input.GetKeyDown(KeyCode.C))
         //    _rainManager.CheckWindEnergy();
 
@@ -60,7 +64,7 @@ public class RainMain : MonoBehaviour
         //    Debug.Log($"Screen captured : ./Assets/Results/results_{DateTime.Now.ToString("dd_MM_hh_mm_ss")}.png");
         //}
 
-        float dt = Constants.DELTA_TIME * Time.deltaTime;
+        float dt = Constants.DeltaTime * Time.deltaTime;
 
         //_turbSampler.Begin();
         _rainManager.UpdateCascade(dt);

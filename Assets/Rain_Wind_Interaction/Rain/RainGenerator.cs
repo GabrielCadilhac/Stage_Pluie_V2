@@ -1,4 +1,5 @@
 using Drop_Impact;
+using RainFlow;
 using Test;
 using UnityEngine;
 
@@ -16,51 +17,51 @@ public class RainGenerator
     private ComputeShader _updateShader, _collisionShader;
     private ComputeBuffer _obbsBuffer, _obbsCollidedBuffer;
 
-    public OBB[] _obbs;
+    public Obb[] Obbs;
     private GameObject[] _obbsGameObject;
 
     private int[] _collisionsId;
     private Vector4[] _splashPos;
 
-    public RainGenerator(ComputeShader p_updateShader,
-                         ComputeShader p_collisionShader,
-                         GraphicsBuffer p_posBuffer,
+    public RainGenerator(ComputeShader pUpdateShader,
+                         ComputeShader pCollisionShader,
+                         GraphicsBuffer pPosBuffer,
                          RainImpact pRainImpact,
-                         ComputeBuffer p_windBuffer,
-                         GameObject[] p_obbsGameObject,
-                         Bounds p_windGrid,
-                         Vector3 p_globalMin,
-                         Vector3 p_globalMax)
+                         ComputeBuffer pWindBuffer,
+                         GameObject[] pObbsGameObject,
+                         Bounds pWindGrid,
+                         Vector3 pGlobalMin,
+                         Vector3 pGlobalMax)
     {
-        _posBuffer  = p_posBuffer;
-        _velBuffer  = new ComputeBuffer(RainManager._nbParticles, 3 * sizeof(float));
+        _posBuffer  = pPosBuffer;
+        _velBuffer  = new ComputeBuffer(RainManager.NbParticles, 3 * sizeof(float));
         //_localWindBuffer = new ComputeBuffer(Common.NB_CELLS.x * Common.NB_CELLS.y * Common.NB_CELLS.z, 3 * sizeof(float));
-        _sizeBuffer = new ComputeBuffer(RainManager._nbParticles, sizeof(float));
+        _sizeBuffer = new ComputeBuffer(RainManager.NbParticles, sizeof(float));
 
-        _obbsCollidedBuffer = new ComputeBuffer(RainManager._nbParticles, sizeof(int));
-        int[] obbsCollided = new int[RainManager._nbParticles];
-        for (int i = 0; i < RainManager._nbParticles; i++)
+        _obbsCollidedBuffer = new ComputeBuffer(RainManager.NbParticles, sizeof(int));
+        int[] obbsCollided = new int[RainManager.NbParticles];
+        for (int i = 0; i < RainManager.NbParticles; i++)
             obbsCollided[i] = -1;
         _obbsCollidedBuffer.SetData(obbsCollided);
 
-        _collisionsId = new int[RainManager._nbParticles];
-        _splashPos = new Vector4[RainManager._nbParticles];
+        _collisionsId = new int[RainManager.NbParticles];
+        _splashPos = new Vector4[RainManager.NbParticles];
 
-        _nbBlocks = Mathf.Clamp(Mathf.FloorToInt((float)RainManager._nbParticles / (float) Constants.BLOCK_SIZE + 0.5f), 1, Constants.MAX_BLOCKS_NUMBER);
+        _nbBlocks = Mathf.Clamp(Mathf.FloorToInt((float)RainManager.NbParticles / (float) Constants.BlockSize + 0.5f), 1, Constants.MaxBlocksNumber);
 
         _splashColBuffer = pRainImpact.GetPosBuffer();
 
-        _obbsGameObject = p_obbsGameObject;
+        _obbsGameObject = pObbsGameObject;
         _obbsBuffer = new ComputeBuffer(_obbsGameObject.Length, 22 * sizeof(float));
 
-        _obbs = new OBB[_obbsGameObject.Length];
-        GameObject2OBB(_obbsGameObject);
-        _obbsBuffer.SetData(_obbs);
+        Obbs = new Obb[_obbsGameObject.Length];
+        GameObject2Obb(_obbsGameObject);
+        _obbsBuffer.SetData(Obbs);
 
         // Generate velocities
-        Vector3[] tempVel = new Vector3[RainManager._nbParticles];
-        float[] tempSize = new float[RainManager._nbParticles];
-        for (int i = 0; i < RainManager._nbParticles; i++)
+        Vector3[] tempVel = new Vector3[RainManager.NbParticles];
+        float[] tempSize = new float[RainManager.NbParticles];
+        for (int i = 0; i < RainManager.NbParticles; i++)
         {
             // Calcul des diam�tres
             float dmin = 0.5f;
@@ -76,25 +77,25 @@ public class RainGenerator
         _sizeBuffer.SetData(tempSize);
 
         // Init update Compute Shader
-        _updateShader = p_updateShader;
-        _windBuffer   = p_windBuffer;
+        _updateShader = pUpdateShader;
+        _windBuffer   = pWindBuffer;
 
-        _updateShader.SetBuffer(0, "Positions", p_posBuffer);
+        _updateShader.SetBuffer(0, "Positions", pPosBuffer);
         _updateShader.SetBuffer(0, "Velocities", _velBuffer);
         _updateShader.SetBuffer(0, "Winds", _windBuffer);
         _updateShader.SetBuffer(0, "Sizes", _sizeBuffer);
 
-        _updateShader.SetInt("_NumParticles", RainManager._nbParticles);
+        _updateShader.SetInt("_NumParticles", RainManager.NbParticles);
         _updateShader.SetInt("_Resolution", _nbBlocks);
         _updateShader.SetFloat("_DeltaTime", 0f);
-        _updateShader.SetVector("_Min", p_globalMin);
-        _updateShader.SetVector("_NbCells", (Vector3) Common.NB_CELLS);
-        _updateShader.SetVector("_WindGridSize", p_windGrid.size);
+        _updateShader.SetVector("_Min", pGlobalMin);
+        _updateShader.SetVector("_NbCells", (Vector3) Common.NbCells);
+        _updateShader.SetVector("_WindGridSize", pWindGrid.size);
 
         // Init collision Compute Shader
-        _collisionShader = p_collisionShader;
+        _collisionShader = pCollisionShader;
 
-        _collisionShader.SetBuffer(0, "Positions",  p_posBuffer);
+        _collisionShader.SetBuffer(0, "Positions",  pPosBuffer);
         _collisionShader.SetBuffer(0, "Velocities", _velBuffer);
         _collisionShader.SetBuffer(0, "Sizes", _sizeBuffer);
         
@@ -105,34 +106,34 @@ public class RainGenerator
         _collisionShader.SetBuffer(0, "Obbs", _obbsBuffer);
         _collisionShader.SetBuffer(0, "ObbsCollided", _obbsCollidedBuffer);
 
-        _collisionShader.SetInt("_NumParticles", RainManager._nbParticles);
+        _collisionShader.SetInt("_NumParticles", RainManager.NbParticles);
         _collisionShader.SetInt("_NumObbs", _obbsGameObject.Length);
         _collisionShader.SetInt("_Resolution", _nbBlocks);
         _collisionShader.SetVector("_InitialVel", _initVel);
-        _collisionShader.SetVector("_Min", p_globalMin);
-        _collisionShader.SetVector("_Max", p_globalMax);
+        _collisionShader.SetVector("_Min", pGlobalMin);
+        _collisionShader.SetVector("_Max", pGlobalMax);
     }
 
-    private void GameObject2OBB(GameObject[] p_obbsGameObject)
+    private void GameObject2Obb(GameObject[] pObbsGameObject)
     {
-        for (int i = 0; i < _obbs.Length; i++)
+        for (int i = 0; i < Obbs.Length; i++)
         {
-            GameObject go = p_obbsGameObject[i];
+            GameObject go = pObbsGameObject[i];
 
             // Define the OBB
-            OBB oBB = new OBB();
-            oBB.rotation = go.GetComponent<CustomRotation>().GetRotation();
-            oBB.center   = go.transform.position;
-            oBB.size     = go.transform.localScale / 2f;
+            Obb oBb = new Obb();
+            oBb.Rotation = go.GetComponent<CustomRotation>().GetRotation();
+            oBb.Center   = go.transform.position;
+            oBb.Size     = go.transform.localScale / 2f;
 
-            _obbs[i] = oBB;
+            Obbs[i] = oBb;
         }
     }
 
-    public void UpdateBoxBounds(Vector3 p_globalMin, Vector3 p_globalMax)
+    public void UpdateBoxBounds(Vector3 pGlobalMin, Vector3 pGlobalMax)
     {
-        _collisionShader.SetVector("_Min", p_globalMin);
-        _collisionShader.SetVector("_Max", p_globalMax);
+        _collisionShader.SetVector("_Min", pGlobalMin);
+        _collisionShader.SetVector("_Max", pGlobalMax);
     }
 
     public void DispatchUpdate()
@@ -140,23 +141,23 @@ public class RainGenerator
         _updateShader.Dispatch(0, _nbBlocks, 1, 1);
     }
 
-    public void DispatchCollision(float p_deltaTime)
+    public void DispatchCollision(float pDeltaTime)
     {
-        GameObject2OBB(_obbsGameObject);
-        _obbsBuffer.SetData(_obbs);
-        _updateShader.SetFloat("_DeltaTime", p_deltaTime);
+        GameObject2Obb(_obbsGameObject);
+        _obbsBuffer.SetData(Obbs);
+        _updateShader.SetFloat("_DeltaTime", pDeltaTime);
         _collisionShader.Dispatch(0, _nbBlocks, 1, 1);
 
         _obbsCollidedBuffer.GetData(_collisionsId);
         _splashColBuffer.GetData(_splashPos);
-        for (int k = 0; k < RainManager._nbParticles; k++)
+        for (int k = 0; k < RainManager.NbParticles; k++)
         {
             int col = _collisionsId[k];
             RainFlowMaps rainFlowMaps = col > -1 ? _obbsGameObject[col].GetComponent<RainFlowMaps>() : null;
             if (col > -1 && rainFlowMaps != null)
             {
-                OBB obb = _obbs[col];
-                Matrix4x4 rot = obb.rotation;
+                Obb obb = Obbs[col];
+                Matrix4x4 rot = obb.Rotation;
                 Vector4 t1 = rot.GetColumn(0);
                 Vector4 t2 = rot.GetColumn(1);
                 Vector4 t3 = rot.GetColumn(2);
@@ -167,17 +168,17 @@ public class RainGenerator
 
                 Vector4 sPos = _splashPos[k];
                 Vector3 point = new Vector3(sPos.x, sPos.y, sPos.z);
-                Vector3 localPoint = point - obb.center;
+                Vector3 localPoint = point - obb.Center;
                 localPoint -= Vector3.Dot(n, localPoint) * n;
 
-                float u = Vector3.Dot(localPoint, e1.normalized) / obb.size.x;
-                float v = Vector3.Dot(localPoint, e2.normalized) / obb.size.y;
+                float u = Vector3.Dot(localPoint, e1.normalized) / obb.Size.x;
+                float v = Vector3.Dot(localPoint, e2.normalized) / obb.Size.y;
 
-                float i = Mathf.Clamp01(u * 0.5f + 0.5f) * (float)(RainFlowMaps.SIZE);
-                float j = Mathf.Clamp01(v * 0.5f + 0.5f) * (float)(RainFlowMaps.SIZE);
+                float i = Mathf.Clamp01(u * 0.5f + 0.5f) * (float)(RainFlowMaps.Size);
+                float j = Mathf.Clamp01(v * 0.5f + 0.5f) * (float)(RainFlowMaps.Size);
 
-                i = Mathf.Clamp(i, 0f, (float)RainFlowMaps.SIZE - 1f);
-                j = Mathf.Clamp(j, 0f, (float)RainFlowMaps.SIZE - 1f);
+                i = Mathf.Clamp(i, 0f, (float)RainFlowMaps.Size - 1f);
+                j = Mathf.Clamp(j, 0f, (float)RainFlowMaps.Size - 1f);
 
                 rainFlowMaps.AddDrop((int)i, (int)j);
             }
@@ -196,14 +197,14 @@ public class RainGenerator
 
     public void ChangeGlobalWind()
     {
-        _collisionShader.SetVector("_GlobalWind", Constants.GLOBAL_WIND);
-        _updateShader.SetVector("_GlobalWind", Constants.GLOBAL_WIND);
+        _collisionShader.SetVector("_GlobalWind", Constants.GlobalWind);
+        _updateShader.SetVector("_GlobalWind", Constants.GlobalWind);
     }
 
-    public void ResetParticles(int p_nbParticles)
+    public void ResetParticles(int pNbParticles)
     {
-        Vector3[] newVel = new Vector3[p_nbParticles];
-        for (int i = 0; i < p_nbParticles; i++)
+        Vector3[] newVel = new Vector3[pNbParticles];
+        for (int i = 0; i < pNbParticles; i++)
             newVel[i] = new Vector3(0.0f, Random.Range(_initVel.y, _initVel.y + 1f), 0f);
 
         _velBuffer.SetData(newVel);

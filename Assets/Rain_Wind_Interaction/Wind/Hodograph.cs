@@ -2,13 +2,14 @@ using System;
 using System.Collections;
 using Unity.VisualScripting;
 using UnityEngine;
+using UnityEngine.Serialization;
 
 public class Hodograph : MonoBehaviour
 {
-    [SerializeField] private BoxCollider _boxCollider;
-    [SerializeField] private BezierCurve _bezierCurve;
-    [SerializeField] private GameObject _parent;
-    [SerializeField] private Transform _rainTransform;
+    [FormerlySerializedAs("_boxCollider")] [SerializeField] private BoxCollider boxCollider;
+    [FormerlySerializedAs("_bezierCurve")] [SerializeField] private BezierCurve bezierCurve;
+    [FormerlySerializedAs("_parent")] [SerializeField] private GameObject parent;
+    [FormerlySerializedAs("_rainTransform")] [SerializeField] private Transform rainTransform;
     
     private Bounds _bounds;
 
@@ -23,9 +24,9 @@ public class Hodograph : MonoBehaviour
     {
         _rectTransform = GetComponent<RectTransform>();
         _hodoPos = new Vector3[transform.childCount];
-        _bounds = _boxCollider.bounds;
+        _bounds = boxCollider.bounds;
         
-        // Rayon est égal à la taille la plus petite / 2
+        // Rayon est ï¿½gal ï¿½ la taille la plus petite / 2
         _radius = Mathf.Min(_bounds.size.x, _bounds.size.z) / 2f;
         _right = new Vector3(1f, 0f, 0f);
 
@@ -35,9 +36,9 @@ public class Hodograph : MonoBehaviour
         //UpdateCurve(_hodoPos);
     }
 
-    private Vector3 ComputeChildPos(int p_index)
+    private Vector3 ComputeChildPos(int pIndex)
     {
-        Transform child = transform.GetChild(p_index);
+        Transform child = transform.GetChild(pIndex);
 
         Vector3 dir = child.localPosition - transform.position;
         float ySign = Mathf.Sign(dir.y);
@@ -59,22 +60,22 @@ public class Hodograph : MonoBehaviour
         //UpdateCurve(_hodoPos);
     }
 
-    private void UpdateCurve(Vector3[] p_curvePoints)
+    private void UpdateCurve(Vector3[] pCurvePoints)
     {
-        float spacing = 1f / (Constants.HODOGRAPH_POINTS - 1f);
+        float spacing = 1f / (Constants.HodographPoints - 1f);
 
-        Vector3 rainPos = _rainTransform.position;
-        Vector3 start = new Vector3(p_curvePoints[0].x, rainPos.y, p_curvePoints[0].z  + rainPos.z);
-        Vector3 end   = new Vector3(p_curvePoints[3].x, rainPos.y + _boxCollider.size.y, p_curvePoints[3].z + rainPos.z);
+        Vector3 rainPos = rainTransform.position;
+        Vector3 start = new Vector3(pCurvePoints[0].x, rainPos.y, pCurvePoints[0].z  + rainPos.z);
+        Vector3 end   = new Vector3(pCurvePoints[3].x, rainPos.y + boxCollider.size.y, pCurvePoints[3].z + rainPos.z);
 
-        _bezierCurve.SetPoint(0, start);
-        _bezierCurve.SetPoint(3, end);
+        bezierCurve.SetPoint(0, start);
+        bezierCurve.SetPoint(3, end);
 
         Vector3 c1 = Vector3.Lerp(start, end, spacing);
         Vector3 c2 = Vector3.Lerp(start, end, 2f * spacing);
 
-        _bezierCurve.SetPoint(1, c1);
-        _bezierCurve.SetPoint(2, c2);
+        bezierCurve.SetPoint(1, c1);
+        bezierCurve.SetPoint(2, c2);
     }
 
     public Vector3[] GetPoints()

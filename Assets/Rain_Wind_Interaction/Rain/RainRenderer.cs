@@ -10,23 +10,23 @@ public class RainRenderer
     private Bounds _bounds;
     private Transform _transform;
 
-    public RainRenderer(Material p_material, Bounds p_bounds, Vector3 p_min, Vector3 p_max, Transform p_transform)
+    public RainRenderer(Material pMaterial, Bounds pBounds, Vector3 pMin, Vector3 pMax, Transform pTransform)
     {
-        _material = p_material;
+        _material = pMaterial;
 		_material.enableInstancing = true;
-        _bounds = p_bounds;
-        _transform = p_transform;
+        _bounds = pBounds;
+        _transform = pTransform;
         
         _mesh = new Mesh() { name = "RainMesh" };
         
         // Generate positions
-        Vector3[] positions = new Vector3[RainManager._nbParticles];
-        for (int i = 0; i < RainManager._nbParticles; i++)
+        Vector3[] positions = new Vector3[RainManager.NbParticles];
+        for (int i = 0; i < RainManager.NbParticles; i++)
         {
             positions[i] = new Vector3(
-                Random.Range(p_min.x, p_max.x),
-                Random.Range(p_min.y, p_max.y),
-                Random.Range(p_min.z, p_max.z));
+                Random.Range(pMin.x, pMax.x),
+                Random.Range(pMin.y, pMax.y),
+                Random.Range(pMin.z, pMax.z));
         }
 
         // Mesh initialization
@@ -35,19 +35,19 @@ public class RainRenderer
                 new VertexAttributeDescriptor(VertexAttribute.Position, VertexAttributeFormat.Float32, 3),
         };
 
-        int[] indices = new int[RainManager._nbParticles];
-        for (int i = 0; i < RainManager._nbParticles; i++)
+        int[] indices = new int[RainManager.NbParticles];
+        for (int i = 0; i < RainManager.NbParticles; i++)
             indices[i] = i;
 
         _mesh.SetVertices(positions);
         _mesh.SetIndices(indices, MeshTopology.Points, 0);
-        _mesh.SetVertexBufferParams(RainManager._nbParticles, layout);
-        _mesh.bounds = p_bounds;
+        _mesh.SetVertexBufferParams(RainManager.NbParticles, layout);
+        _mesh.bounds = pBounds;
         _mesh.hideFlags = HideFlags.HideAndDontSave;
         _mesh.vertexBufferTarget |= GraphicsBuffer.Target.Raw;
         
         _posBuffer = _mesh.GetVertexBuffer(0);
-        _material.SetInteger("_ParticlesNumber", RainManager._nbParticles);
+        _material.SetInteger("_ParticlesNumber", RainManager.NbParticles);
     }
 
     public void Draw()
@@ -60,19 +60,19 @@ public class RainRenderer
         Graphics.RenderMeshPrimitives(rp, _mesh, 0, 1);
     }
 
-    public void SetWindRotation(float p_forceRotation = 1f)
+    public void SetWindRotation(float pForceRotation = 1f)
     {
-        _material.SetFloat("_ForceRotation", p_forceRotation);
+        _material.SetFloat("_ForceRotation", pForceRotation);
     }
     
-    public void SetVelBuffer(ComputeBuffer p_velBuffer)
+    public void SetVelBuffer(ComputeBuffer pVelBuffer)
     {
-        _material.SetBuffer("Velocities", p_velBuffer);
+        _material.SetBuffer("Velocities", pVelBuffer);
     }
 
-    public void SetSizeBuffer(ComputeBuffer p_sizeBuffer)
+    public void SetSizeBuffer(ComputeBuffer pSizeBuffer)
     {
-        _material.SetBuffer("Sizes", p_sizeBuffer);
+        _material.SetBuffer("Sizes", pSizeBuffer);
     }
 
     public GraphicsBuffer GetPositionsBuffer()
@@ -90,9 +90,9 @@ public class RainRenderer
         return _material;
     }
 
-    public void SetParticles(Vector3[] p_newPos)
+    public void SetParticles(Vector3[] pNewPos)
     {
-        _mesh.SetVertices(p_newPos);
+        _mesh.SetVertices(pNewPos);
     }
 
     public void Disable()
